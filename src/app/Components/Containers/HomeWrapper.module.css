@@ -1,0 +1,39 @@
+.mainContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+.leftContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 50%;
+  height: 100vh;
+  background-color: var(--MainBlue);
+  padding: 20px;
+}
+
+.logoImageWrapper {
+  margin-bottom: 20px;
+}
+
+.logoImage {
+  max-width: 100%;
+  height: auto;
+}
+
+.rightContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 50%;
+  height: 100vh;
+  background-color: var(--GrisClaro);
+  padding: 20px;
+}
