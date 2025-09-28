@@ -1,13 +1,8 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --GrisClaro: #F5F7F9;
-  --LightBlue: #95ABB6;
-  --MainBlue: #125F8B;
-  --DarkBlue: #0E4057;
-  --Texto: #202020;
-  --GrisOscuro: #52555B;
-  --GrisClaro: #F5F7F9;
+  --mainBlue: #1A2E47;
+  --darkBlue: #090B17;
+  --lightGray: #ADADAD;
+  --gold : #96781A;
 }
 
 
@@ -29,9 +24,11 @@ body {
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: black;
+  background: #fff;
+  font-family: Raleway, -apple-system, BlinkMacSystemFont, Segoe UI,
+    Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

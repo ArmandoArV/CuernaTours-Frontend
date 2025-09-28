@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styles from "./main.module.css";
+import styles from "./inputStyles.module.css";
 import { EyeFilled, EyeOffFilled } from "@fluentui/react-icons";
 import { InputTypes } from "@/app/Types/InputTypes";
 export default function InputComponent({
