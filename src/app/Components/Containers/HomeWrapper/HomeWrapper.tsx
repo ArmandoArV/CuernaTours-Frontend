@@ -2,8 +2,8 @@
 import React from "react";
 import styles from "./HomeWrapper.module.css";
 import Image from "next/image";
-import InputComponent from "../InputComponent/InputComponent";
-import ButtonComponent from "../ButtonComponent/ButtonComponent";
+import InputComponent from "../../InputComponent/InputComponent";
+import ButtonComponent from "../../ButtonComponent/ButtonComponent";
 import { LoginUserType } from "@/app/Types/LoginUserType";
 import Link from "next/link";
 export default function HomeWrapper() {

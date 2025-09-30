@@ -1,11 +1,9 @@
 :root {
-  --mainBlue: #1A2E47;
-  --darkBlue: #090B17;
-  --lightGray: #ADADAD;
-  --gold : #96781A;
+  --Main-1A2E47: #1a2e47;
+  --Main-090B17: #090b17;
+  --Text-ADADAD: #adadad;
+  --gold: #96781a;
 }
-
-
 
 html,
 body {
@@ -26,9 +24,8 @@ body {
 body {
   color: black;
   background: #fff;
-  font-family: Raleway, -apple-system, BlinkMacSystemFont, Segoe UI,
-    Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-    sans-serif;
+  font-family: Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+    Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
