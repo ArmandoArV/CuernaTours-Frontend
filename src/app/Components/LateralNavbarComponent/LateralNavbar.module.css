@@ -10,7 +10,7 @@
   flex-direction: column;
   z-index: 1000;
   overflow: hidden;
-  width: 70px;
+  width: 90px;
 }
 
 .lateralNavbar:hover {
@@ -60,9 +60,10 @@
 }
 
 .navItem {
-  margin: 0;
-  padding: 0;
-  width: 100%;
+  width: 80%;
+  /* I want to center the element without it being full width */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .navLink:hover {
