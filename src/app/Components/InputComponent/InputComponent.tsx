@@ -32,7 +32,10 @@ export default function InputComponent({
   const inputType = type === "password" && showPassword ? "text" : type;
 
   return (
-    <div className={`${styles.inputContainer} ${containerClassName}`} style={containerStyle}>
+    <div
+      className={`${styles.inputContainer} ${containerClassName}`}
+      style={containerStyle}
+    >
       {label && (
         <label
           htmlFor={id}
@@ -61,9 +64,9 @@ export default function InputComponent({
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? (
-              <EyeOffFilled className={styles.passwordIcon} />
-            ) : (
               <EyeFilled className={styles.passwordIcon} />
+            ) : (
+              <EyeOffFilled className={styles.passwordIcon} />
             )}
           </button>
         )}
