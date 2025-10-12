@@ -1,19 +1,20 @@
+"use client";
 import React from "react";
 import { LateralNavbarType } from "../../../Types/LateralNavbarType";
 import LateralNavbarComponent from "../../LateralNavbarComponent/LateralNavbarComponent";
 import { HomeFilled } from "@fluentui/react-icons";
 import styles from "./DashboardLayout.module.css";
-
+import TopNavbarComponent from "../../TopNavbarComponent/TopNavbarComponent";
 export interface DashboardLayoutProps {
   children: React.ReactNode;
   userIsAdmin?: boolean;
   userIsOwner?: boolean;
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
-  children, 
-  userIsAdmin = false, 
-  userIsOwner = false 
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+  children,
+  userIsAdmin = false,
+  userIsOwner = false,
 }) => {
   const navItems: LateralNavbarType[] = [
     { title: "Home", link: "/", icon: <HomeFilled /> }, // Visible to all
@@ -25,15 +26,33 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
   return (
     <div className={styles.dashboardLayout}>
+      <TopNavbarComponent
+        title="CuernaTours Admin"
+        items={[
+          { title: "Dashboard", link: "/dashboard", icon: <HomeFilled /> },
+          {
+            title: "Tours",
+            isDropdown: true,
+            dropdownItems: [
+              { title: "All Tours", link: "/tours" },
+              { title: "Create Tour", link: "/tours/create" },
+            ],
+          },
+        ]}
+        userInfo={{
+          name: "John Doe",
+          role: "Administrator",
+        }}
+        onNotificationClick={() => console.log("Notifications")}
+        notificationCount={5}
+      />
       <LateralNavbarComponent
         items={navItems}
         userIsAdmin={userIsAdmin}
         userIsOwner={userIsOwner}
       />
       <main className={styles.mainContent}>
-        <div className={styles.contentWrapper}>
-          {children}
-        </div>
+        <div className={styles.contentWrapper}>{children}</div>
       </main>
     </div>
   );
