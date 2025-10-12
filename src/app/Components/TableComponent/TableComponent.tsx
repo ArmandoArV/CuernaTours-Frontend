@@ -1,7 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import styles from "./TableComponent.module.css";
 import { EyeFilled, DocumentEditRegular  } from "@fluentui/react-icons";
+import { Pagination } from "../../PaginationComponent/PaginationComponent";
 export type TableComponentProps = {
   data: Array<{ [key: string]: any }>;
   columns: string[];
@@ -16,6 +17,11 @@ export type TableComponentProps = {
   showActions?: boolean;
   onViewDetails?: (rowData: { [key: string]: any }) => void;
   onEdit?: (rowData: { [key: string]: any }) => void;
+  // Pagination props
+  enablePagination?: boolean;
+  itemsPerPage?: number;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
 };
 
 const TableComponent: React.FC<TableComponentProps> = ({
@@ -32,9 +38,48 @@ const TableComponent: React.FC<TableComponentProps> = ({
   showActions = false,
   onViewDetails,
   onEdit,
+  // Pagination props
+  enablePagination = false,
+  itemsPerPage = 10,
+  currentPage,
+  onPageChange,
 }) => {
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [internalCurrentPage, setInternalCurrentPage] = useState(currentPage || 1);
+
+  // Sync internal state with external currentPage prop
+  useEffect(() => {
+    if (currentPage !== undefined) {
+      setInternalCurrentPage(currentPage);
+    }
+  }, [currentPage]);
+
+  // Use external currentPage if provided, otherwise use internal state
+  const activePage = currentPage !== undefined ? currentPage : internalCurrentPage;
+
+  // Calculate pagination data
+  const { paginatedData, totalPages } = useMemo(() => {
+    if (!enablePagination) {
+      return { paginatedData: data, totalPages: 1 };
+    }
+
+    const startIndex = (activePage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedData = data.slice(startIndex, endIndex);
+    const totalPages = Math.ceil(data.length / itemsPerPage);
+
+    return { paginatedData, totalPages };
+  }, [data, activePage, itemsPerPage, enablePagination]);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    if (onPageChange) {
+      onPageChange(page);
+    } else {
+      setInternalCurrentPage(page);
+    }
+  };
 
   // Map status text to its corresponding color
   const getStatusColor = (statusValue: string): string => {
@@ -88,7 +133,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
               </tr>
             </thead>
             <tbody>
-              {data.map((row, rowIndex) => (
+              {paginatedData.map((row, rowIndex) => (
                 <tr
                   key={rowIndex}
                   onClick={() => onRowClick && onRowClick(row)}
@@ -168,6 +213,17 @@ const TableComponent: React.FC<TableComponentProps> = ({
               }}
             >
               {hoveredButton.includes("details") ? "Ver detalles" : "Editar"}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {enablePagination && totalPages > 1 && (
+            <div className={styles.paginationWrapper}>
+              <Pagination
+                currentPage={activePage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
             </div>
           )}
         </>

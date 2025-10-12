@@ -2,15 +2,15 @@ import React from "react";
 import { LateralNavbarType } from "../../../Types/LateralNavbarType";
 import LateralNavbarComponent from "../../LateralNavbarComponent/LateralNavbarComponent";
 import { HomeFilled } from "@fluentui/react-icons";
-import styles from "./DashboardWrapper.module.css";
+import styles from "./DashboardLayout.module.css";
 
-export interface DashboardWrapperProps {
-  children?: React.ReactNode;
+export interface DashboardLayoutProps {
+  children: React.ReactNode;
   userIsAdmin?: boolean;
   userIsOwner?: boolean;
 }
 
-const DashboardWrapper: React.FC<DashboardWrapperProps> = ({ 
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
   children, 
   userIsAdmin = false, 
   userIsOwner = false 
@@ -38,4 +38,5 @@ const DashboardWrapper: React.FC<DashboardWrapperProps> = ({
     </div>
   );
 };
-export default DashboardWrapper;
+
+export default DashboardLayout;
