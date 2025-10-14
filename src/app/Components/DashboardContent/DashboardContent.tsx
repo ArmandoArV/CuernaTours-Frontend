@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import TableComponent from "../TableComponent/TableComponent";
+import SearchComponent from "../SearchComponent/SearchComponent";
 
 export default function DashboardContent() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -123,7 +124,7 @@ export default function DashboardContent() {
     <div>
       <TableComponent
         title="Lista de Viajes"
-        description="Gestión de viajes y tours disponibles"
+        // description="Gestión de viajes y tours disponibles"
         data={sampleData}
         columns={columns}
         showActions={true}
@@ -135,6 +136,7 @@ export default function DashboardContent() {
         currentPage={currentPage}
         onPageChange={setCurrentPage}
       />
+      
     </div>
   );
 }

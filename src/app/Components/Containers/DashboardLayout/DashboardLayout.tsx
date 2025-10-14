@@ -2,9 +2,9 @@
 import React from "react";
 import { LateralNavbarType } from "../../../Types/LateralNavbarType";
 import LateralNavbarComponent from "../../LateralNavbarComponent/LateralNavbarComponent";
+import TopNavbarComponent from "../../TopNavbarComponent/TopNavbarComponent";
 import { HomeFilled } from "@fluentui/react-icons";
 import styles from "./DashboardLayout.module.css";
-import TopNavbarComponent from "../../TopNavbarComponent/TopNavbarComponent";
 export interface DashboardLayoutProps {
   children: React.ReactNode;
   userIsAdmin?: boolean;
@@ -16,7 +16,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   userIsAdmin = false,
   userIsOwner = false,
 }) => {
-  const navItems: LateralNavbarType[] = [
+  const lateralNavItems: LateralNavbarType[] = [
     { title: "Home", link: "/", icon: <HomeFilled /> }, // Visible to all
     { title: "Profile", link: "/profile" }, // Visible to all
     { title: "Admin Panel", link: "/admin", isAdmin: true }, // Only admin and owner
@@ -24,30 +24,32 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     { title: "System Settings", link: "/settings", isOwner: true }, // Only owner
   ];
 
+  const handleNotificationClick = () => {
+    console.log("Notifications clicked");
+  };
+
+  const handleUserMenuClick = () => {
+    console.log("User menu clicked");
+  };
+
   return (
     <div className={styles.dashboardLayout}>
       <TopNavbarComponent
-        title="CuernaTours Admin"
-        items={[
-          { title: "Dashboard", link: "/dashboard", icon: <HomeFilled /> },
-          {
-            title: "Tours",
-            isDropdown: true,
-            dropdownItems: [
-              { title: "All Tours", link: "/tours" },
-              { title: "Create Tour", link: "/tours/create" },
-            ],
-          },
-        ]}
+        title="CuernaTours"
         userInfo={{
           name: "John Doe",
-          role: "Administrator",
+          role: userIsOwner
+            ? "Propietario"
+            : userIsAdmin
+            ? "Administrador"
+            : "Usuario",
         }}
-        onNotificationClick={() => console.log("Notifications")}
-        notificationCount={5}
+        onNotificationClick={handleNotificationClick}
+        onUserMenuClick={handleUserMenuClick}
+        notificationCount={3}
       />
       <LateralNavbarComponent
-        items={navItems}
+        items={lateralNavItems}
         userIsAdmin={userIsAdmin}
         userIsOwner={userIsOwner}
       />
