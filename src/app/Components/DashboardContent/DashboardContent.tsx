@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import TableComponent from "../TableComponent/TableComponent";
-import SearchComponent from "../SearchComponent/SearchComponent";
+import FilterableTableComponent from "../FilterableTable/FilterableTableComponent";
+import { FilterConfig, FilterPresets } from "../FilterComponent";
+import { AddFilled } from "@fluentui/react-icons";
 
 export default function DashboardContent() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -110,6 +111,33 @@ export default function DashboardContent() {
     "Estatus",
   ];
 
+  // Configure filters for the table
+  const filterConfigs: FilterConfig[] = [
+    FilterPresets.createSelectFilter(
+      "Chofer",
+      "Chofer",
+      Array.from(new Set(sampleData.map((item) => item.Chofer))),
+      "Filtrar por Chofer"
+    ),
+    FilterPresets.createStatusFilter(
+      "Estatus",
+      Array.from(new Set(sampleData.map((item) => item.Estatus))),
+      "Filtrar por Estatus"
+    ),
+    FilterPresets.createSelectFilter(
+      "Unidad",
+      "Tipo de Unidad",
+      Array.from(new Set(sampleData.map((item) => item.Unidad))),
+      "Filtrar por Unidad"
+    ),
+    FilterPresets.createSelectFilter(
+      "Origen",
+      "Ciudad de Origen",
+      Array.from(new Set(sampleData.map((item) => item.Origen))),
+      "Filtrar por Origen"
+    ),
+  ];
+
   const handleViewDetails = (rowData: any) => {
     console.log("Ver detalles de:", rowData);
     alert(`Ver detalles de: ${rowData["Empresa o Cliente"]}`);
@@ -120,23 +148,61 @@ export default function DashboardContent() {
     alert(`Editar: ${rowData["Empresa o Cliente"]}`);
   };
 
+  const handleFiltersChange = (
+    activeFilters: Record<string, string | string[]>
+  ) => {
+    console.log("Filtros aplicados:", activeFilters);
+  };
+
+  const handleSearch = (searchTerm: string) => {
+    console.log("Búsqueda:", searchTerm);
+  };
+
+  const handleCreateOrder = () => {
+    console.log("Crear nueva orden");
+    alert("Crear nueva orden");
+  };
+
   return (
     <div>
-      <TableComponent
-        title="Lista de Viajes"
-        // description="Gestión de viajes y tours disponibles"
-        data={sampleData}
+      <FilterableTableComponent
+        title="Lista de viajes"
+        originalData={sampleData}
         columns={columns}
+        filterConfigs={filterConfigs}
+        enableFiltering={true}
+        enableSearch={true}
         showActions={true}
         onViewDetails={handleViewDetails}
         onEdit={handleEdit}
+        onSearch={handleSearch}
         emptyMessage="No hay viajes disponibles"
         enablePagination={true}
         itemsPerPage={5}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
+        onFiltersChange={handleFiltersChange}
+        actionButtons={
+          <button
+            onClick={handleCreateOrder}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: "#374151",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              fontSize: "14px",
+              fontWeight: "500",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <AddFilled /> Crear Orden
+          </button>
+        }
       />
-      
     </div>
   );
 }

@@ -3,7 +3,10 @@ import React, { useState, useMemo, useEffect } from "react";
 import styles from "./TableComponent.module.css";
 import { EyeFilled, DocumentEditRegular  } from "@fluentui/react-icons";
 import { Pagination } from "../../PaginationComponent/PaginationComponent";
-import SearchComponent from "../SearchComponent/SearchComponent";
+// Remove SearchComponent import since it's now handled by FilterableTableComponent
+// import SearchComponent from "../SearchComponent/SearchComponent";
+// Remove FilterComponent import since it's now handled by FilterableTableComponent
+// import FilterComponent from "../FilterComponent/FilterComponent";
 export type TableComponentProps = {
   data: Array<{ [key: string]: any }>;
   columns: string[];
@@ -116,7 +119,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
     >
       {title && <h2 className={styles.title}>{title}</h2>}
       {description && <p className={styles.description}>{description}</p>}
-      <SearchComponent onSearch={(term) => console.log("Buscar:", term)} />
+      {/* Remove SearchComponent from here since it's now in FilterableTableComponent */}
       {loading ? (
         <div className={styles.loading}>Loading...</div>
       ) : error ? (

@@ -1,0 +1,156 @@
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.filter-wrapper::after {
+  content: '▼';
+  color: #9ca3af;
+  font-size: 10px;
+  margin-left: 4px;
+  pointer-events: none;
+}
+
+.filter-wrapper:hover {
+  border-color: #9ca3af;
+  background-color: #f9fafb;
+}
+
+.filter-icon {
+  color: #6b7280;
+  min-width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.filter-select {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  color: #374151;
+  font-size: 14px;
+  min-width: 120px;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.filter-select:hover {
+  color: #1f2937;
+}
+
+.filter-select:focus {
+  outline: none;
+  color: #1f2937;
+}
+
+.filter-wrapper:focus-within {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.filter-select option {
+  padding: 8px;
+  background-color: #ffffff;
+  color: #333333;
+}
+
+.clear-filters-btn {
+  padding: 8px 16px;
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 20px;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.clear-filters-btn:hover:not(:disabled) {
+  background-color: #e5e7eb;
+  color: #374151;
+  border-color: #9ca3af;
+}
+
+.clear-filters-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  background-color: #4d5dbc;
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  gap: 4px;
+}
+
+.filter-tag-remove {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.filter-tag-remove:hover {
+  opacity: 0.8;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .filter-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .filter-wrapper {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .filter-select {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .clear-filters-btn {
+    align-self: center;
+  }
+}
