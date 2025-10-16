@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
 import styles from "./TableComponent.module.css";
-import { EyeFilled, DocumentEditRegular  } from "@fluentui/react-icons";
+import { EyeFilled, MoreVerticalFilled  } from "@fluentui/react-icons";
 import { Pagination } from "../../PaginationComponent/PaginationComponent";
 // Remove SearchComponent import since it's now handled by FilterableTableComponent
 // import SearchComponent from "../SearchComponent/SearchComponent";
@@ -198,7 +198,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                           }}
                           onMouseLeave={() => setHoveredButton(null)}
                         >
-                            <DocumentEditRegular />
+                            <MoreVerticalFilled />
                         </button>
                       </div>
                     </td>

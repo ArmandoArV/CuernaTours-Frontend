@@ -2,6 +2,7 @@
   --Main-1A2E47: #1a2e47;
   --Main-090B17: #090b17;
   --Text-ADADAD: #adadad;
+  --Main-FFFFFF: #ffffff;
   --Shadows-1A2E47-80: #1A2E47;
   --gold: #96781a;
 }
@@ -11,7 +12,7 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden;
+  overflow: auto;
 }
 
 @media (max-width: 767px) {

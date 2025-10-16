@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useCallback } from "react";
 import styles from "./HomeWrapper.module.css";
 import Image from "next/image";
 import InputComponent from "../../InputComponent/InputComponent";
@@ -11,6 +11,8 @@ export default function HomeWrapper() {
     email: "",
     password: "",
   });
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -24,6 +26,42 @@ export default function HomeWrapper() {
       [type === "text" ? "email" : "password"]: value,
     }));
   };
+
+  const authenticateUser = useCallback(async () => {
+    if (formData.email && formData.password) {
+      try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Allow-Control-Allow-Origin": "*",
+          },
+          body: JSON.stringify(formData),
+        });
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("user", JSON.stringify(data.user));
+          // Redirect to dashboard or another page
+          window.location.href = "/dashboard";
+        } else {
+          console.error("Login failed");
+          alert(
+            "Error en la autenticación. Por favor, verifica tus credenciales."
+          );
+        }
+      } catch (error) {
+        console.error("Error during authentication:", error);
+        alert(
+          "Ocurrió un error durante la autenticación. Inténtalo de nuevo más tarde."
+        );
+      }
+    }
+  }, [formData, API_URL]);
+
+  useEffect(() => {
+    authenticateUser();
+  }, [authenticateUser]);
   return (
     <div className={styles["mainContainer"]}>
       <div className={styles["leftContainer"]}>
@@ -61,9 +99,7 @@ export default function HomeWrapper() {
           <div className={styles["buttonContainer"]}>
             <ButtonComponent
               text="Iniciar Sesión"
-              onClick={() => {
-                // Handle button click if needed
-              }}
+              onClick={authenticateUser}
               className={styles["loginButton"]}
               type="submit"
             />
