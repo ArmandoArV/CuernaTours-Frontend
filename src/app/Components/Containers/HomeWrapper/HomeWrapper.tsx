@@ -6,6 +6,7 @@ import InputComponent from "../../InputComponent/InputComponent";
 import ButtonComponent from "../../ButtonComponent/ButtonComponent";
 import { LoginUserType } from "@/app/Types/LoginUserType";
 import Link from "next/link";
+import { showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
 export default function HomeWrapper() {
   const [formData, setFormData] = React.useState<LoginUserType>({
     email: "",
@@ -16,7 +17,7 @@ export default function HomeWrapper() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Handle form submission logic here
+    authenticateUser();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,40 +29,129 @@ export default function HomeWrapper() {
   };
 
   const authenticateUser = useCallback(async () => {
-    if (formData.email && formData.password) {
-      try {
-        const response = await fetch(`${API_URL}/auth/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Allow-Control-Allow-Origin": "*",
-          },
-          body: JSON.stringify(formData),
-        });
-        if (response.ok) {
-          const data = await response.json();
-          localStorage.setItem("token", data.token);
-          localStorage.setItem("user", JSON.stringify(data.user));
-          // Redirect to dashboard or another page
-          window.location.href = "/dashboard";
-        } else {
-          console.error("Login failed");
-          alert(
-            "Error en la autenticación. Por favor, verifica tus credenciales."
-          );
+    // Validate required fields
+    if (!formData.email || !formData.password) {
+      if (!formData.email && !formData.password) {
+        showErrorAlert(
+          "Campos requeridos",
+          "Por favor, ingresa tu usuario y contraseña."
+        );
+      } else if (!formData.email) {
+        showErrorAlert(
+          "Campo requerido",
+          "Por favor, ingresa tu usuario."
+        );
+      } else {
+        showErrorAlert(
+          "Campo requerido",
+          "Por favor, ingresa tu contraseña."
+        );
+      }
+      return;
+    }
+
+    // Validate email format (basic validation)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      showErrorAlert(
+        "Formato inválido",
+        "Por favor, ingresa un correo electrónico válido."
+      );
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Allow-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        // Store tokens and user data
+        localStorage.setItem("accessToken", data.data.accessToken);
+        localStorage.setItem("refreshToken", data.data.refreshToken);
+        localStorage.setItem("user", JSON.stringify(data.data.user));
+        
+        // Show success alert
+        showSuccessAlert(
+          "Inicio de sesión exitoso",
+          `Bienvenido, ${data.data.user.display_name}!`,
+          () => {
+            // Redirect to dashboard after alert is closed
+            window.location.href = "/dashboard";
+          }
+        );
+      } else {
+        // Handle different types of authentication errors
+        let errorTitle = "Error de autenticación";
+        let errorMessage = "Error en la autenticación. Por favor, verifica tus credenciales.";
+        
+        if (data.message) {
+          // Check for specific error messages from the API
+          const message = data.message.toLowerCase();
+          
+          if (message.includes("invalid") || message.includes("incorrect") || 
+              message.includes("wrong") || message.includes("credenciales") ||
+              message.includes("usuario") || message.includes("contraseña")) {
+            errorTitle = "Credenciales incorrectas";
+            errorMessage = "Usuario o contraseña incorrectos. Por favor, verifica tus datos e intenta nuevamente.";
+          } else if (message.includes("not found") || message.includes("no encontrado")) {
+            errorTitle = "Usuario no encontrado";
+            errorMessage = "El usuario ingresado no existe en el sistema.";
+          } else if (message.includes("blocked") || message.includes("suspended") || 
+                     message.includes("bloqueado") || message.includes("suspendido")) {
+            errorTitle = "Cuenta bloqueada";
+            errorMessage = "Tu cuenta ha sido bloqueada. Contacta al administrador.";
+          } else if (message.includes("expired") || message.includes("expirado")) {
+            errorTitle = "Sesión expirada";
+            errorMessage = "Tu sesión ha expirado. Por favor, intenta iniciar sesión nuevamente.";
+          } else {
+            // Use the original message from the API if it doesn't match specific patterns
+            errorMessage = data.message;
+          }
         }
-      } catch (error) {
-        console.error("Error during authentication:", error);
-        alert(
-          "Ocurrió un error durante la autenticación. Inténtalo de nuevo más tarde."
+        
+        // Handle HTTP status codes
+        if (response.status === 401) {
+          errorTitle = "Credenciales incorrectas";
+          errorMessage = "Usuario o contraseña incorrectos. Por favor, verifica tus datos e intenta nuevamente.";
+        } else if (response.status === 403) {
+          errorTitle = "Acceso denegado";
+          errorMessage = "No tienes permisos para acceder al sistema.";
+        } else if (response.status === 429) {
+          errorTitle = "Demasiados intentos";
+          errorMessage = "Has excedido el límite de intentos de inicio de sesión. Intenta más tarde.";
+        } else if (response.status >= 500) {
+          errorTitle = "Error del servidor";
+          errorMessage = "Error interno del servidor. Por favor, intenta más tarde.";
+        }
+        
+        showErrorAlert(errorTitle, errorMessage);
+      }
+    } catch (error) {
+      console.error("Error during authentication:", error);
+      
+      // Handle network errors
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        showErrorAlert(
+          "Error de conexión",
+          "No se pudo conectar al servidor. Verifica tu conexión a internet e intenta nuevamente."
+        );
+      } else {
+        showErrorAlert(
+          "Error inesperado",
+          "Ocurrió un error inesperado durante la autenticación. Inténtalo de nuevo más tarde."
         );
       }
     }
   }, [formData, API_URL]);
 
-  useEffect(() => {
-    authenticateUser();
-  }, [authenticateUser]);
   return (
     <div className={styles["mainContainer"]}>
       <div className={styles["leftContainer"]}>
