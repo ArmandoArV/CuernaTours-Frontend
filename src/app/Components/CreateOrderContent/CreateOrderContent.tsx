@@ -1,11 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import styles from "./CreateOrderContent.module.css";
 import InputComponent from "../InputComponent/InputComponent";
 import SelectComponent from "../SelectComponent/SelectComponent";
 import { ArrowBounceFilled } from "@fluentui/react-icons";
 
 export default function CreateOrderContent() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
   const [formData, setFormData] = useState({
     empresa: "",
     nombreContacto: "",
@@ -47,6 +49,20 @@ export default function CreateOrderContent() {
     // Handle next/submit logic
     console.log("Form data:", formData);
   };
+
+  const fetchTableData = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_URL}/some-endpoint`);
+      const data = await response.json();
+      // Process and set the fetched data as needed
+    } catch (error) {
+      console.error("Error fetching table data:", error);
+    }
+  }, [API_URL]);
+
+  useEffect(() => {
+    fetchTableData();
+  }, [fetchTableData]);
 
   return (
     <main className={styles.main}>
@@ -173,7 +189,7 @@ export default function CreateOrderContent() {
 
           <div className={styles.section}>
             <div className={styles.textareaContainer}>
-             <InputComponent
+              <InputComponent
                 type="text"
                 value={formData.comentarios}
                 onChange={handleInputChange("comentarios")}
