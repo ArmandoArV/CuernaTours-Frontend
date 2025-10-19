@@ -5,6 +5,6 @@ export type InputTypes = {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
-  label?: string;
+  label?: React.ReactNode | string;
   id?: string;
 }

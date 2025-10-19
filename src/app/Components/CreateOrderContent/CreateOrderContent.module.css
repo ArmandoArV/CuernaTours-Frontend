@@ -17,6 +17,43 @@
   margin: 0 auto;
 }
 
+.backButton {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0.5em;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 2rem;
+}
+
+.radioInput {
+  margin: 0.8rem;
+  font-size: 1.8rem;
+  cursor: pointer;
+  display: inline-block;
+  width: auto;
+  height: auto;
+  accent-color: #000000;
+  background: #fff;
+}
+
+.radioGroupHorizontal {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  width: 18em;
+  height: auto;
+}
+
+.radioLabelHorizontal {
+  width: 60%;
+}
+
 .header {
   display: flex;
   width: 100%;

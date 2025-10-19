@@ -3,8 +3,8 @@ import { useState, useCallback, useEffect } from "react";
 import styles from "./CreateOrderContent.module.css";
 import InputComponent from "../InputComponent/InputComponent";
 import SelectComponent from "../SelectComponent/SelectComponent";
-import { ArrowBounceFilled } from "@fluentui/react-icons";
-
+import { ArrowHookUpLeftRegular } from "@fluentui/react-icons";
+import Link from "next/link";
 export default function CreateOrderContent() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -21,6 +21,10 @@ export default function CreateOrderContent() {
     aplicaIva: "Si",
     costoViaje: "",
     llevaComision: "Si",
+    nombreRecibeComision: "",
+    tipoComision: "Porcentaje",
+    porcentaje: "",
+    montoArreglado: "",
     coordinadorViaje: "",
     observacionesInternas: "",
   });
@@ -50,30 +54,15 @@ export default function CreateOrderContent() {
     console.log("Form data:", formData);
   };
 
-  const fetchTableData = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_URL}/some-endpoint`);
-      const data = await response.json();
-      // Process and set the fetched data as needed
-    } catch (error) {
-      console.error("Error fetching table data:", error);
-    }
-  }, [API_URL]);
-
-  useEffect(() => {
-    fetchTableData();
-  }, [fetchTableData]);
-
   return (
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <button
-            className={styles.backButton}
-            onClick={() => window.history.back()}
-          >
-            <ArrowBounceFilled color="#ffff" />
-          </button>
+          <Link href="/dashboard" passHref>
+            <button className={styles.backButton}>
+              <ArrowHookUpLeftRegular color="black" />
+            </button>
+          </Link>
           <div>
             <h1 className={styles.title}>Crear contrato de orden</h1>
             <p className={styles.subtitle}>
@@ -110,7 +99,7 @@ export default function CreateOrderContent() {
                 type="text"
                 value={formData.nombreContacto}
                 onChange={handleInputChange("nombreContacto")}
-                label="Nombre(s) del contacto *"
+                label={<p>Nombre del contacto <strong style={{ color: "red" }}>*</strong></p>}
                 placeholder=""
                 className={styles.input}
               />
@@ -120,7 +109,7 @@ export default function CreateOrderContent() {
                 type="text"
                 value={formData.primerApellido}
                 onChange={handleInputChange("primerApellido")}
-                label="Primer apellido *"
+                label={<p>Primer apellido <strong style={{ color: "red" }}>*</strong></p>}
                 placeholder=""
                 className={styles.input}
               />
@@ -143,14 +132,17 @@ export default function CreateOrderContent() {
                 type="tel"
                 value={formData.telefono}
                 onChange={handleInputChange("telefono")}
-                label="Teléfono *"
+                label={<p>Teléfono <strong style={{ color: "red" }}>*</strong></p>}
                 placeholder=""
                 className={styles.input}
               />
             </div>
             <div className={styles.col}>
               <div className={styles.radioGroup}>
-                <label className={styles.radioLabel}>¿Tiene WhatsApp? *</label>
+                <label className={styles.radioLabel}>
+                  ¿Tiene WhatsApp?
+                  <strong style={{ color: "red" }}> *</strong>
+                </label>
                 <div className={styles.radioOptions}>
                   <label className={styles.radioOption}>
                     <input
@@ -159,6 +151,7 @@ export default function CreateOrderContent() {
                       value="Si"
                       checked={formData.tieneWhatsapp === "Si"}
                       onChange={() => handleRadioChange("tieneWhatsapp", "Si")}
+                      className={styles.radioInput}
                     />
                     Sí
                   </label>
@@ -169,6 +162,7 @@ export default function CreateOrderContent() {
                       value="No"
                       checked={formData.tieneWhatsapp === "No"}
                       onChange={() => handleRadioChange("tieneWhatsapp", "No")}
+                      className={styles.radioInput}
                     />
                     No
                   </label>
@@ -220,14 +214,18 @@ export default function CreateOrderContent() {
 
           <div className={styles.row}>
             <div className={styles.col}>
-              <div className={styles.radioGroup}>
-                <label className={styles.radioLabel}>¿Aplica IVA? *</label>
+              <div className={styles.radioGroupHorizontal}>
+                <label className={styles.radioLabel}>
+                  ¿Aplica IVA?
+                  <strong style={{ color: "red" }}> *</strong>
+                </label>
                 <div className={styles.radioOptions}>
-                  <label className={styles.radioOption}>
+                  <label className={styles.radioLabelHorizontal}>
                     <input
                       type="radio"
                       name="iva"
                       value="Si"
+                      className={styles.radioInput}
                       checked={formData.aplicaIva === "Si"}
                       onChange={() => handleRadioChange("aplicaIva", "Si")}
                     />
@@ -238,6 +236,7 @@ export default function CreateOrderContent() {
                       type="radio"
                       name="iva"
                       value="No"
+                      className={styles.radioInput}
                       checked={formData.aplicaIva === "No"}
                       onChange={() => handleRadioChange("aplicaIva", "No")}
                     />
@@ -251,7 +250,7 @@ export default function CreateOrderContent() {
                 type="number"
                 value={formData.costoViaje}
                 onChange={handleInputChange("costoViaje")}
-                label="Costo del viaje *"
+                label={<p>Costo del viaje <strong style={{ color: "red" }}>*</strong></p>}
                 placeholder=""
                 className={styles.input}
               />
@@ -259,14 +258,17 @@ export default function CreateOrderContent() {
           </div>
 
           <div className={styles.section}>
-            <div className={styles.radioGroup}>
-              <label className={styles.radioLabel}>¿Lleva comisión? *</label>
+            <div className={styles.radioGroupHorizontal}>
+              <label className={styles.radioLabelHorizontal}>
+                ¿Lleva comisión? <strong style={{ color: "red" }}>*</strong>
+              </label>
               <div className={styles.radioOptions}>
                 <label className={styles.radioOption}>
                   <input
                     type="radio"
                     name="comision"
                     value="Si"
+                    className={styles.radioInput}
                     checked={formData.llevaComision === "Si"}
                     onChange={() => handleRadioChange("llevaComision", "Si")}
                   />
@@ -277,6 +279,7 @@ export default function CreateOrderContent() {
                     type="radio"
                     name="comision"
                     value="No"
+                    className={styles.radioInput}
                     checked={formData.llevaComision === "No"}
                     onChange={() => handleRadioChange("llevaComision", "No")}
                   />
@@ -285,6 +288,87 @@ export default function CreateOrderContent() {
               </div>
             </div>
           </div>
+
+          {/* Conditional commission fields */}
+          {formData.llevaComision === "Si" && (
+            <>
+              <div className={styles.section}>
+                <InputComponent
+                  type="text"
+                  value={formData.nombreRecibeComision}
+                  onChange={handleInputChange("nombreRecibeComision")}
+                  label="Nombre de quien recibe la comisión *"
+                  placeholder=""
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.section}>
+                <div className={styles.radioGroup}>
+                  <label className={styles.radioLabel}>
+                    Tipo de comisión <strong style={{ color: "red" }}>*</strong>
+                  </label>
+                  <div className={styles.radioOptions}>
+                    <label className={styles.radioOption}>
+                      <input
+                        type="radio"
+                        name="tipoComision"
+                        value="Porcentaje"
+                        className={styles.radioInput}
+                        checked={formData.tipoComision === "Porcentaje"}
+                        onChange={() =>
+                          handleRadioChange("tipoComision", "Porcentaje")
+                        }
+                      />
+                      Porcentaje
+                    </label>
+                    <label className={styles.radioOption}>
+                      <input
+                        type="radio"
+                        name="tipoComision"
+                        value="Arreglada"
+                        className={styles.radioInput}
+                        checked={formData.tipoComision === "Arreglada"}
+                        onChange={() =>
+                          handleRadioChange("tipoComision", "Arreglada")
+                        }
+                      />
+                      Arreglada
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.row}>
+                {formData.tipoComision === "Porcentaje" && (
+                  <div className={styles.col}>
+                    <InputComponent
+                      type="number"
+                      value={formData.porcentaje}
+                      onChange={handleInputChange("porcentaje")}
+                      label="Porcentaje (%)"
+                      placeholder=""
+                      className={styles.input}
+                    />
+                  </div>
+                )}
+                <div className={styles.col}>
+                  <InputComponent
+                    type="number"
+                    value={formData.montoArreglado}
+                    onChange={handleInputChange("montoArreglado")}
+                    label={
+                      formData.tipoComision === "Porcentaje"
+                        ? "Monto del porcentaje ($)"
+                        : "Monto de la comisión ($)"
+                    }
+                    placeholder=""
+                    className={styles.input}
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <div className={styles.section}>
             <SelectComponent
