@@ -3,7 +3,7 @@ import { useState } from "react";
 import FilterableTableComponent from "../FilterableTable/FilterableTableComponent";
 import { FilterConfig, FilterPresets } from "../FilterComponent";
 import { AddFilled } from "@fluentui/react-icons";
-
+import Link from "next/link";
 export default function DashboardContent() {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -158,11 +158,6 @@ export default function DashboardContent() {
     console.log("Búsqueda:", searchTerm);
   };
 
-  const handleCreateOrder = () => {
-    console.log("Crear nueva orden");
-    alert("Crear nueva orden");
-  };
-
   return (
     <div>
       <FilterableTableComponent
@@ -183,24 +178,25 @@ export default function DashboardContent() {
         onPageChange={setCurrentPage}
         onFiltersChange={handleFiltersChange}
         actionButtons={
-          <button
-            onClick={handleCreateOrder}
-            style={{
-              padding: "8px 16px",
-              backgroundColor: "#374151",
-              color: "white",
-              border: "none",
-              borderRadius: "6px",
-              fontSize: "14px",
-              fontWeight: "500",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            <AddFilled /> Crear Orden
-          </button>
+          <Link href="/dashboard/createOrder" passHref>
+            <button
+              style={{
+                padding: "8px 16px",
+                backgroundColor: "#374151",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontWeight: "500",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <AddFilled /> Crear Orden
+            </button>
+          </Link>
         }
       />
     </div>
