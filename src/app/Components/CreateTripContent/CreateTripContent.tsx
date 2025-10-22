@@ -5,7 +5,6 @@ import InputComponent from "../InputComponent/InputComponent";
 import SelectComponent from "../SelectComponent/SelectComponent";
 import { ArrowHookUpLeftRegular } from "@fluentui/react-icons";
 import Link from "next/link";
-import { showErrorAlert } from "../../Utils/AlertUtil";
 export default function CreateOrderContent() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -30,182 +29,19 @@ export default function CreateOrderContent() {
     observacionesInternas: "",
   });
 
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
-  const [showErrors, setShowErrors] = useState(false);
-
-  const validateForm = () => {
-    const missingFields: string[] = [];
-    const newErrors: {[key: string]: string} = {};
-
-    // Required fields validation
-    if (!formData.empresa.trim()) {
-      missingFields.push("Empresa o cliente");
-      newErrors.empresa = "La empresa o cliente es obligatorio";
-    }
-    if (!formData.nombreContacto.trim()) {
-      missingFields.push("Nombre del contacto");
-      newErrors.nombreContacto = "El nombre del contacto es obligatorio";
-    }
-    if (!formData.primerApellido.trim()) {
-      missingFields.push("Primer apellido");
-      newErrors.primerApellido = "El primer apellido es obligatorio";
-    }
-    if (!formData.telefono.trim()) {
-      missingFields.push("Teléfono");
-      newErrors.telefono = "El teléfono es obligatorio";
-    } else if (!isValidPhone(formData.telefono)) {
-      newErrors.telefono = "El teléfono solo debe contener números";
-    }
-    
-    if (!formData.costoViaje.trim()) {
-      missingFields.push("Costo del viaje");
-      newErrors.costoViaje = "El costo del viaje es obligatorio";
-    } else if (!isValidNumber(formData.costoViaje)) {
-      newErrors.costoViaje = "El costo del viaje debe ser un número válido";
-    }
-
-    // Conditional validations when llevaComision is "Si"
-    if (formData.llevaComision === "Si") {
-      if (!formData.nombreRecibeComision.trim()) {
-        missingFields.push("Nombre de quien recibe la comisión");
-        newErrors.nombreRecibeComision = "El nombre de quien recibe la comisión es obligatorio";
-      }
-      
-      // Validate percentage if tipo comision is percentage
-      if (formData.tipoComision === "Porcentaje" && formData.porcentaje.trim() && !isValidNumber(formData.porcentaje)) {
-        newErrors.porcentaje = "El porcentaje debe ser un número válido";
-      }
-      
-      // Validate amount if provided
-      if (formData.montoArreglado.trim() && !isValidNumber(formData.montoArreglado)) {
-        newErrors.montoArreglado = "El monto debe ser un número válido";
-      }
-    }
-
-    // Email validation (if provided)
-    if (formData.correoElectronico.trim() && !isValidEmail(formData.correoElectronico)) {
-      newErrors.correoElectronico = "El correo electrónico no es válido";
-      showErrorAlert(
-        "Email inválido",
-        "Por favor, ingrese un correo electrónico válido."
-      );
-      setErrors(newErrors);
-      setShowErrors(true);
-      return false;
-    }
-
-    // Set errors for inline display
-    setErrors(newErrors);
-    setShowErrors(true);
-
-    // Check for format errors first
-    const formatErrors = Object.keys(newErrors).filter(key => 
-      newErrors[key].includes("número válido") || 
-      newErrors[key].includes("solo debe contener números")
-    );
-    
-    if (formatErrors.length > 0) {
-      showErrorAlert(
-        "Formato incorrecto",
-        "Por favor, corrija los campos que contienen formato incorrecto."
-      );
-      return false;
-    }
-
-    // Show missing fields alert if any
-    if (missingFields.length > 0) {
-      const fieldsList = missingFields.join(", ");
-      showErrorAlert(
-        "Campos obligatorios faltantes",
-        `Por favor, complete los siguientes campos obligatorios: ${fieldsList}`
-      );
-      return false;
-    }
-
-    return true;
-  };
-
-  const isValidEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const isValidNumber = (value: string) => {
-    const numberRegex = /^\d*\.?\d*$/;
-    return numberRegex.test(value);
-  };
-
-  const isValidPhone = (phone: string) => {
-    const phoneRegex = /^\d*$/;
-    return phoneRegex.test(phone);
-  };
-
   const handleInputChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      
-      // Apply numeric validation for specific fields
-      if (field === 'telefono' && !isValidPhone(value)) {
-        return; // Don't update if not valid phone number
-      }
-      
-      if ((field === 'costoViaje' || field === 'porcentaje' || field === 'montoArreglado') && !isValidNumber(value)) {
-        return; // Don't update if not valid number
-      }
-
       setFormData((prev) => ({
         ...prev,
-        [field]: value,
+        [field]: e.target.value,
       }));
-
-      // Clear error for this field when user starts typing
-      if (errors[field]) {
-        setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[field];
-          return newErrors;
-        });
-      }
     };
-
-  const handleSelectChange = (field: string) => (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    // Clear error for this field when user makes a selection
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
 
   const handleRadioChange = (field: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
-
-    // Clear error for this field when user makes a selection
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
-
-  const handleNext = () => {
-    if (validateForm()) {
-      // Proceed to next step
-      window.location.href = "/dashboard/createOrder/createTrip";
-    }
   };
 
   const handleCancel = () => {
@@ -234,7 +70,12 @@ export default function CreateOrderContent() {
           <div className={styles.section}>
             <SelectComponent
               value={formData.empresa}
-              onChange={handleSelectChange("empresa")}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  empresa: e.target.value,
+                }))
+              }
               options={[
                 { value: "empresa1", label: "Empresa 1" },
                 { value: "empresa2", label: "Empresa 2" },
@@ -243,11 +84,8 @@ export default function CreateOrderContent() {
               label="Empresa o cliente"
               placeholder="Seleccione..."
               required={true}
-              className={`${styles.select} ${showErrors && errors.empresa ? styles.selectError : ''}`}
+              className={styles.select}
             />
-            {showErrors && errors.empresa && (
-              <p className={styles.errorMessage}>{errors.empresa}</p>
-            )}
           </div>
 
           <div className={styles.row}>
@@ -263,11 +101,8 @@ export default function CreateOrderContent() {
                   </p>
                 }
                 placeholder=""
-                className={`${styles.input} ${showErrors && errors.nombreContacto ? styles.inputError : ''}`}
+                className={styles.input}
               />
-              {showErrors && errors.nombreContacto && (
-                <p className={styles.errorMessage}>{errors.nombreContacto}</p>
-              )}
             </div>
             <div className={styles.col}>
               <InputComponent
@@ -280,11 +115,8 @@ export default function CreateOrderContent() {
                   </p>
                 }
                 placeholder=""
-                className={`${styles.input} ${showErrors && errors.primerApellido ? styles.inputError : ''}`}
+                className={styles.input}
               />
-              {showErrors && errors.primerApellido && (
-                <p className={styles.errorMessage}>{errors.primerApellido}</p>
-              )}
             </div>
             <div className={styles.col}>
               <InputComponent
@@ -301,7 +133,7 @@ export default function CreateOrderContent() {
           <div className={styles.row}>
             <div className={styles.col}>
               <InputComponent
-                type="text"
+                type="tel"
                 value={formData.telefono}
                 onChange={handleInputChange("telefono")}
                 label={
@@ -310,11 +142,8 @@ export default function CreateOrderContent() {
                   </p>
                 }
                 placeholder=""
-                className={`${styles.input} ${showErrors && errors.telefono ? styles.inputError : ''}`}
+                className={styles.input}
               />
-              {showErrors && errors.telefono && (
-                <p className={styles.errorMessage}>{errors.telefono}</p>
-              )}
             </div>
             <div className={styles.col}>
               <div className={styles.radioGroup}>
@@ -355,11 +184,8 @@ export default function CreateOrderContent() {
                 onChange={handleInputChange("correoElectronico")}
                 label="Correo electrónico"
                 placeholder=""
-                className={`${styles.input} ${showErrors && errors.correoElectronico ? styles.inputError : ''}`}
+                className={styles.input}
               />
-              {showErrors && errors.correoElectronico && (
-                <p className={styles.errorMessage}>{errors.correoElectronico}</p>
-              )}
             </div>
           </div>
 
@@ -379,7 +205,9 @@ export default function CreateOrderContent() {
           <div className={styles.section}>
             <SelectComponent
               value={formData.tipoPago}
-              onChange={handleSelectChange("tipoPago")}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, tipoPago: e.target.value }))
+              }
               options={[
                 { value: "efectivo", label: "Efectivo" },
                 { value: "transferencia", label: "Transferencia" },
@@ -427,7 +255,7 @@ export default function CreateOrderContent() {
             </div>
             <div className={styles.col}>
               <InputComponent
-                type="text"
+                type="number"
                 value={formData.costoViaje}
                 onChange={handleInputChange("costoViaje")}
                 label={
@@ -436,11 +264,8 @@ export default function CreateOrderContent() {
                   </p>
                 }
                 placeholder=""
-                className={`${styles.input} ${showErrors && errors.costoViaje ? styles.inputError : ''}`}
+                className={styles.input}
               />
-              {showErrors && errors.costoViaje && (
-                <p className={styles.errorMessage}>{errors.costoViaje}</p>
-              )}
             </div>
           </div>
 
@@ -486,11 +311,8 @@ export default function CreateOrderContent() {
                   onChange={handleInputChange("nombreRecibeComision")}
                   label="Nombre de quien recibe la comisión *"
                   placeholder=""
-                  className={`${styles.input} ${showErrors && errors.nombreRecibeComision ? styles.inputError : ''}`}
+                  className={styles.input}
                 />
-                {showErrors && errors.nombreRecibeComision && (
-                  <p className={styles.errorMessage}>{errors.nombreRecibeComision}</p>
-                )}
               </div>
 
               <div className={styles.section}>
@@ -533,21 +355,18 @@ export default function CreateOrderContent() {
                 {formData.tipoComision === "Porcentaje" && (
                   <div className={styles.col}>
                     <InputComponent
-                      type="text"
+                      type="number"
                       value={formData.porcentaje}
                       onChange={handleInputChange("porcentaje")}
                       label="Porcentaje (%)"
                       placeholder=""
-                      className={`${styles.input} ${showErrors && errors.porcentaje ? styles.inputError : ''}`}
+                      className={styles.input}
                     />
-                    {showErrors && errors.porcentaje && (
-                      <p className={styles.errorMessage}>{errors.porcentaje}</p>
-                    )}
                   </div>
                 )}
                 <div className={styles.col}>
                   <InputComponent
-                    type="text"
+                    type="number"
                     value={formData.montoArreglado}
                     onChange={handleInputChange("montoArreglado")}
                     label={
@@ -556,11 +375,8 @@ export default function CreateOrderContent() {
                         : "Monto de la comisión ($)"
                     }
                     placeholder=""
-                    className={`${styles.input} ${showErrors && errors.montoArreglado ? styles.inputError : ''}`}
+                    className={styles.input}
                   />
-                  {showErrors && errors.montoArreglado && (
-                    <p className={styles.errorMessage}>{errors.montoArreglado}</p>
-                  )}
                 </div>
               </div>
             </>
@@ -569,7 +385,12 @@ export default function CreateOrderContent() {
           <div className={styles.section}>
             <SelectComponent
               value={formData.coordinadorViaje}
-              onChange={handleSelectChange("coordinadorViaje")}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  coordinadorViaje: e.target.value,
+                }))
+              }
               options={[
                 { value: "coordinador1", label: "Coordinador 1" },
                 { value: "coordinador2", label: "Coordinador 2" },
@@ -608,13 +429,14 @@ export default function CreateOrderContent() {
             >
               Cancelar
             </button>
-            <button
-              type="button"
-              onClick={handleNext}
-              className={`${styles.button} ${styles.nextButton}`}
-            >
-              Siguiente
-            </button>
+            <Link href="/dashboard/createOrder/createTrip" passHref>
+              <button
+                type="button"
+                className={`${styles.button} ${styles.nextButton}`}
+              >
+                Siguiente
+              </button>
+            </Link>
           </div>
         </form>
       </div>
