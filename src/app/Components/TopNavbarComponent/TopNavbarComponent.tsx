@@ -7,6 +7,7 @@ import { ChevronDown20Regular, PersonRegular, ArrowExitFilled } from "@fluentui/
 import { TopNavbarProps, TopNavbarItem } from "../../Types/TopNavbarType";
 import styles from "./TopNavbar.module.css";
 import { getCookie, deleteCookie } from "@/app/Utils/CookieUtil";
+import { showConfirmAlert, showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
 
 const TopNavbarComponent: React.FC<TopNavbarProps> = ({
   userInfo: propsUserInfo,
@@ -96,17 +97,120 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
   const handleLogoutClick = () => {
     setIsUserMenuOpen(false);
     
-    // Clear all authentication-related cookies
-    deleteCookie('user', { path: '/' });
-    deleteCookie('token', { path: '/' });
-    deleteCookie('auth', { path: '/' });
-    deleteCookie('session', { path: '/' });
-    
-    // Clear user info state
-    setUserInfo(null);
-    
-    // Navigate to home page using Next.js router
-    router.push('/');
+    // Show confirmation dialog
+    showConfirmAlert(
+      "Cerrar Sesión",
+      "¿Estás seguro de que quieres cerrar sesión?",
+      "Sí, cerrar sesión",
+      async () => {
+        try {
+          // Get the API URL from environment or use a default
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+          
+          // Get token for authentication
+          const token = getCookie('token');
+          
+          // Make API call to logout endpoint
+          const response = await fetch(`${apiUrl}/auth/logout`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token && { 'Authorization': `Bearer ${token}` }),
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success) {
+              // Clear all authentication-related cookies
+              deleteCookie('user', { path: '/' });
+              deleteCookie('token', { path: '/' });
+              deleteCookie('auth', { path: '/' });
+              deleteCookie('session', { path: '/' });
+              
+              // Clear user info state
+              setUserInfo(null);
+              
+              // Show success message using the API message
+              showSuccessAlert(
+                "Sesión Cerrada",
+                data.message || "Has cerrado sesión exitosamente.",
+                () => {
+                  // Navigate to home page after success message
+                  router.push('/');
+                }
+              );
+            } else {
+              // API returned ok but success is false
+              showSuccessAlert(
+                "Sesión Cerrada",
+                "Has cerrado sesión exitosamente.",
+                () => {
+                  // Still clear local session for security
+                  deleteCookie('user', { path: '/' });
+                  deleteCookie('token', { path: '/' });
+                  deleteCookie('auth', { path: '/' });
+                  deleteCookie('session', { path: '/' });
+                  setUserInfo(null);
+                  router.push('/');
+                }
+              );
+            }
+          } else {
+            // Handle logout API error but still clear local data
+            console.error('Logout API failed, but clearing local session');
+            
+            // Clear all authentication-related cookies anyway
+            deleteCookie('user', { path: '/' });
+            deleteCookie('token', { path: '/' });
+            deleteCookie('auth', { path: '/' });
+            deleteCookie('session', { path: '/' });
+            
+            // Clear user info state
+            setUserInfo(null);
+            
+            showSuccessAlert(
+                "Sesión Cerrada",
+                "Has cerrado sesión exitosamente.",
+                () => {
+                  // Still clear local session for security
+                  deleteCookie('user', { path: '/' });
+                  deleteCookie('token', { path: '/' });
+                  deleteCookie('auth', { path: '/' });
+                  deleteCookie('session', { path: '/' });
+                  setUserInfo(null);
+                  router.push('/');
+                }
+              );
+          }
+        } catch (error) {
+          console.error('Logout error:', error);
+          
+          // Clear local session even if API call fails
+          deleteCookie('user', { path: '/' });
+          deleteCookie('token', { path: '/' });
+          deleteCookie('auth', { path: '/' });
+          deleteCookie('session', { path: '/' });
+          
+          // Clear user info state
+          setUserInfo(null);
+          
+          // Show error message but still redirect
+          showErrorAlert(
+            "Error de Conexión",
+            "No se pudo conectar con el servidor, pero tu sesión local ha sido eliminada.",
+            () => {
+              router.push('/');
+            }
+          );
+        }
+      },
+      () => {
+        // Cancel function - do nothing
+        console.log('Logout cancelled');
+      }
+    );
   };
 
   return (
