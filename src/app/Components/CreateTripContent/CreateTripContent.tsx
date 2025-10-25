@@ -1,65 +1,119 @@
 "use client";
 import { useState, useCallback, useEffect } from "react";
-import styles from "./CreateOrderContent.module.css";
+import styles from "./CreateTripContent.module.css";
 import InputComponent from "../InputComponent/InputComponent";
 import SelectComponent from "../SelectComponent/SelectComponent";
 import { ArrowHookUpLeftRegular } from "@fluentui/react-icons";
 import Link from "next/link";
-export default function CreateOrderContent() {
+import { showErrorAlert, showSuccessAlert } from "@/app/Utils/AlertUtil";
+
+export default function CreateTripContent() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-  const [formData, setFormData] = useState({
-    empresa: "",
-    nombreContacto: "",
-    primerApellido: "",
-    segundoApellido: "",
-    telefono: "",
-    tieneWhatsapp: "Si",
-    correoElectronico: "",
-    comentarios: "",
-    tipoPago: "",
-    aplicaIva: "Si",
-    costoViaje: "",
-    llevaComision: "Si",
-    nombreRecibeComision: "",
-    tipoComision: "Porcentaje",
-    porcentaje: "",
-    montoArreglado: "",
-    coordinadorViaje: "",
-    observacionesInternas: "",
+  // Order data from previous step
+  const [orderData, setOrderData] = useState<any>(null);
+
+  // Trip-specific form data
+  const [tripFormData, setTripFormData] = useState({
+    fechaInicio: "",
+    fechaFin: "",
+    horaInicio: "",
+    horaFin: "",
+    lugarSalida: "",
+    lugarDestino: "",
+    numeroPersonas: "",
+    tipoTransporte: "",
+    descripcionViaje: "",
+    requisitosPasajeros: "",
+    incluye: "",
+    noIncluye: "",
+    observacionesViaje: "",
+    conductor: "",
+    vehiculo: "",
   });
 
-  const handleInputChange =
+  // Load order data from localStorage when component mounts
+  useEffect(() => {
+    const storedOrderData = localStorage.getItem('orderFormData');
+    if (storedOrderData) {
+      try {
+        const parsedData = JSON.parse(storedOrderData);
+        setOrderData(parsedData);
+      } catch (error) {
+        console.error('Error parsing order data:', error);
+        showErrorAlert('Error', 'Error al cargar los datos del pedido');
+      }
+    } else {
+      // Redirect back if no order data found
+      showErrorAlert('Error', 'No se encontraron datos del pedido. Redirigiendo...');
+      setTimeout(() => {
+        window.location.href = '/dashboard/createOrder';
+      }, 2000);
+    }
+  }, []);
+
+  const handleTripInputChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData((prev) => ({
+      setTripFormData((prev) => ({
         ...prev,
         [field]: e.target.value,
       }));
     };
 
-  const handleRadioChange = (field: string, value: string) => {
-    setFormData((prev) => ({
+  const handleTripSelectChange = (field: string) => (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setTripFormData((prev) => ({
       ...prev,
-      [field]: value,
+      [field]: e.target.value,
     }));
   };
 
   const handleCancel = () => {
-    // Handle cancel logic
-    console.log("Cancel clicked");
+    // Clear stored data and go back
+    localStorage.removeItem('orderFormData');
+    window.location.href = '/dashboard/createOrder';
+  };
+
+  const handleSubmit = async () => {
+    try {
+      // Combine order data and trip data for the final POST request
+      const completeData = {
+        order: orderData,
+        trip: tripFormData
+      };
+
+      console.log('Complete form data:', completeData);
+      
+      // Here you would make the POST request to your API
+      // const response = await fetch(`${API_URL}/api/create-order-trip`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(completeData),
+      // });
+
+      showSuccessAlert('Éxito', 'Orden y viaje creados correctamente');
+      localStorage.removeItem('orderFormData');
+      // Redirect to dashboard or order list
+      window.location.href = '/dashboard';
+      
+    } catch (error) {
+      console.error('Error creating order and trip:', error);
+      showErrorAlert('Error', 'Error al crear la orden y el viaje');
+    }
   };
 
   return (
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <Link href="/dashboard" passHref>
+          <Link href="/dashboard/createOrder" passHref>
             <button className={styles.backButton}>
               <ArrowHookUpLeftRegular color="black" />
             </button>
           </Link>
           <div>
-            <h1 className={styles.title}>Crear contrato de orden</h1>
+            <h1 className={styles.title}>Crear viaje</h1>
             <p className={styles.subtitle}>
               Los campos marcados con un asterisco rojo son obligatorios{" "}
               <strong style={{ color: "red" }}>* </strong>
@@ -67,356 +121,268 @@ export default function CreateOrderContent() {
           </div>
         </div>
         <form className={styles.form}>
+          {/* Order Summary Section - Read Only */}
           <div className={styles.section}>
-            <SelectComponent
-              value={formData.empresa}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  empresa: e.target.value,
-                }))
-              }
-              options={[
-                { value: "empresa1", label: "Empresa 1" },
-                { value: "empresa2", label: "Empresa 2" },
-                { value: "empresa3", label: "Empresa 3" },
-              ]}
-              label="Empresa o cliente"
-              placeholder="Seleccione..."
-              required={true}
-              className={styles.select}
-            />
-          </div>
-
-          <div className={styles.row}>
-            <div className={styles.col}>
-              <InputComponent
-                type="text"
-                value={formData.nombreContacto}
-                onChange={handleInputChange("nombreContacto")}
-                label={
-                  <p>
-                    Nombre del contacto{" "}
-                    <strong style={{ color: "red" }}>*</strong>
-                  </p>
-                }
-                placeholder=""
-                className={styles.input}
-              />
-            </div>
-            <div className={styles.col}>
-              <InputComponent
-                type="text"
-                value={formData.primerApellido}
-                onChange={handleInputChange("primerApellido")}
-                label={
-                  <p>
-                    Primer apellido <strong style={{ color: "red" }}>*</strong>
-                  </p>
-                }
-                placeholder=""
-                className={styles.input}
-              />
-            </div>
-            <div className={styles.col}>
-              <InputComponent
-                type="text"
-                value={formData.segundoApellido}
-                onChange={handleInputChange("segundoApellido")}
-                label="Segundo apellido"
-                placeholder=""
-                className={styles.input}
-              />
-            </div>
-          </div>
-
-          <div className={styles.row}>
-            <div className={styles.col}>
-              <InputComponent
-                type="tel"
-                value={formData.telefono}
-                onChange={handleInputChange("telefono")}
-                label={
-                  <p>
-                    Teléfono <strong style={{ color: "red" }}>*</strong>
-                  </p>
-                }
-                placeholder=""
-                className={styles.input}
-              />
-            </div>
-            <div className={styles.col}>
-              <div className={styles.radioGroup}>
-                <label className={styles.radioLabel}>
-                  ¿Tiene WhatsApp?
-                  <strong style={{ color: "red" }}> *</strong>
-                </label>
-                <div className={styles.radioOptions}>
-                  <label className={styles.radioOption}>
-                    <input
-                      type="radio"
-                      name="whatsapp"
-                      value="Si"
-                      checked={formData.tieneWhatsapp === "Si"}
-                      onChange={() => handleRadioChange("tieneWhatsapp", "Si")}
-                      className={styles.radioInput}
-                    />
-                    Sí
-                  </label>
-                  <label className={styles.radioOption}>
-                    <input
-                      type="radio"
-                      name="whatsapp"
-                      value="No"
-                      checked={formData.tieneWhatsapp === "No"}
-                      onChange={() => handleRadioChange("tieneWhatsapp", "No")}
-                      className={styles.radioInput}
-                    />
-                    No
-                  </label>
-                </div>
+            <h3 className={styles.sectionTitle}>Resumen del Pedido</h3>
+            {orderData && (
+              <div className={styles.orderSummary}>
+                <p><strong>Empresa:</strong> {orderData.empresa}</p>
+                <p><strong>Contacto:</strong> {orderData.nombreContacto} {orderData.primerApellido} {orderData.segundoApellido}</p>
+                <p><strong>Teléfono:</strong> {orderData.telefono}</p>
+                <p><strong>Costo del viaje:</strong> ${orderData.costoViaje}</p>
               </div>
+            )}
+          </div>
+
+          {/* Trip Details Section */}
+          <h3 className={styles.sectionTitle}>Detalles del Viaje</h3>
+          
+          <div className={styles.row}>
+            <div className={styles.col}>
+              <InputComponent
+                type="date"
+                value={tripFormData.fechaInicio}
+                onChange={handleTripInputChange("fechaInicio")}
+                label={
+                  <p>
+                    Fecha de inicio <strong style={{ color: "red" }}>*</strong>
+                  </p>
+                }
+                placeholder=""
+                className={styles.input}
+              />
             </div>
             <div className={styles.col}>
               <InputComponent
-                type="email"
-                value={formData.correoElectronico}
-                onChange={handleInputChange("correoElectronico")}
-                label="Correo electrónico"
+                type="date"
+                value={tripFormData.fechaFin}
+                onChange={handleTripInputChange("fechaFin")}
+                label={
+                  <p>
+                    Fecha de fin <strong style={{ color: "red" }}>*</strong>
+                  </p>
+                }
                 placeholder=""
                 className={styles.input}
               />
             </div>
-          </div>
-
-          <div className={styles.section}>
-            <div className={styles.textareaContainer}>
-              <InputComponent
-                type="text"
-                value={formData.comentarios}
-                onChange={handleInputChange("comentarios")}
-                label="Comentarios del contacto"
-                placeholder=""
-                className={styles.input}
-              />
-            </div>
-          </div>
-
-          <div className={styles.section}>
-            <SelectComponent
-              value={formData.tipoPago}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, tipoPago: e.target.value }))
-              }
-              options={[
-                { value: "efectivo", label: "Efectivo" },
-                { value: "transferencia", label: "Transferencia" },
-                { value: "tarjeta", label: "Tarjeta" },
-              ]}
-              label="Tipo de pago"
-              placeholder="Seleccione..."
-              required={true}
-              className={styles.select}
-            />
           </div>
 
           <div className={styles.row}>
             <div className={styles.col}>
-              <div className={styles.radioGroupHorizontal}>
-                <label className={styles.radioLabel}>
-                  ¿Aplica IVA?
-                  <strong style={{ color: "red" }}> *</strong>
-                </label>
-                <div className={styles.radioOptions}>
-                  <label className={styles.radioLabelHorizontal}>
-                    <input
-                      type="radio"
-                      name="iva"
-                      value="Si"
-                      className={styles.radioInput}
-                      checked={formData.aplicaIva === "Si"}
-                      onChange={() => handleRadioChange("aplicaIva", "Si")}
-                    />
-                    Sí
-                  </label>
-                  <label className={styles.radioOption}>
-                    <input
-                      type="radio"
-                      name="iva"
-                      value="No"
-                      className={styles.radioInput}
-                      checked={formData.aplicaIva === "No"}
-                      onChange={() => handleRadioChange("aplicaIva", "No")}
-                    />
-                    No
-                  </label>
-                </div>
-              </div>
+              <InputComponent
+                type="time"
+                value={tripFormData.horaInicio}
+                onChange={handleTripInputChange("horaInicio")}
+                label="Hora de inicio"
+                placeholder=""
+                className={styles.input}
+              />
             </div>
+            <div className={styles.col}>
+              <InputComponent
+                type="time"
+                value={tripFormData.horaFin}
+                onChange={handleTripInputChange("horaFin")}
+                label="Hora de fin"
+                placeholder=""
+                className={styles.input}
+              />
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <div className={styles.col}>
+              <InputComponent
+                type="text"
+                value={tripFormData.lugarSalida}
+                onChange={handleTripInputChange("lugarSalida")}
+                label={
+                  <p>
+                    Lugar de salida <strong style={{ color: "red" }}>*</strong>
+                  </p>
+                }
+                placeholder=""
+                className={styles.input}
+              />
+            </div>
+            <div className={styles.col}>
+              <InputComponent
+                type="text"
+                value={tripFormData.lugarDestino}
+                onChange={handleTripInputChange("lugarDestino")}
+                label={
+                  <p>
+                    Lugar de destino <strong style={{ color: "red" }}>*</strong>
+                  </p>
+                }
+                placeholder=""
+                className={styles.input}
+              />
+            </div>
+          </div>
+
+          <div className={styles.row}>
             <div className={styles.col}>
               <InputComponent
                 type="number"
-                value={formData.costoViaje}
-                onChange={handleInputChange("costoViaje")}
+                value={tripFormData.numeroPersonas}
+                onChange={handleTripInputChange("numeroPersonas")}
                 label={
                   <p>
-                    Costo del viaje <strong style={{ color: "red" }}>*</strong>
+                    Número de personas <strong style={{ color: "red" }}>*</strong>
                   </p>
                 }
                 placeholder=""
                 className={styles.input}
               />
             </div>
-          </div>
-
-          <div className={styles.section}>
-            <div className={styles.radioGroupHorizontal}>
-              <label className={styles.radioLabelHorizontal}>
-                ¿Lleva comisión? <strong style={{ color: "red" }}>*</strong>
-              </label>
-              <div className={styles.radioOptions}>
-                <label className={styles.radioOption}>
-                  <input
-                    type="radio"
-                    name="comision"
-                    value="Si"
-                    className={styles.radioInput}
-                    checked={formData.llevaComision === "Si"}
-                    onChange={() => handleRadioChange("llevaComision", "Si")}
-                  />
-                  Sí
-                </label>
-                <label className={styles.radioOption}>
-                  <input
-                    type="radio"
-                    name="comision"
-                    value="No"
-                    className={styles.radioInput}
-                    checked={formData.llevaComision === "No"}
-                    onChange={() => handleRadioChange("llevaComision", "No")}
-                  />
-                  No
-                </label>
-              </div>
+            <div className={styles.col}>
+              <SelectComponent
+                value={tripFormData.tipoTransporte}
+                onChange={handleTripSelectChange("tipoTransporte")}
+                options={[
+                  { value: "autobus", label: "Autobús" },
+                  { value: "van", label: "Van" },
+                  { value: "automovil", label: "Automóvil" },
+                  { value: "microbus", label: "Microbús" },
+                ]}
+                label="Tipo de transporte *"
+                placeholder="Seleccione..."
+                required={true}
+                className={styles.select}
+              />
             </div>
-          </div>
-
-          {/* Conditional commission fields */}
-          {formData.llevaComision === "Si" && (
-            <>
-              <div className={styles.section}>
-                <InputComponent
-                  type="text"
-                  value={formData.nombreRecibeComision}
-                  onChange={handleInputChange("nombreRecibeComision")}
-                  label="Nombre de quien recibe la comisión *"
-                  placeholder=""
-                  className={styles.input}
-                />
-              </div>
-
-              <div className={styles.section}>
-                <div className={styles.radioGroup}>
-                  <label className={styles.radioLabel}>
-                    Tipo de comisión <strong style={{ color: "red" }}>*</strong>
-                  </label>
-                  <div className={styles.radioOptions}>
-                    <label className={styles.radioOption}>
-                      <input
-                        type="radio"
-                        name="tipoComision"
-                        value="Porcentaje"
-                        className={styles.radioInput}
-                        checked={formData.tipoComision === "Porcentaje"}
-                        onChange={() =>
-                          handleRadioChange("tipoComision", "Porcentaje")
-                        }
-                      />
-                      Porcentaje
-                    </label>
-                    <label className={styles.radioOption}>
-                      <input
-                        type="radio"
-                        name="tipoComision"
-                        value="Arreglada"
-                        className={styles.radioInput}
-                        checked={formData.tipoComision === "Arreglada"}
-                        onChange={() =>
-                          handleRadioChange("tipoComision", "Arreglada")
-                        }
-                      />
-                      Arreglada
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.row}>
-                {formData.tipoComision === "Porcentaje" && (
-                  <div className={styles.col}>
-                    <InputComponent
-                      type="number"
-                      value={formData.porcentaje}
-                      onChange={handleInputChange("porcentaje")}
-                      label="Porcentaje (%)"
-                      placeholder=""
-                      className={styles.input}
-                    />
-                  </div>
-                )}
-                <div className={styles.col}>
-                  <InputComponent
-                    type="number"
-                    value={formData.montoArreglado}
-                    onChange={handleInputChange("montoArreglado")}
-                    label={
-                      formData.tipoComision === "Porcentaje"
-                        ? "Monto del porcentaje ($)"
-                        : "Monto de la comisión ($)"
-                    }
-                    placeholder=""
-                    className={styles.input}
-                  />
-                </div>
-              </div>
-            </>
-          )}
-
-          <div className={styles.section}>
-            <SelectComponent
-              value={formData.coordinadorViaje}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  coordinadorViaje: e.target.value,
-                }))
-              }
-              options={[
-                { value: "coordinador1", label: "Coordinador 1" },
-                { value: "coordinador2", label: "Coordinador 2" },
-                { value: "coordinador3", label: "Coordinador 3" },
-              ]}
-              label="Coordinador del viaje"
-              placeholder="Seleccione..."
-              className={styles.select}
-            />
           </div>
 
           <div className={styles.section}>
             <div className={styles.textareaContainer}>
               <label className={styles.textareaLabel}>
-                Observaciones internas
+                Descripción del viaje <strong style={{ color: "red" }}>*</strong>
               </label>
               <textarea
-                value={formData.observacionesInternas}
+                value={tripFormData.descripcionViaje}
                 onChange={(e) =>
-                  setFormData((prev) => ({
+                  setTripFormData((prev) => ({
                     ...prev,
-                    observacionesInternas: e.target.value,
+                    descripcionViaje: e.target.value,
                   }))
                 }
                 className={styles.textarea}
                 rows={4}
+                placeholder="Describe el itinerario del viaje..."
+              />
+            </div>
+          </div>
+
+          <div className={styles.section}>
+            <div className={styles.textareaContainer}>
+              <label className={styles.textareaLabel}>
+                Requisitos para pasajeros
+              </label>
+              <textarea
+                value={tripFormData.requisitosPasajeros}
+                onChange={(e) =>
+                  setTripFormData((prev) => ({
+                    ...prev,
+                    requisitosPasajeros: e.target.value,
+                  }))
+                }
+                className={styles.textarea}
+                rows={3}
+                placeholder="Ej: Documento de identidad, equipaje ligero..."
+              />
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <div className={styles.col}>
+              <div className={styles.textareaContainer}>
+                <label className={styles.textareaLabel}>
+                  Incluye
+                </label>
+                <textarea
+                  value={tripFormData.incluye}
+                  onChange={(e) =>
+                    setTripFormData((prev) => ({
+                      ...prev,
+                      incluye: e.target.value,
+                    }))
+                  }
+                  className={styles.textarea}
+                  rows={3}
+                  placeholder="Ej: Transporte, seguro, refrigerios..."
+                />
+              </div>
+            </div>
+            <div className={styles.col}>
+              <div className={styles.textareaContainer}>
+                <label className={styles.textareaLabel}>
+                  No incluye
+                </label>
+                <textarea
+                  value={tripFormData.noIncluye}
+                  onChange={(e) =>
+                    setTripFormData((prev) => ({
+                      ...prev,
+                      noIncluye: e.target.value,
+                    }))
+                  }
+                  className={styles.textarea}
+                  rows={3}
+                  placeholder="Ej: Comidas, hospedaje, actividades extras..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <div className={styles.col}>
+              <SelectComponent
+                value={tripFormData.conductor}
+                onChange={handleTripSelectChange("conductor")}
+                options={[
+                  { value: "conductor1", label: "Juan Pérez" },
+                  { value: "conductor2", label: "María García" },
+                  { value: "conductor3", label: "Carlos López" },
+                ]}
+                label="Conductor asignado"
+                placeholder="Seleccione..."
+                className={styles.select}
+              />
+            </div>
+            <div className={styles.col}>
+              <SelectComponent
+                value={tripFormData.vehiculo}
+                onChange={handleTripSelectChange("vehiculo")}
+                options={[
+                  { value: "vehiculo1", label: "Autobús - ABC-123" },
+                  { value: "vehiculo2", label: "Van - DEF-456" },
+                  { value: "vehiculo3", label: "Microbús - GHI-789" },
+                ]}
+                label="Vehículo asignado"
+                placeholder="Seleccione..."
+                className={styles.select}
+              />
+            </div>
+          </div>
+
+          <div className={styles.section}>
+            <div className={styles.textareaContainer}>
+              <label className={styles.textareaLabel}>
+                Observaciones del viaje
+              </label>
+              <textarea
+                value={tripFormData.observacionesViaje}
+                onChange={(e) =>
+                  setTripFormData((prev) => ({
+                    ...prev,
+                    observacionesViaje: e.target.value,
+                  }))
+                }
+                className={styles.textarea}
+                rows={4}
+                placeholder="Observaciones adicionales sobre el viaje..."
               />
             </div>
           </div>
@@ -429,14 +395,13 @@ export default function CreateOrderContent() {
             >
               Cancelar
             </button>
-            <Link href="/dashboard/createOrder/createTrip" passHref>
-              <button
-                type="button"
-                className={`${styles.button} ${styles.nextButton}`}
-              >
-                Siguiente
-              </button>
-            </Link>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className={`${styles.button} ${styles.nextButton}`}
+            >
+              Crear Orden y Viaje
+            </button>
           </div>
         </form>
       </div>

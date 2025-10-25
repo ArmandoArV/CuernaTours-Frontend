@@ -7,6 +7,7 @@ import ButtonComponent from "../../ButtonComponent/ButtonComponent";
 import { LoginUserType } from "@/app/Types/LoginUserType";
 import Link from "next/link";
 import { showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
+import { setCookie } from "@/app/Utils/CookieUtil";
 export default function HomeWrapper() {
   const [formData, setFormData] = React.useState<LoginUserType>({
     email: "",
@@ -73,10 +74,25 @@ export default function HomeWrapper() {
       const data = await response.json();
       
       if (response.ok && data.success) {
-        // Store tokens and user data
-        localStorage.setItem("accessToken", data.data.accessToken);
-        localStorage.setItem("refreshToken", data.data.refreshToken);
-        localStorage.setItem("user", JSON.stringify(data.data.user));
+        // Store tokens and user data in cookies
+        setCookie("accessToken", data.data.accessToken, {
+          expires: 7, // 7 days
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/'
+        });
+        setCookie("refreshToken", data.data.refreshToken, {
+          expires: 30, // 30 days for refresh token
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/'
+        });
+        setCookie("user", JSON.stringify(data.data.user), {
+          expires: 7, // 7 days
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/'
+        });
         
         // Show success alert
         showSuccessAlert(

@@ -203,6 +203,8 @@ export default function CreateOrderContent() {
 
   const handleNext = () => {
     if (validateForm()) {
+      // Store order data in localStorage for the trip creation step
+      localStorage.setItem('orderFormData', JSON.stringify(formData));
       // Proceed to next step
       window.location.href = "/dashboard/createOrder/createTrip";
     }

@@ -1,105 +1,102 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FilterableTableComponent from "../FilterableTable/FilterableTableComponent";
 import { FilterConfig, FilterPresets } from "../FilterComponent";
 import { AddFilled } from "@fluentui/react-icons";
 import Link from "next/link";
+import { getCookie } from "@/app/Utils/CookieUtil";
+
+// Status mapping based on provided ids
+const STATUS_MAP: Record<number, string> = {
+  1: "Agendado",
+  2: "Por asignar",
+  3: "Próximo",
+  4: "En curso",
+  5: "Por pagar",
+  6: "Finalizado",
+  7: "Cancelado",
+};
+
+// Function to transform API data to table format
+function transformApiData(apiData: any[]): any[] {
+  const rows: any[] = [];
+  apiData.forEach((contract) => {
+    (contract.trips || []).forEach((trip: any) => {
+      rows.push({
+        "Empresa o Cliente": contract.client_name,
+        Origen: trip.origin?.name || "",
+        Destino: trip.destination?.name || "",
+        Fecha: trip.service_date
+          ? new Date(trip.service_date).toLocaleDateString()
+          : "",
+        Unidad: trip.vehicle?.type || trip.unit_type || "",
+        Chofer: trip.driver
+          ? `${trip.driver.name} ${trip.driver.lastname}`
+          : "",
+        Estatus: STATUS_MAP[trip.status?.id] || trip.status?.name || "",
+      });
+    });
+  });
+  return rows;
+}
+
 export default function DashboardContent() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [contractsData, setContractsData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sample data for the table
-  const sampleData = [
-    {
-      "Empresa o Cliente": "Empresa ABC",
-      Origen: "Madrid",
-      Destino: "Barcelona",
-      Fecha: "15/10/2024",
-      Unidad: "Autobús",
-      Chofer: "Juan Pérez",
-      Estatus: "Agendado",
-    },
-    {
-      "Empresa o Cliente": "Cliente XYZ",
-      Origen: "Sevilla",
-      Destino: "Valencia",
-      Fecha: "20/10/2024",
-      Unidad: "Minibús",
-      Chofer: "María García",
-      Estatus: "Por asignar",
-    },
-    {
-      "Empresa o Cliente": "Turismo DEF",
-      Origen: "Bilbao",
-      Destino: "San Sebastián",
-      Fecha: "25/10/2024",
-      Unidad: "Autobús",
-      Chofer: "Carlos López",
-      Estatus: "Próximo",
-    },
-    {
-      "Empresa o Cliente": "Tours GHI",
-      Origen: "Granada",
-      Destino: "Córdoba",
-      Fecha: "28/10/2024",
-      Unidad: "Minibús",
-      Chofer: "Ana Rodríguez",
-      Estatus: "En curso",
-    },
-    {
-      "Empresa o Cliente": "Viajes JKL",
-      Origen: "Toledo",
-      Destino: "Segovia",
-      Fecha: "30/10/2024",
-      Unidad: "Autobús",
-      Chofer: "Luis Martín",
-      Estatus: "Por pagar",
-    },
-    {
-      "Empresa o Cliente": "Excursiones MNO",
-      Origen: "Salamanca",
-      Destino: "Ávila",
-      Fecha: "02/11/2024",
-      Unidad: "Minibús",
-      Chofer: "Carmen Jiménez",
-      Estatus: "Finalizado",
-    },
-    {
-      "Empresa o Cliente": "Turismo PQR",
-      Origen: "Cáceres",
-      Destino: "Badajoz",
-      Fecha: "05/11/2024",
-      Unidad: "Autobús",
-      Chofer: "Roberto Silva",
-      Estatus: "Agendado",
-    },
-    {
-      "Empresa o Cliente": "Transportes STU",
-      Origen: "León",
-      Destino: "Astorga",
-      Fecha: "08/11/2024",
-      Unidad: "Minibús",
-      Chofer: "Elena Vega",
-      Estatus: "Por asignar",
-    },
-    {
-      "Empresa o Cliente": "Viajes VWX",
-      Origen: "Palencia",
-      Destino: "Burgos",
-      Fecha: "10/11/2024",
-      Unidad: "Autobús",
-      Chofer: "Francisco Moreno",
-      Estatus: "Próximo",
-    },
-    {
-      "Empresa o Cliente": "Tours YZ",
-      Origen: "Soria",
-      Destino: "Logroño",
-      Fecha: "12/11/2024",
-      Unidad: "Minibús",
-      Chofer: "Isabel Ruiz",
-      Estatus: "En curso",
-    },
-  ];
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  // Fetch data from API
+  useEffect(() => {
+    const fetchContracts = async () => {
+      try {
+        setLoading(true);
+
+        // Get access token from cookies
+        const accessToken = getCookie("accessToken");
+
+        // Prepare headers
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+
+        // Add authorization header if token exists
+        if (accessToken) {
+          headers["Authorization"] = `Bearer ${accessToken}`;
+        }
+
+        const response = await fetch(`${API_URL}/contracts/details`, {
+          method: "GET",
+          headers,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          setContractsData(result.data);
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (err) {
+        console.error("Error fetching contracts:", err);
+        setError(err instanceof Error ? err.message : "An error occurred");
+        // Fallback to empty array in case of error
+        setContractsData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContracts();
+  }, []);
+
+  // Transform API data for the table
+  const sampleData = transformApiData(contractsData);
 
   const columns = [
     "Empresa o Cliente",
@@ -157,6 +154,23 @@ export default function DashboardContent() {
   const handleSearch = (searchTerm: string) => {
     console.log("Búsqueda:", searchTerm);
   };
+
+  if (loading) {
+    return (
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <p>Cargando viajes...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <p style={{ color: "red" }}>Error: {error}</p>
+        <p>Mostrando datos de ejemplo como respaldo.</p>
+      </div>
+    );
+  }
 
   return (
     <div>
