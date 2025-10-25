@@ -91,6 +91,88 @@
   box-sizing: border-box;
 }
 
+/* Date picker styles */
+.datePickerContainer {
+  position: relative;
+  width: 100%;
+}
+
+.datePickerLabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.dateInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.dateInput {
+  flex: 1;
+  padding: 0.75rem 2.5rem 0.75rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  background-color: white;
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.calendarButton {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 1.1rem;
+  z-index: 1;
+}
+
+.calendarButton:hover {
+  color: #3b82f6;
+}
+
+.calendarDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-top: 0.25rem;
+}
+
+/* Tablet styles for date picker */
+@media (min-width: 768px) {
+  .datePickerLabel {
+    font-size: 1rem;
+  }
+  
+  .dateInput {
+    font-size: 1rem;
+  }
+}
+
 /* Additional responsive utilities */
 .section {
   display: flex;
@@ -366,6 +448,140 @@
   width: 100%;
   gap: 1rem;
   box-sizing: border-box;
+}
+
+/* Time picker styles */
+.timeContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.timeLabel {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.timeInputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timeInput {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeValue {
+  width: 3rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  text-align: center;
+  font-size: 0.9rem;
+  background-color: #f9f9f9;
+}
+
+.timeButtons {
+  position: absolute;
+  right: 0.25rem;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.timeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.timeButton:hover {
+  color: #3b82f6;
+}
+
+.timeSeparator {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.amPmSelect {
+  min-width: 4rem;
+}
+
+/* Section titles */
+.sectionTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.subSection {
+  margin: 1rem 0;
+}
+
+.subSectionTitle {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 0.75rem;
+}
+
+/* Radio section styles */
+.radioSection {
+  margin: 1rem 0;
+}
+
+.flightSection {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.25rem;
+  border: 1px solid #e9ecef;
+}
+
+.orderSummary {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.25rem;
+  border: 1px solid #e9ecef;
+}
+
+.orderSummary p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+/* Tablet styles for time picker */
+@media (min-width: 768px) {
+  .timeLabel {
+    font-size: 1rem;
+  }
+  
+  .timeValue {
+    font-size: 1rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.4rem;
+  }
+  
+  .subSectionTitle {
+    font-size: 1.1rem;
+  }
 }
 
 /* Tablet and desktop styles for rows and columns */

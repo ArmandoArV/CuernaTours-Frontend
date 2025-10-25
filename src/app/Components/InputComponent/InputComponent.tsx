@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import styles from "./inputStyles.module.css";
 import { EyeFilled, EyeOffFilled } from "@fluentui/react-icons";
 import { InputTypes } from "@/app/Types/InputTypes";
@@ -11,6 +11,8 @@ export default function InputComponent({
   label = "",
   disabled = false,
   id = "",
+  icon,
+  onIconClick,
   labelClassName = "",
   labelStyle = {},
   style = {},
@@ -24,9 +26,20 @@ export default function InputComponent({
   containerStyle?: React.CSSProperties;
 }) {
   const [showPassword, setShowPassword] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
+  };
+
+  const handleIconClick = () => {
+    if (onIconClick) {
+      onIconClick();
+    } else if (type === "date" && inputRef.current) {
+      // For date inputs, focus the input and show the date picker
+      inputRef.current.focus();
+      inputRef.current.showPicker?.();
+    }
   };
 
   const inputType = type === "password" && showPassword ? "text" : type;
@@ -46,12 +59,21 @@ export default function InputComponent({
         </label>
       )}
       <div className={styles.inputWrapper}>
+        {icon && (
+          <span 
+            className={`${styles.inputIcon} ${onIconClick || type === "date" ? styles.clickableIcon : ""}`}
+            onClick={handleIconClick}
+          >
+            {icon}
+          </span>
+        )}
         <input
+          ref={inputRef}
           type={inputType}
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`${styles.input} ${className}`}
+          className={`${styles.input} ${className} ${icon ? styles.inputWithIcon : ""}`}
           disabled={disabled}
           id={id}
           style={style} // Apply custom styles

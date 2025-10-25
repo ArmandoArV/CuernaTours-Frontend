@@ -6,6 +6,7 @@ import SelectComponent from "../SelectComponent/SelectComponent";
 import { ArrowHookUpLeftRegular } from "@fluentui/react-icons";
 import Link from "next/link";
 import { showErrorAlert } from "../../Utils/AlertUtil";
+import { getCookie } from "@/app/Utils/CookieUtil";
 export default function CreateOrderContent() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -30,12 +31,13 @@ export default function CreateOrderContent() {
     observacionesInternas: "",
   });
 
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showErrors, setShowErrors] = useState(false);
+  const [clients, setClients] = useState<Array<{ value: string; label: string }>>([]);
 
   const validateForm = () => {
     const missingFields: string[] = [];
-    const newErrors: {[key: string]: string} = {};
+    const newErrors: { [key: string]: string } = {};
 
     // Required fields validation
     if (!formData.empresa.trim()) {
@@ -56,7 +58,7 @@ export default function CreateOrderContent() {
     } else if (!isValidPhone(formData.telefono)) {
       newErrors.telefono = "El teléfono solo debe contener números";
     }
-    
+
     if (!formData.costoViaje.trim()) {
       missingFields.push("Costo del viaje");
       newErrors.costoViaje = "El costo del viaje es obligatorio";
@@ -68,22 +70,33 @@ export default function CreateOrderContent() {
     if (formData.llevaComision === "Si") {
       if (!formData.nombreRecibeComision.trim()) {
         missingFields.push("Nombre de quien recibe la comisión");
-        newErrors.nombreRecibeComision = "El nombre de quien recibe la comisión es obligatorio";
+        newErrors.nombreRecibeComision =
+          "El nombre de quien recibe la comisión es obligatorio";
       }
-      
+
       // Validate percentage if tipo comision is percentage
-      if (formData.tipoComision === "Porcentaje" && formData.porcentaje.trim() && !isValidNumber(formData.porcentaje)) {
+      if (
+        formData.tipoComision === "Porcentaje" &&
+        formData.porcentaje.trim() &&
+        !isValidNumber(formData.porcentaje)
+      ) {
         newErrors.porcentaje = "El porcentaje debe ser un número válido";
       }
-      
+
       // Validate amount if provided
-      if (formData.montoArreglado.trim() && !isValidNumber(formData.montoArreglado)) {
+      if (
+        formData.montoArreglado.trim() &&
+        !isValidNumber(formData.montoArreglado)
+      ) {
         newErrors.montoArreglado = "El monto debe ser un número válido";
       }
     }
 
     // Email validation (if provided)
-    if (formData.correoElectronico.trim() && !isValidEmail(formData.correoElectronico)) {
+    if (
+      formData.correoElectronico.trim() &&
+      !isValidEmail(formData.correoElectronico)
+    ) {
       newErrors.correoElectronico = "El correo electrónico no es válido";
       showErrorAlert(
         "Email inválido",
@@ -99,11 +112,12 @@ export default function CreateOrderContent() {
     setShowErrors(true);
 
     // Check for format errors first
-    const formatErrors = Object.keys(newErrors).filter(key => 
-      newErrors[key].includes("número válido") || 
-      newErrors[key].includes("solo debe contener números")
+    const formatErrors = Object.keys(newErrors).filter(
+      (key) =>
+        newErrors[key].includes("número válido") ||
+        newErrors[key].includes("solo debe contener números")
     );
-    
+
     if (formatErrors.length > 0) {
       showErrorAlert(
         "Formato incorrecto",
@@ -143,13 +157,18 @@ export default function CreateOrderContent() {
   const handleInputChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      
+
       // Apply numeric validation for specific fields
-      if (field === 'telefono' && !isValidPhone(value)) {
+      if (field === "telefono" && !isValidPhone(value)) {
         return; // Don't update if not valid phone number
       }
-      
-      if ((field === 'costoViaje' || field === 'porcentaje' || field === 'montoArreglado') && !isValidNumber(value)) {
+
+      if (
+        (field === "costoViaje" ||
+          field === "porcentaje" ||
+          field === "montoArreglado") &&
+        !isValidNumber(value)
+      ) {
         return; // Don't update if not valid number
       }
 
@@ -168,22 +187,23 @@ export default function CreateOrderContent() {
       }
     };
 
-  const handleSelectChange = (field: string) => (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const handleSelectChange =
+    (field: string) => (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = e.target.value;
+      setFormData((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
 
-    // Clear error for this field when user makes a selection
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
+      // Clear error for this field when user makes a selection
+      if (errors[field]) {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[field];
+          return newErrors;
+        });
+      }
+    };
 
   const handleRadioChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -204,7 +224,7 @@ export default function CreateOrderContent() {
   const handleNext = () => {
     if (validateForm()) {
       // Store order data in localStorage for the trip creation step
-      localStorage.setItem('orderFormData', JSON.stringify(formData));
+      localStorage.setItem("orderFormData", JSON.stringify(formData));
       // Proceed to next step
       window.location.href = "/dashboard/createOrder/createTrip";
     }
@@ -214,6 +234,49 @@ export default function CreateOrderContent() {
     // Handle cancel logic
     console.log("Cancel clicked");
   };
+
+  const fetchClients = useCallback(async () => {
+    try {
+      // Get access token from cookies
+      const accessToken = getCookie("accessToken");
+
+      // Prepare headers
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      // Add authorization header if token exists
+      if (accessToken) {
+        headers["Authorization"] = `Bearer ${accessToken}`;
+      }
+
+      const response = await fetch(`${API_URL}/clients`, {
+        method: "GET",
+        headers,
+      });
+      if (!response.ok) {
+        throw new Error("Error fetching clients");
+      }
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        // Transform client data to the format expected by SelectComponent
+        const clientOptions = data.data.map((client: any) => ({
+          value: client.client_id.toString(),
+          label: client.name,
+        }));
+        setClients(clientOptions);
+      }
+    } catch (error) {
+      console.error("Error fetching clients:", error);
+      // Set empty array if fetch fails
+      setClients([]);
+    }
+  }, [API_URL]);
+
+  useEffect(() => {
+    fetchClients();
+  }, [fetchClients]);
 
   return (
     <main className={styles.main}>
@@ -237,15 +300,13 @@ export default function CreateOrderContent() {
             <SelectComponent
               value={formData.empresa}
               onChange={handleSelectChange("empresa")}
-              options={[
-                { value: "empresa1", label: "Empresa 1" },
-                { value: "empresa2", label: "Empresa 2" },
-                { value: "empresa3", label: "Empresa 3" },
-              ]}
+              options={clients}
               label="Empresa o cliente"
               placeholder="Seleccione..."
               required={true}
-              className={`${styles.select} ${showErrors && errors.empresa ? styles.selectError : ''}`}
+              className={`${styles.select} ${
+                showErrors && errors.empresa ? styles.selectError : ""
+              }`}
             />
             {showErrors && errors.empresa && (
               <p className={styles.errorMessage}>{errors.empresa}</p>
@@ -265,7 +326,9 @@ export default function CreateOrderContent() {
                   </p>
                 }
                 placeholder=""
-                className={`${styles.input} ${showErrors && errors.nombreContacto ? styles.inputError : ''}`}
+                className={`${styles.input} ${
+                  showErrors && errors.nombreContacto ? styles.inputError : ""
+                }`}
               />
               {showErrors && errors.nombreContacto && (
                 <p className={styles.errorMessage}>{errors.nombreContacto}</p>
@@ -282,7 +345,9 @@ export default function CreateOrderContent() {
                   </p>
                 }
                 placeholder=""
-                className={`${styles.input} ${showErrors && errors.primerApellido ? styles.inputError : ''}`}
+                className={`${styles.input} ${
+                  showErrors && errors.primerApellido ? styles.inputError : ""
+                }`}
               />
               {showErrors && errors.primerApellido && (
                 <p className={styles.errorMessage}>{errors.primerApellido}</p>
@@ -312,7 +377,9 @@ export default function CreateOrderContent() {
                   </p>
                 }
                 placeholder=""
-                className={`${styles.input} ${showErrors && errors.telefono ? styles.inputError : ''}`}
+                className={`${styles.input} ${
+                  showErrors && errors.telefono ? styles.inputError : ""
+                }`}
               />
               {showErrors && errors.telefono && (
                 <p className={styles.errorMessage}>{errors.telefono}</p>
@@ -357,10 +424,16 @@ export default function CreateOrderContent() {
                 onChange={handleInputChange("correoElectronico")}
                 label="Correo electrónico"
                 placeholder=""
-                className={`${styles.input} ${showErrors && errors.correoElectronico ? styles.inputError : ''}`}
+                className={`${styles.input} ${
+                  showErrors && errors.correoElectronico
+                    ? styles.inputError
+                    : ""
+                }`}
               />
               {showErrors && errors.correoElectronico && (
-                <p className={styles.errorMessage}>{errors.correoElectronico}</p>
+                <p className={styles.errorMessage}>
+                  {errors.correoElectronico}
+                </p>
               )}
             </div>
           </div>
@@ -438,7 +511,9 @@ export default function CreateOrderContent() {
                   </p>
                 }
                 placeholder=""
-                className={`${styles.input} ${showErrors && errors.costoViaje ? styles.inputError : ''}`}
+                className={`${styles.input} ${
+                  showErrors && errors.costoViaje ? styles.inputError : ""
+                }`}
               />
               {showErrors && errors.costoViaje && (
                 <p className={styles.errorMessage}>{errors.costoViaje}</p>
@@ -488,10 +563,16 @@ export default function CreateOrderContent() {
                   onChange={handleInputChange("nombreRecibeComision")}
                   label="Nombre de quien recibe la comisión *"
                   placeholder=""
-                  className={`${styles.input} ${showErrors && errors.nombreRecibeComision ? styles.inputError : ''}`}
+                  className={`${styles.input} ${
+                    showErrors && errors.nombreRecibeComision
+                      ? styles.inputError
+                      : ""
+                  }`}
                 />
                 {showErrors && errors.nombreRecibeComision && (
-                  <p className={styles.errorMessage}>{errors.nombreRecibeComision}</p>
+                  <p className={styles.errorMessage}>
+                    {errors.nombreRecibeComision}
+                  </p>
                 )}
               </div>
 
@@ -540,7 +621,9 @@ export default function CreateOrderContent() {
                       onChange={handleInputChange("porcentaje")}
                       label="Porcentaje (%)"
                       placeholder=""
-                      className={`${styles.input} ${showErrors && errors.porcentaje ? styles.inputError : ''}`}
+                      className={`${styles.input} ${
+                        showErrors && errors.porcentaje ? styles.inputError : ""
+                      }`}
                     />
                     {showErrors && errors.porcentaje && (
                       <p className={styles.errorMessage}>{errors.porcentaje}</p>
@@ -558,10 +641,16 @@ export default function CreateOrderContent() {
                         : "Monto de la comisión ($)"
                     }
                     placeholder=""
-                    className={`${styles.input} ${showErrors && errors.montoArreglado ? styles.inputError : ''}`}
+                    className={`${styles.input} ${
+                      showErrors && errors.montoArreglado
+                        ? styles.inputError
+                        : ""
+                    }`}
                   />
                   {showErrors && errors.montoArreglado && (
-                    <p className={styles.errorMessage}>{errors.montoArreglado}</p>
+                    <p className={styles.errorMessage}>
+                      {errors.montoArreglado}
+                    </p>
                   )}
                 </div>
               </div>

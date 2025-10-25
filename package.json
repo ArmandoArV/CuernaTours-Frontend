@@ -8,7 +8,9 @@
     "start": "next start"
   },
   "dependencies": {
+    "@fluentui/react-calendar-compat": "^0.3.12",
     "@fluentui/react-components": "^9.70.0",
+    "@fluentui/react-datepicker-compat": "^0.6.17",
     "@fluentui/react-icons": "^2.0.311",
     "next": "15.5.4",
     "react": "19.1.0",
