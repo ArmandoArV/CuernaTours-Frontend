@@ -17,7 +17,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   userIsOwner = false,
 }) => {
   const lateralNavItems: LateralNavbarType[] = [
-    { title: "Home", link: "/", icon: <HomeFilled /> }, // Visible to all
+    { title: "Home", link: "/dashboard", icon: <HomeFilled /> }, // Visible to all
     { title: "Profile", link: "/profile" }, // Visible to all
     { title: "Admin Panel", link: "/admin", isAdmin: true }, // Only admin and owner
     { title: "User Management", link: "/users", isAdmin: true }, // Only admin and owner
