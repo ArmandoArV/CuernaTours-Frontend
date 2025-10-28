@@ -21,71 +21,9 @@
   box-sizing: border-box;
 }
 
-/* Tablet styles */
-@media (min-width: 768px) {
-  .main {
-    padding: 1.5rem;
-  }
-  
-  .container {
-    padding: 1.5rem;
-  }
-}
-
-/* Desktop styles */
-@media (min-width: 1024px) {
-  .main {
-    padding: 20px;
-  }
-}
-
-/* Mobile-specific improvements */
-@media (max-width: 480px) {
-  .main {
-    padding: 0.5rem;
-  }
-  
-  .container {
-    padding: 0.75rem;
-    border-radius: 0;
-  }
-  
-  .backButton {
-    margin: 0.25em;
-    touch-action: manipulation;
-  }
-  
-  .button {
-    padding: 1rem 1.5rem;
-    font-size: 1.1rem;
-    touch-action: manipulation;
-    min-height: 44px; /* Minimum touch target size */
-  }
-  
-  .radioInput {
-    margin: 0.25rem;
-    transform: scale(1.2); /* Larger touch targets */
-  }
-  
-  .radioOption {
-    padding: 0.5rem 0;
-    min-height: 44px;
-    align-items: center;
-  }
-  
-  .title {
-    font-size: 1.25rem;
-    line-height: 1.2;
-  }
-  
-  .subtitle {
-    font-size: 0.8rem;
-    line-height: 1.3;
-  }
-}
-
 /* Ensure inputs and selects are responsive */
-.input, .select {
+.input,
+.select {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -167,6 +105,32 @@
   background-color: #7c5f14;
 }
 
+.header {
+  display: flex;
+  width: 100%;
+  min-height: fit-content;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.row {
+  display: flex;
+  width: 100%;
+  gap: 1rem;
+  flex-direction: column;
+  align-items: stretch;
+  box-sizing: border-box;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 1rem;
+  box-sizing: border-box;
+}
+
 .radioGroup {
   display: flex;
   flex-direction: column;
@@ -184,6 +148,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  align-items: flex-start; /* ensure options start from same edge */
+  justify-content: flex-start;
 }
 
 .radioOption {
@@ -192,6 +158,7 @@
   gap: 0.5rem;
   font-size: 0.9rem;
   cursor: pointer;
+  justify-content: flex-start; /* keep input and label together on the left */
 }
 
 .title {
@@ -207,7 +174,7 @@
   margin: 0.5rem 0 0 0;
 }
 
-.textarea{
+.textarea {
   font-size: 0.9rem;
   background-color: var(--Background-F5F7FA, #f5f7fa);
   color: #000000;
@@ -232,55 +199,15 @@
   box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.1) !important;
 }
 
-/* Tablet and desktop styles for error messages */
-@media (min-width: 768px) {
-  .errorMessage {
-    font-size: 0.9rem;
-  }
-}
-
-
-/* Tablet styles for buttons and form elements */
-@media (min-width: 768px) {
-  .buttonContainer {
-    flex-direction: row;
-    justify-content: flex-end;
-    gap: 1rem;
-  }
-  
-  .button {
-    width: auto;
-    min-width: 120px;
-  }
-  
-  .radioOptions {
-    flex-direction: row;
-    gap: 1rem;
-  }
-  
-  .title {
-    font-size: 1.75rem;
-  }
-  
-  .subtitle {
-    font-size: 1rem;
-  }
-  
-  .textareaLabel {
-    font-size: 1rem;
-  }
-  
-  .textarea {
-    font-size: 1rem;
-  }
-  
-  .radioLabel {
-    font-size: 1rem;
-  }
-  
-  .radioOption {
-    font-size: 1rem;
-  }
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex: 1;
+  min-height: fit-content;
+  box-sizing: border-box;
 }
 
 .backButton {
@@ -307,6 +234,106 @@
   background: #fff;
 }
 
+
+/* Align radio groups horizontally with consistent label width */
+.radioGroupHorizontal {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Give both label columns the same width */
+.radioGroupHorizontal .radioLabelHorizontal {
+  width: 10rem; /* adjust this width as needed */
+  text-align: left;
+  flex-shrink: 0;
+}
+
+/* Keep the radio options aligned left in the remaining space */
+.radioGroupHorizontal .radioOptions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.radioGroupHorizontal .radioLabelHorizontal {
+  width: 9rem;
+}
+
+
+
+
+/* Tablet and desktop styles for error messages */
+@media (min-width: 768px) {
+  .errorMessage {
+    font-size: 0.9rem;
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 768px) {
+  .main {
+    padding: 1.5rem;
+  }
+
+  .container {
+    padding: 1.5rem;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+  .main {
+    padding: 20px;
+  }
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 480px) {
+  .main {
+    padding: 0.5rem;
+  }
+
+  .container {
+    padding: 0.75rem;
+    border-radius: 0;
+  }
+
+  .backButton {
+    margin: 0.25em;
+    touch-action: manipulation;
+  }
+
+  .button {
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    touch-action: manipulation;
+    min-height: 44px; /* Minimum touch target size */
+  }
+
+  .radioInput {
+    margin: 0.25rem;
+    transform: scale(1.2); /* Larger touch targets */
+  }
+
+  .radioOption {
+    padding: 0.5rem 0;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .title {
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+}
+
 /* Tablet and desktop styles for radio inputs */
 @media (min-width: 768px) {
   .radioInput {
@@ -315,41 +342,32 @@
   }
 }
 
-.radioGroupHorizontal {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  width: 100%;
-  height: auto;
-  gap: 0.5rem;
-}
-
-.radioLabelHorizontal {
-  width: 100%;
-  font-weight: 500;
-}
-
 /* Tablet and desktop styles for horizontal radio groups */
 @media (min-width: 768px) {
   .radioGroupHorizontal {
     flex-direction: row;
     align-items: center;
-    width: 18em;
+    width: 100%;
+    gap: 1rem;
   }
-  
-  .radioLabelHorizontal {
-    width: 60%;
-  }
-}
 
-.header {
-  display: flex;
-  width: 100%;
-  min-height: fit-content;
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 1rem;
+  /* Fixed label column so radio circles align across different groups */
+  .radioLabelHorizontal {
+    width: 18em; /* fixed column width aligns radios vertically */
+    padding-right: 0.5rem;
+    box-sizing: border-box;
+  }
+
+  /* Options column takes remaining space; keep options left-aligned */
+  .radioGroupHorizontal .radioOptions {
+    width: calc(100% - 18em);
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+    justify-content: flex-start;
+    box-sizing: border-box;
+  }
 }
 
 /* Tablet and desktop styles for header */
@@ -361,41 +379,12 @@
   }
 }
 
-.form {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 1rem;
-  margin-top: 1rem;
-  flex: 1;
-  min-height: fit-content;
-  box-sizing: border-box;
-}
-
 /* Tablet and desktop styles for form */
 @media (min-width: 768px) {
   .form {
     gap: 1.5rem;
   }
 }
-
-.row {
-  display: flex;
-  width: 100%;
-  gap: 1rem;
-  flex-direction: column;
-  align-items: stretch;
-  box-sizing: border-box;
-}
-
-.col {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 1rem;
-  box-sizing: border-box;
-}
-
 /* Tablet and desktop styles for rows and columns */
 @media (min-width: 768px) {
   .row {
@@ -404,8 +393,51 @@
     align-items: center;
     justify-content: space-between;
   }
-  
+
   .col {
     gap: 1.5rem;
+  }
+}
+
+/* Tablet styles for buttons and form elements */
+@media (min-width: 768px) {
+  .buttonContainer {
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+
+  .button {
+    width: auto;
+    min-width: 120px;
+  }
+
+  .radioOptions {
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .textareaLabel {
+    font-size: 1rem;
+  }
+
+  .textarea {
+    font-size: 1rem;
+  }
+
+  .radioLabel {
+    font-size: 1rem;
+  }
+
+  .radioOption {
+    font-size: 1rem;
   }
 }

@@ -33,7 +33,9 @@ export default function CreateOrderContent() {
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showErrors, setShowErrors] = useState(false);
-  const [clients, setClients] = useState<Array<{ value: string; label: string }>>([]);
+  const [clients, setClients] = useState<
+    Array<{ value: string; label: string }>
+  >([]);
 
   const validateForm = () => {
     const missingFields: string[] = [];
@@ -258,7 +260,7 @@ export default function CreateOrderContent() {
         throw new Error("Error fetching clients");
       }
       const data = await response.json();
-      
+
       if (data.success && data.data) {
         // Transform client data to the format expected by SelectComponent
         const clientOptions = data.data.map((client: any) => ({
@@ -470,19 +472,18 @@ export default function CreateOrderContent() {
           <div className={styles.row}>
             <div className={styles.col}>
               <div className={styles.radioGroupHorizontal}>
-                <label className={styles.radioLabel}>
-                  ¿Aplica IVA?
-                  <strong style={{ color: "red" }}> *</strong>
+                <label className={styles.radioLabelHorizontal}>
+                  ¿Aplica IVA? <strong style={{ color: "red" }}>*</strong>
                 </label>
                 <div className={styles.radioOptions}>
-                  <label className={styles.radioLabelHorizontal}>
+                  <label className={styles.radioOption}>
                     <input
                       type="radio"
                       name="iva"
                       value="Si"
-                      className={styles.radioInput}
                       checked={formData.aplicaIva === "Si"}
                       onChange={() => handleRadioChange("aplicaIva", "Si")}
+                      className={styles.radioInput}
                     />
                     Sí
                   </label>
@@ -491,9 +492,9 @@ export default function CreateOrderContent() {
                       type="radio"
                       name="iva"
                       value="No"
-                      className={styles.radioInput}
                       checked={formData.aplicaIva === "No"}
                       onChange={() => handleRadioChange("aplicaIva", "No")}
+                      className={styles.radioInput}
                     />
                     No
                   </label>
