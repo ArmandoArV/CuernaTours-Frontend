@@ -160,7 +160,10 @@ const TableComponent: React.FC<TableComponentProps> = ({
             <thead>
               <tr>
                 {columns.map((col) => (
-                  <th key={col}>{col}</th>
+                  <th key={col}
+                  // Make the id of each th to be assigned as the column name in lowercase without spaces
+                  id={col.toLowerCase().replace(/\s+/g, '-')}
+                  >{col}</th>
                 ))}
                 {showActions && <th></th>}
               </tr>
