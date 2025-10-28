@@ -117,13 +117,14 @@
 .textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ccc;
+  border: none;
   border-radius: 0.25rem;
   font-family: inherit;
   font-size: 0.9rem;
   resize: vertical;
   min-height: 100px;
   box-sizing: border-box;
+  background-color: var(--Background-F5F7FA, #f5f7fa);
 }
 
 .buttonContainer {
@@ -148,8 +149,9 @@
 }
 
 .cancelButton {
-  background-color: #f3f4f6;
-  color: #374151;
+  color: var(--Main-96781A);
+  border: 2px solid var(--Main-96781A);
+  background-color: transparent;
 }
 
 .cancelButton:hover {
@@ -157,12 +159,12 @@
 }
 
 .nextButton {
-  background-color: #3b82f6;
+  background-color: var(--Main-96781A);
   color: white;
 }
 
 .nextButton:hover {
-  background-color: #2563eb;
+  background-color: #7c5f14;
 }
 
 .radioGroup {
@@ -207,7 +209,7 @@
 
 .textarea{
   font-size: 0.9rem;
-  background-color: transparent;
+  background-color: var(--Background-F5F7FA, #f5f7fa);
   color: #000000;
 }
 
