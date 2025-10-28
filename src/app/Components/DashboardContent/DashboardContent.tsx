@@ -200,15 +200,16 @@ export default function DashboardContent() {
                 color: "white",
                 border: "none",
                 borderRadius: "6px",
-                fontSize: "14px",
+                fontSize: "1rem",
                 fontWeight: "500",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
+                
               }}
             >
-              <AddFilled /> Crear Orden
+              <AddFilled color="white" width={16} height={16} /> Crear Orden
             </button>
           </Link>
         }

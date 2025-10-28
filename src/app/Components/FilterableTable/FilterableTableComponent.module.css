@@ -3,10 +3,14 @@
 }
 
 .title {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 16px 0;
-  color: #1f2937;
+  color: var(--Text-3D3D3D, #3d3d3d);
+  /* B-24px */
+  font-size: 1.5rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 0.03rem;
+  margin-bottom: 1em;
 }
 
 .description {
@@ -54,12 +58,12 @@
     align-items: stretch;
     gap: 12px;
   }
-  
+
   .searchSection {
     width: 100%;
     max-width: none;
   }
-  
+
   .filterSection,
   .actionSection {
     width: 100%;

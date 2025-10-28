@@ -16,16 +16,12 @@
 
 .table th,
 .table td {
-  padding: 12px 16px;
+  width: 9.2rem;
+  height: 3rem;
+  padding: 0.75rem 1rem;
+  align-items: center;
+  gap: 0.5rem;
   text-align: left;
-  border-bottom: 1px solid #e0e0e0;
-  overflow: hidden;
-  color: var(--Text-61636E, #61636e);
-  text-overflow: ellipsis;
-  font-size: 1rem;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
 }
 
 .table th {
@@ -49,7 +45,20 @@
 
 .table th:nth-child(8) {
   width: 1%;
-  max-width: 50px;
+  text-align: center;
+  
+}
+
+.table td {
+  border-bottom: 1px solid #e0e0e0;
+  color: #555;
+  font-size: 14px;
+  vertical-align: middle;
+  padding: 0.75rem 1rem;
+  height: 3rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .table tbody tr {
@@ -66,7 +75,7 @@
 
 .actionsContainer {
   display: flex;
-  gap: 8px;
+  gap: 1px;
   align-items: center;
   position: relative;
 }
@@ -114,13 +123,13 @@
   color: white;
   padding: 2px 6px;
   border-radius: 3px;
-  font-size: 10px;
+  font-size: 15px;
   z-index: 1000;
   pointer-events: none;
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   transform: translateX(-50%);
-  max-width: 60px;
+  max-width: 150px;
 }
 
 .tooltip::after {
