@@ -2,9 +2,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px;
+  padding: 0;
   border-radius: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 0;
   flex-wrap: wrap;
 }
 
@@ -12,18 +12,18 @@
   position: relative;
   display: flex;
   align-items: center;
-  border: 1px solid #e5e7eb;
-  border-radius: 25px;
-  background-color: #ffffff;
+  border-radius: 0.25rem;
+  border: 1px solid var(--Text-ADADAD, #adadad);
   transition: all 0.2s ease;
   cursor: pointer;
   z-index: 1;
   min-width: 120px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 40px;
+  box-sizing: border-box;
 }
 
 .filter-wrapper::after {
-  content: '▼';
+  content: "▼";
   position: absolute;
   right: 16px;
   top: 50%;
@@ -66,7 +66,7 @@
 
 .filter-select {
   width: 100%;
-  height: 100%;
+  height: 40px;
   padding: 10px 40px 10px 48px;
   border: none;
   border-radius: 25px;
@@ -80,7 +80,7 @@
   -webkit-appearance: none;
   -moz-appearance: none;
   z-index: 2;
-  min-height: 40px;
+  box-sizing: border-box;
 }
 
 .filter-select:hover {
@@ -119,6 +119,10 @@
   transition: all 0.2s ease;
   white-space: nowrap;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 40px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
 }
 
 .clear-filters-btn:hover:not(:disabled) {
@@ -182,7 +186,7 @@
   .filter-wrapper {
     cursor: default;
   }
-  
+
   .filter-select {
     cursor: default;
     -webkit-appearance: menulist;
@@ -190,11 +194,11 @@
     appearance: menulist;
     padding: 10px 16px 10px 48px;
   }
-  
+
   .filter-wrapper::after {
     display: none;
   }
-  
+
   .filter-icon {
     display: block;
   }
@@ -207,13 +211,13 @@
     align-items: stretch;
     gap: 12px;
   }
-  
+
   .filter-wrapper {
     width: 100%;
     justify-content: space-between;
     min-width: unset;
   }
-  
+
   .clear-filters-btn {
     align-self: center;
   }

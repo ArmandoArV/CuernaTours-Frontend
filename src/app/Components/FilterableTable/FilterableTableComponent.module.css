@@ -18,7 +18,7 @@
 .searchFilterBar {
   display: flex;
   gap: 12px;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
@@ -27,11 +27,15 @@
   flex: 1;
   min-width: 200px;
   max-width: 350px;
+  display: flex;
+  align-items: center;
 }
 
 .filterSection {
   flex: none;
   min-width: auto;
+  display: flex;
+  align-items: center;
 }
 
 .actionSection {

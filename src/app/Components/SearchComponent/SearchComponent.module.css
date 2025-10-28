@@ -2,10 +2,12 @@
   display: flex;
   align-items: center;
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 10px 12px;
   width: 100%;
   max-width: 300px;
   border: 1px solid var(--Text-ADADAD);
+  min-height: 40px;
+  box-sizing: border-box;
 }
 
 .search-icon {

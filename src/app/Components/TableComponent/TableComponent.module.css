@@ -23,12 +23,17 @@
 }
 
 .table th {
-  background-color: #f8f9fa;
+  background-color: #dbdbdb;
   font-weight: 600;
   color: #333;
   text-transform: uppercase;
   font-size: 12px;
   letter-spacing: 0.5px;
+  width: 9.2rem;
+  height: 3rem;
+  padding: 0.75rem 1rem;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .table th:nth-child(8) {
@@ -74,7 +79,6 @@
   background-color: transparent;
   color: rgb(0, 0, 0);
   font-size: 30px;
-
 }
 
 .viewButton:hover {
@@ -84,7 +88,7 @@
 .editButton {
   background-color: #28a745;
   color: white;
-    background-color: transparent;
+  background-color: transparent;
   color: rgb(0, 0, 0);
   font-size: 30px;
 }
@@ -109,7 +113,7 @@
 }
 
 .tooltip::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 100%;
   left: 50%;
