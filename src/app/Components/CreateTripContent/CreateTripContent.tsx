@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import styles from "./CreateTripContent.module.css";
 import InputComponent from "../InputComponent/InputComponent";
 import SelectComponent from "../SelectComponent/SelectComponent";
@@ -7,22 +7,32 @@ import {
   ArrowHookUpLeftRegular,
   ChevronUpRegular,
   ChevronDownRegular,
-  CalendarLtrRegular,
 } from "@fluentui/react-icons";
-import { Calendar } from "@fluentui/react-calendar-compat";
+import DatePickerComponent from "../DatePickerComponent/DatePickerComponent";
 import Link from "next/link";
 import { showErrorAlert, showSuccessAlert } from "@/app/Utils/AlertUtil";
 import { getCookie } from "@/app/Utils/CookieUtil";
-import { mapTripFormToPayload, mapOrderFormToPayload, OrderFormData } from "@/app/Types/OrderTripTypes";
+import {
+  mapTripFormToPayload,
+  mapOrderFormToPayload,
+  OrderFormData,
+} from "@/app/Types/OrderTripTypes";
 import { useOrderContext } from "@/app/Contexts/OrderContext";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
+import { useRouter } from "next/navigation";
 
 export default function CreateTripContent() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const { orderData, tripData, setTripData, clearData } = useOrderContext();
+  const router = useRouter();
 
   // Trip-specific form data
-  const [tripFormData, setTripFormData] = useState(tripData);
+  const [tripFormData, setTripFormData] = useState({
+    ...tripData,
+    numeroPasajeros: tripData.regresoPasajeros || "",
+    idaFecha: tripData.idaFecha || "",
+    regresoFecha: tripData.regresoFecha || "",
+  });
 
   // Dropdown data
   const [lugares, setLugares] = useState<
@@ -35,22 +45,14 @@ export default function CreateTripContent() {
     Array<{ value: string; label: string }>
   >([]);
 
-  // Calendar visibility state
-  const [showIdaCalendar, setShowIdaCalendar] = useState(false);
-  const [showRegresoCalendar, setShowRegresoCalendar] = useState(false);
-
   // Fetch functions
   const fetchLugares = useCallback(async () => {
     try {
-      // Get access token from cookies
       const accessToken = getCookie("accessToken");
-
-      // Prepare headers
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
 
-      // Add authorization header if token exists
       if (accessToken) {
         headers["Authorization"] = `Bearer ${accessToken}`;
       }
@@ -77,15 +79,11 @@ export default function CreateTripContent() {
 
   const fetchChoferes = useCallback(async () => {
     try {
-      // Get access token from cookies
       const accessToken = getCookie("accessToken");
-
-      // Prepare headers
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
 
-      // Add authorization header if token exists
       if (accessToken) {
         headers["Authorization"] = `Bearer ${accessToken}`;
       }
@@ -112,15 +110,11 @@ export default function CreateTripContent() {
 
   const fetchUnidades = useCallback(async () => {
     try {
-      // Get access token from cookies
       const accessToken = getCookie("accessToken");
-
-      // Prepare headers
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
 
-      // Add authorization header if token exists
       if (accessToken) {
         headers["Authorization"] = `Bearer ${accessToken}`;
       }
@@ -149,71 +143,62 @@ export default function CreateTripContent() {
   useEffect(() => {
     console.log("CreateTripContent - OrderData:", orderData);
     console.log("CreateTripContent - TripData:", tripData);
-    
-    // Give context some time to load, then check
+
     const checkOrderData = () => {
-      // Also check localStorage for debugging
-      const localStorageData = typeof window !== 'undefined' ? localStorage.getItem('orderData') : null;
-      console.log("LocalStorage orderData:", localStorageData);
-      
-      // Check if orderData exists and has required fields
-      const hasOrderData = orderData && 
-        (orderData.empresa || 
-         orderData.nombreContacto || 
-         orderData.costoViaje);
-         
+      const localStorageData =
+        typeof window !== "undefined"
+          ? localStorage.getItem("orderData")
+          : null;
+
+      const hasOrderData =
+        orderData &&
+        (orderData.empresa || orderData.nombreContacto || orderData.costoViaje);
+
       if (!hasOrderData) {
         console.log("No order data found, redirecting...");
-        console.log("Available orderData:", orderData);
-        console.log("Checking localStorage directly:", localStorageData);
         showErrorAlert(
           "Error",
           "No se encontraron datos del pedido. Redirigiendo..."
         );
         setTimeout(() => {
-          window.location.href = "/dashboard/createOrder";
+          router.push("/dashboard/createOrder");
         }, 2000);
         return;
       }
-      
+
       console.log("Order data validation passed, proceeding...");
     };
 
-    // Delay the check to allow context to load
-    const timeoutId = setTimeout(checkOrderData, 500); // Increased delay
+    const timeoutId = setTimeout(checkOrderData, 500);
 
-    // Sync form data with context data
-    setTripFormData(tripData);
+    // Sync form data with context data, ensuring proper defaults
+    setTripFormData(prev => ({
+      ...prev,
+      ...tripData,
+      numeroPasajeros: tripData.regresoPasajeros || prev.numeroPasajeros || "",
+      idaFecha: tripData.idaFecha || prev.idaFecha || "",
+      regresoFecha: tripData.regresoFecha || prev.regresoFecha || "",
+    }));
 
-    // Fetch dropdown data
     fetchLugares();
     fetchChoferes();
     fetchUnidades();
 
     return () => clearTimeout(timeoutId);
-  }, [fetchLugares, fetchChoferes, fetchUnidades, orderData, tripData]);
+  }, [fetchLugares, fetchChoferes, fetchUnidades, orderData, tripData, router]);
 
-  // Close calendars when clicking outside
+  // Debug effect to monitor form data changes
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest(`.${styles.datePickerContainer}`)) {
-        setShowIdaCalendar(false);
-        setShowRegresoCalendar(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+    console.log("Current tripFormData:", tripFormData);
+  }, [tripFormData]);
 
   const handleTripInputChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      console.log(`Field ${field} changed to:`, value);
       setTripFormData((prev) => ({
         ...prev,
-        [field]: e.target.value,
+        [field]: value,
       }));
     };
 
@@ -258,60 +243,42 @@ export default function CreateTripContent() {
     });
   };
 
-  // Date utility functions
-  const formatDateToDDMMYYYY = (date: Date): string => {
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-
   const parseDDMMYYYYToDate = (dateString: string): Date | null => {
+    if (!dateString) return null;
     const parts = dateString.split("/");
     if (parts.length !== 3) return null;
     const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+    const month = parseInt(parts[1], 10) - 1;
     const year = parseInt(parts[2], 10);
     if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
-    return new Date(year, month, day);
+
+    if (day < 1 || day > 31 || month < 0 || month > 11 || year < 1900)
+      return null;
+
+    const date = new Date(year, month, day);
+    if (
+      date.getDate() !== day ||
+      date.getMonth() !== month ||
+      date.getFullYear() !== year
+    ) {
+      return null;
+    }
+
+    return date;
   };
 
-  const handleDateChange =
-    (field: "idaFecha" | "regresoFecha") => (date: Date | null | undefined) => {
-      const dateValue = date ? formatDateToDDMMYYYY(date) : "";
-      setTripFormData((prev) => ({
-        ...prev,
-        [field]: dateValue,
-      }));
-      // Close calendar after selection
-      if (field === "idaFecha") setShowIdaCalendar(false);
-      if (field === "regresoFecha") setShowRegresoCalendar(false);
-    };
-
-  const handleDateInputChange =
-    (field: "idaFecha" | "regresoFecha") =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setTripFormData((prev) => ({
-        ...prev,
-        [field]: e.target.value,
-      }));
-    };
-
   const handleCancel = () => {
-    // Save current trip data before going back
     setTripData(tripFormData);
-    window.location.href = "/dashboard/createOrder";
+    router.push("/dashboard/createOrder");
   };
 
   const handleSaveDraft = () => {
-    // Update context with current trip data
     setTripData(tripFormData);
     showSuccessAlert("Guardado", "Borrador guardado correctamente");
   };
 
   const handleCreateTrip = async () => {
     try {
-      // Validate required fields
       if (!orderData) {
         showErrorAlert("Error", "No se encontraron datos del pedido");
         return;
@@ -329,15 +296,11 @@ export default function CreateTripContent() {
         return;
       }
 
-      // Get access token from cookies
       const accessToken = getCookie("accessToken");
-
-      // Prepare headers
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
 
-      // Add authorization header if token exists
       if (accessToken) {
         headers["Authorization"] = `Bearer ${accessToken}`;
       }
@@ -357,7 +320,7 @@ export default function CreateTripContent() {
       }
 
       const orderResult = await orderResponse.json();
-      
+
       if (!orderResult.success) {
         throw new Error(orderResult.message || "Error al crear el contrato");
       }
@@ -379,12 +342,11 @@ export default function CreateTripContent() {
       }
 
       const tripResult = await tripResponse.json();
-      
+
       if (tripResult.success) {
         showSuccessAlert("Éxito", "Contrato y viaje creados correctamente");
-        clearData(); // Clear context data
-        // Redirect to dashboard
-        window.location.href = "/dashboard";
+        clearData();
+        router.push("/dashboard");
       } else {
         throw new Error(tripResult.message || "Error al crear el viaje");
       }
@@ -392,13 +354,12 @@ export default function CreateTripContent() {
       console.error("Error creating contract and trip:", error);
       showErrorAlert(
         "Error",
-        error instanceof Error ? error.message : "Error al crear el contrato y viaje"
+        error instanceof Error
+          ? error.message
+          : "Error al crear el contrato y viaje"
       );
     }
   };
-
-  // Keep the old handleSubmit for backward compatibility (if needed)
-  const handleSubmit = handleCreateTrip;
 
   return (
     <main className={styles.main}>
@@ -417,376 +378,285 @@ export default function CreateTripContent() {
             </p>
           </div>
         </div>
-        <form className={styles.form}>
-          {/* Order Summary Section - Read Only */}
+        <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+          <h2 className={styles.sectionTitle}>Origen</h2>
           <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Resumen del Pedido</h3>
-            {orderData && (
-              <div className={styles.orderSummary}>
+            <SelectComponent
+              label="Nombre lugar"
+              options={lugares}
+              value={tripFormData.origenNombreLugar || ""}
+              onChange={handleTripSelectChange("origenNombreLugar")}
+              required
+              className={styles.input}
+            />
+          </div>
+          <div className={styles.section}>
+            <InputComponent
+              type="text"
+              value={tripFormData.origenCalle || ""}
+              onChange={handleTripInputChange("origenCalle")}
+              label={
                 <p>
-                  <strong>Empresa:</strong> {orderData.empresa}
+                  Calle <strong style={{ color: "red" }}>*</strong>
                 </p>
+              }
+              containerClassName={styles.streetInputContainer}
+            />
+            <InputComponent
+              type="text"
+              value={tripFormData.origenNumero || ""}
+              onChange={handleTripInputChange("origenNumero")}
+              label={
                 <p>
-                  <strong>Contacto:</strong> {orderData.nombreContacto}{" "}
-                  {orderData.primerApellido} {orderData.segundoApellido}
+                  Número <strong style={{ color: "red" }}>*</strong>
                 </p>
+              }
+              containerClassName={styles.numberInputContainer}
+            />
+          </div>
+          <div className={styles.section}>
+            <InputComponent
+              type="text"
+              value={tripFormData.origenColonia || ""}
+              onChange={handleTripInputChange("origenColonia")}
+              label={
                 <p>
-                  <strong>Teléfono:</strong> {orderData.telefono}
+                  Colonia <strong style={{ color: "red" }}>*</strong>
                 </p>
+              }
+              className={styles.input}
+              containerClassName={styles.streetInputContainer}
+            />
+            <InputComponent
+              type="text"
+              value={tripFormData.origenCodigoPostal || ""}
+              onChange={handleTripInputChange("origenCodigoPostal")}
+              label={
                 <p>
-                  <strong>Costo del viaje:</strong> ${orderData.costoViaje}
+                  Código Postal <strong style={{ color: "red" }}>*</strong>
                 </p>
-              </div>
-            )}
+              }
+              className={styles.input}
+              containerClassName={styles.numberInputContainer}
+            />
+          </div>
+          <div className={styles.section}>
+            <InputComponent
+              type="text"
+              value={tripFormData.origenCiudad || ""}
+              onChange={handleTripInputChange("origenCiudad")}
+              label={
+                <p>
+                  Ciudad <strong style={{ color: "red" }}>*</strong>
+                </p>
+              }
+              className={styles.input}
+            />
+            <InputComponent
+              type="text"
+              value={tripFormData.origenEstado || ""}
+              onChange={handleTripInputChange("origenEstado")}
+              label={
+                <p>
+                  Estado <strong style={{ color: "red" }}>*</strong>
+                </p>
+              }
+              className={styles.input}
+            />
           </div>
 
-          {/* Lugar de Origen Section */}
-          <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Lugar de Origen</h3>
-
-            <div className={styles.row}>
-              <div className={styles.col}>
-                <SelectComponent
-                  value={tripFormData.origenNombreLugar}
-                  onChange={handleTripSelectChange("origenNombreLugar")}
-                  options={lugares}
-                  label="Nombre Lugar *"
-                  placeholder="Seleccione..."
-                  required={true}
-                  className={styles.select}
+          {/* Es un vuelo radio buttons */}
+          <div className={styles.buttonGroup}>
+            <label className={styles.radioLabel}>
+              ¿Es un vuelo? <strong style={{ color: "red" }}>*</strong>
+            </label>
+            <div className={styles.radioOptions}>
+              <label className={styles.radioOption}>
+                <input
+                  type="radio"
+                  name="origenEsVuelo"
+                  value="yes"
+                  checked={tripFormData.origenEsVuelo === true}
+                  onChange={() => handleRadioChange("origenEsVuelo", true)}
                 />
-              </div>
-              <div className={styles.col}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.origenCalle}
-                  onChange={handleTripInputChange("origenCalle")}
-                  label="Calle"
-                  placeholder=""
-                  className={styles.input}
+                Sí
+              </label>
+              <label className={styles.radioOption}>
+                <input
+                  type="radio"
+                  name="origenEsVuelo"
+                  value="no"
+                  checked={tripFormData.origenEsVuelo === false}
+                  onChange={() => handleRadioChange("origenEsVuelo", false)}
                 />
-              </div>
-              <div className={styles.col}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.origenNumero}
-                  onChange={handleTripInputChange("origenNumero")}
-                  label="Número"
-                  placeholder=""
-                  className={styles.input}
-                />
-              </div>
+                No
+              </label>
             </div>
-
-            <div className={styles.row}>
-              <div className={styles.col}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.origenColonia}
-                  onChange={handleTripInputChange("origenColonia")}
-                  label="Colonia"
-                  placeholder=""
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.col}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.origenCodigoPostal}
-                  onChange={handleTripInputChange("origenCodigoPostal")}
-                  label="Código Postal"
-                  placeholder=""
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.col}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.origenCiudad}
-                  onChange={handleTripInputChange("origenCiudad")}
-                  label="Ciudad"
-                  placeholder=""
-                  className={styles.input}
-                />
-              </div>
-            </div>
-
-            <div className={styles.row}>
-              <div className={styles.col}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.origenEstado}
-                  onChange={handleTripInputChange("origenEstado")}
-                  label="Estado"
-                  placeholder=""
-                  className={styles.input}
-                />
-              </div>
-            </div>
-
-            <div className={styles.radioSection}>
-              <label className={styles.radioLabel}>¿Es un vuelo?</label>
-              <div className={styles.radioOptions}>
-                <label className={styles.radioOption}>
-                  <input
-                    type="radio"
-                    name="origenEsVuelo"
-                    checked={tripFormData.origenEsVuelo === true}
-                    onChange={() => handleRadioChange("origenEsVuelo", true)}
-                    className={styles.radioInput}
-                  />
-                  Sí
-                </label>
-                <label className={styles.radioOption}>
-                  <input
-                    type="radio"
-                    name="origenEsVuelo"
-                    checked={tripFormData.origenEsVuelo === false}
-                    onChange={() => handleRadioChange("origenEsVuelo", false)}
-                    className={styles.radioInput}
-                  />
-                  No
-                </label>
-              </div>
-            </div>
-
-            {tripFormData.origenEsVuelo && (
-              <div className={styles.flightSection}>
-                <div className={styles.row}>
-                  <div className={styles.col}>
-                    <InputComponent
-                      type="text"
-                      value={tripFormData.origenNumeroVuelo}
-                      onChange={handleTripInputChange("origenNumeroVuelo")}
-                      label="No. de vuelo"
-                      placeholder=""
-                      className={styles.input}
-                    />
-                  </div>
-                  <div className={styles.col}>
-                    <InputComponent
-                      type="text"
-                      value={tripFormData.origenAerolinea}
-                      onChange={handleTripInputChange("origenAerolinea")}
-                      label="Aerolínea"
-                      placeholder=""
-                      className={styles.input}
-                    />
-                  </div>
-                </div>
-                <div className={styles.row}>
-                  <div className={styles.col}>
-                    <InputComponent
-                      type="text"
-                      value={tripFormData.origenLugarVuelo}
-                      onChange={handleTripInputChange("origenLugarVuelo")}
-                      label="Lugar de origen del vuelo"
-                      placeholder=""
-                      className={styles.input}
-                    />
-                  </div>
-                  <div className={styles.col}>
-                    <div className={styles.textareaContainer}>
-                      <label className={styles.textareaLabel}>Notas</label>
-                      <textarea
-                        value={tripFormData.origenNotas}
-                        onChange={(e) =>
-                          setTripFormData((prev) => ({
-                            ...prev,
-                            origenNotas: e.target.value,
-                          }))
-                        }
-                        className={styles.textarea}
-                        rows={3}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Lugar de Destino Section */}
-          <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Lugar de Destino</h3>
-
-            <div className={styles.row}>
-              <div className={styles.col}>
-                <SelectComponent
-                  value={tripFormData.destinoNombreLugar}
-                  onChange={handleTripSelectChange("destinoNombreLugar")}
-                  options={lugares}
-                  label="Nombre Lugar *"
-                  placeholder="Seleccione..."
-                  required={true}
-                  className={styles.select}
-                />
-              </div>
-              <div className={styles.col}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.destinoCalle}
-                  onChange={handleTripInputChange("destinoCalle")}
-                  label="Calle"
-                  placeholder=""
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.col}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.destinoNumero}
-                  onChange={handleTripInputChange("destinoNumero")}
-                  label="Número"
-                  placeholder=""
-                  className={styles.input}
-                />
-              </div>
+          {tripFormData.origenEsVuelo && (
+            <div className={styles.section}>
+              <InputComponent
+                type="text"
+                value={tripFormData.origenNumeroVuelo || ""}
+                onChange={handleTripInputChange("origenNumeroVuelo")}
+                label={
+                  <p>
+                    Número de vuelo <strong style={{ color: "red" }}>*</strong>
+                  </p>
+                }
+                className={styles.input}
+              />
+              <InputComponent
+                type="text"
+                value={tripFormData.origenAerolinea || ""}
+                onChange={handleTripInputChange("origenAerolinea")}
+                label="Aerolínea"
+                className={styles.input}
+              />
+              <InputComponent
+                type="text"
+                value={tripFormData.origenLugarVuelo || ""}
+                onChange={handleTripInputChange("origenLugarVuelo")}
+                label="Lugar de vuelo"
+                className={styles.input}
+              />
             </div>
+          )}
 
-            <div className={styles.row}>
-              <div className={styles.col}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.destinoColonia}
-                  onChange={handleTripInputChange("destinoColonia")}
-                  label="Colonia"
-                  placeholder=""
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.col}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.destinoCodigoPostal}
-                  onChange={handleTripInputChange("destinoCodigoPostal")}
-                  label="Código Postal"
-                  placeholder=""
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.col}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.destinoCiudad}
-                  onChange={handleTripInputChange("destinoCiudad")}
-                  label="Ciudad"
-                  placeholder=""
-                  className={styles.input}
-                />
-              </div>
+          {tripFormData.origenEsVuelo && (
+            <div className={styles.section}>
+              <InputComponent
+                type="textarea"
+                value={tripFormData.origenNotas || ""}
+                onChange={handleTripInputChange("origenNotasAdicionales")}
+                label="Notas adicionales"
+                className={styles.textarea}
+              />
             </div>
+          )}
 
-            <div className={styles.row}>
-              <div className={styles.col}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.destinoEstado}
-                  onChange={handleTripInputChange("destinoEstado")}
-                  label="Estado"
-                  placeholder=""
-                  className={styles.input}
-                />
-              </div>
-            </div>
-
-            <div className={styles.radioSection}>
-              <label className={styles.radioLabel}>¿Es un vuelo?</label>
-              <div className={styles.radioOptions}>
-                <label className={styles.radioOption}>
-                  <input
-                    type="radio"
-                    name="destinoEsVuelo"
-                    checked={tripFormData.destinoEsVuelo === true}
-                    onChange={() => handleRadioChange("destinoEsVuelo", true)}
-                    className={styles.radioInput}
-                  />
-                  Sí
-                </label>
-                <label className={styles.radioOption}>
-                  <input
-                    type="radio"
-                    name="destinoEsVuelo"
-                    checked={tripFormData.destinoEsVuelo === false}
-                    onChange={() => handleRadioChange("destinoEsVuelo", false)}
-                    className={styles.radioInput}
-                  />
-                  No
-                </label>
-              </div>
-            </div>
-
-            {tripFormData.destinoEsVuelo && (
-              <div className={styles.flightSection}>
-                <div className={styles.row}>
-                  <div className={styles.col}>
-                    <InputComponent
-                      type="text"
-                      value={tripFormData.destinoNumeroVuelo}
-                      onChange={handleTripInputChange("destinoNumeroVuelo")}
-                      label="No. de vuelo"
-                      placeholder=""
-                      className={styles.input}
-                    />
-                  </div>
-                  <div className={styles.col}>
-                    <InputComponent
-                      type="text"
-                      value={tripFormData.destinoAerolinea}
-                      onChange={handleTripInputChange("destinoAerolinea")}
-                      label="Aerolínea"
-                      placeholder=""
-                      className={styles.input}
-                    />
-                  </div>
-                </div>
-                <div className={styles.row}>
-                  <div className={styles.col}>
-                    <InputComponent
-                      type="text"
-                      value={tripFormData.destinoLugarVuelo}
-                      onChange={handleTripInputChange("destinoLugarVuelo")}
-                      label="Lugar de origen del vuelo"
-                      placeholder=""
-                      className={styles.input}
-                    />
-                  </div>
-                  <div className={styles.col}>
-                    <div className={styles.textareaContainer}>
-                      <label className={styles.textareaLabel}>Notas</label>
-                      <textarea
-                        value={tripFormData.destinoNotas}
-                        onChange={(e) =>
-                          setTripFormData((prev) => ({
-                            ...prev,
-                            destinoNotas: e.target.value,
-                          }))
-                        }
-                        className={styles.textarea}
-                        rows={3}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+          <div className={styles.divider}>
+            <h2 className={styles.sectionTitle}>Destino</h2>
           </div>
 
-          {/* Viaje Section */}
           <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Viaje</h3>
+            <SelectComponent
+              label="Nombre lugar"
+              options={lugares}
+              value={tripFormData.destinoNombreLugar || ""}
+              onChange={handleTripSelectChange("destinoNombreLugar")}
+              required
+              className={styles.input}
+            />
+          </div>
+          <div className={styles.section}>
+            <InputComponent
+              type="text"
+              value={tripFormData.destinoCalle || ""}
+              onChange={handleTripInputChange("destinoCalle")}
+              label={
+                <p>
+                  Calle <strong style={{ color: "red" }}>*</strong>
+                </p>
+              }
+              containerClassName={styles.streetInputContainer}
+            />
+            <InputComponent
+              type="text"
+              value={tripFormData.destinoNumero || ""}
+              onChange={handleTripInputChange("destinoNumero")}
+              label={
+                <p>
+                  Número <strong style={{ color: "red" }}>*</strong>
+                </p>
+              }
+              containerClassName={styles.numberInputContainer}
+            />
+          </div>
+          <div className={styles.section}>
+            <InputComponent
+              type="text"
+              value={tripFormData.destinoColonia || ""}
+              onChange={handleTripInputChange("destinoColonia")}
+              label={
+                <p>
+                  Colonia <strong style={{ color: "red" }}>*</strong>
+                </p>
+              }
+              className={styles.input}
+              containerClassName={styles.streetInputContainer}
+            />
+            <InputComponent
+              type="text"
+              value={tripFormData.destinoCodigoPostal || ""}
+              onChange={handleTripInputChange("destinoCodigoPostal")}
+              label={
+                <p>
+                  Código Postal <strong style={{ color: "red" }}>*</strong>
+                </p>
+              }
+              className={styles.input}
+              containerClassName={styles.numberInputContainer}
+            />
+          </div>
+          <div className={styles.section}>
+            <InputComponent
+              type="text"
+              value={tripFormData.destinoCiudad || ""}
+              onChange={handleTripInputChange("destinoCiudad")}
+              label={
+                <p>
+                  Ciudad <strong style={{ color: "red" }}>*</strong>
+                </p>
+              }
+              className={styles.input}
+            />
+            <InputComponent
+              type="text"
+              value={tripFormData.destinoEstado || ""}
+              onChange={handleTripInputChange("destinoEstado")}
+              label={
+                <p>
+                  Estado <strong style={{ color: "red" }}>*</strong>
+                </p>
+              }
+              className={styles.input}
+            />
+          </div>
 
-            <div className={styles.radioSection}>
-              <label className={styles.radioLabel}>Tipo de viaje *</label>
+          <div className={styles.divider}>
+            <h2 className={styles.sectionTitle}>Viaje</h2>
+          </div>
+
+          <div className={styles.section}>
+            <InputComponent
+              type="number"
+              value={tripFormData.numeroPasajeros || ""}
+              onChange={handleTripInputChange("numeroPasajeros")}
+              label="No. de pasajeros"
+              className={styles.input}
+            />
+          </div>
+
+          <div className={styles.section}>
+            <div className={styles.buttonGroup}>
               <div className={styles.radioOptions}>
+                <label className={styles.radioLabel}>
+                  Tipo de viaje<strong style={{ color: "red" }}>*</strong>
+                </label>
                 <label className={styles.radioOption}>
                   <input
                     type="radio"
                     name="tipoViaje"
-                    value="sencillo"
-                    checked={tripFormData.tipoViaje === "sencillo"}
-                    onChange={handleTripInputChange("tipoViaje")}
-                    className={styles.radioInput}
+                    value="oneWay"
+                    checked={tripFormData.tipoViaje === "oneWay"}
+                    onChange={() =>
+                      setTripFormData((prev) => ({
+                        ...prev,
+                        tipoViaje: "oneWay",
+                      }))
+                    }
                   />
                   Sencillo
                 </label>
@@ -794,373 +664,215 @@ export default function CreateTripContent() {
                   <input
                     type="radio"
                     name="tipoViaje"
-                    value="redondo"
-                    checked={tripFormData.tipoViaje === "redondo"}
-                    onChange={handleTripInputChange("tipoViaje")}
-                    className={styles.radioInput}
+                    value="roundTrip"
+                    checked={tripFormData.tipoViaje === "roundTrip"}
+                    onChange={() =>
+                      setTripFormData((prev) => ({
+                        ...prev,
+                        tipoViaje: "roundTrip",
+                      }))
+                    }
                   />
                   Redondo
                 </label>
               </div>
             </div>
+          </div>
 
-            {/* Ida */}
-            <div className={styles.subSection}>
-              <h4 className={styles.subSectionTitle}>Ida</h4>
-              <div className={styles.row}>
-                <div className={styles.col}>
-                  <div className={styles.datePickerContainer}>
-                    <label className={styles.datePickerLabel}>Fecha *</label>
-                    <div className={styles.dateInputWrapper}>
-                      <input
-                        type="text"
-                        value={tripFormData.idaFecha}
-                        onChange={handleDateInputChange("idaFecha")}
-                        placeholder="DD/MM/YYYY"
-                        className={styles.dateInput}
-                      />
+          <div className={styles.divider}>
+            <h2 className={styles.subsectionTitle}>Ida</h2>
+          </div>
+
+          <div className={styles.section}>
+            <div className={styles.datePickerContainer}>
+              <DatePickerComponent
+                id="idaFecha"
+                label={
+                  <p>
+                    Fecha de ida <strong style={{ color: "red" }}>*</strong>
+                  </p>
+                }
+                value={tripFormData.idaFecha || ""}
+                onChange={(value) => {
+                  console.log("Date changed:", value);
+                  setTripFormData((prev) => ({
+                    ...prev,
+                    idaFecha: value,
+                  }));
+                }}
+                placeholder="dd/mm/yyyy"
+                minDate={new Date()}
+                required
+              />
+            </div>
+          </div>
+
+          <div className={styles.section}>
+            <div className={styles.timePickerContainer}>
+              <label className={styles.radioLabel}>Hora de ida</label>
+              <div className={styles.timePicker}>
+                <div className={styles.timeInput}>
+                  <button
+                    type="button"
+                    onClick={() => handleTimeIncrement("idaHora")}
+                    className={styles.timeButton}
+                  >
+                    <ChevronUpRegular />
+                  </button>
+                  <span className={styles.timeValue}>
+                    {String(tripFormData.idaHora || 12).padStart(2, "0")}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleTimeDecrement("idaHora")}
+                    className={styles.timeButton}
+                  >
+                    <ChevronDownRegular />
+                  </button>
+                </div>
+                <span className={styles.timeSeparator}>:</span>
+                <div className={styles.timeInput}>
+                  <button
+                    type="button"
+                    onClick={() => handleTimeIncrement("idaMinutos")}
+                    className={styles.timeButton}
+                  >
+                    <ChevronUpRegular />
+                  </button>
+                  <span className={styles.timeValue}>
+                    {String(tripFormData.idaMinutos || 0).padStart(2, "0")}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleTimeDecrement("idaMinutos")}
+                    className={styles.timeButton}
+                  >
+                    <ChevronDownRegular />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {tripFormData.tipoViaje === "roundTrip" && (
+            <>
+              <div className={styles.divider}>
+                <h2 className={styles.subsectionTitle}>Regreso</h2>
+              </div>
+
+              <div className={styles.section}>
+                <div className={styles.datePickerContainer}>
+                  <DatePickerComponent
+                    id="regresoFecha"
+                    label={
+                      <p>
+                        Fecha de regreso <strong style={{ color: "red" }}>*</strong>
+                      </p>
+                    }
+                    value={tripFormData.regresoFecha || ""}
+                    onChange={(value) => {
+                      console.log("Return date changed:", value);
+                      setTripFormData((prev) => ({
+                        ...prev,
+                        regresoFecha: value,
+                      }));
+                    }}
+                    placeholder="dd/mm/yyyy"
+                    minDate={
+                      tripFormData.idaFecha
+                        ? parseDDMMYYYYToDate(tripFormData.idaFecha) || new Date()
+                        : new Date()
+                    }
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className={styles.section}>
+                <div className={styles.timePickerContainer}>
+                  <label className={styles.radioLabel}>Hora de regreso</label>
+                  <div className={styles.timePicker}>
+                    <div className={styles.timeInput}>
                       <button
                         type="button"
-                        onClick={() => setShowIdaCalendar(!showIdaCalendar)}
-                        className={styles.calendarButton}
+                        onClick={() => handleTimeIncrement("regresoHora")}
+                        className={styles.timeButton}
                       >
-                        <CalendarLtrRegular />
+                        <ChevronUpRegular />
+                      </button>
+                      <span className={styles.timeValue}>
+                        {String(tripFormData.regresoHora || 12).padStart(2, "0")}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleTimeDecrement("regresoHora")}
+                        className={styles.timeButton}
+                      >
+                        <ChevronDownRegular />
                       </button>
                     </div>
-                    {showIdaCalendar && (
-                      <div className={styles.calendarDropdown}>
-                        <Calendar
-                          value={
-                            tripFormData.idaFecha
-                              ? parseDDMMYYYYToDate(tripFormData.idaFecha) ||
-                                undefined
-                              : undefined
-                          }
-                          onSelectDate={handleDateChange("idaFecha")}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className={styles.col}>
-                  <div className={styles.timeContainer}>
-                    <label className={styles.timeLabel}>Hora *</label>
-                    <div className={styles.timeInputs}>
-                      <div className={styles.timeInput}>
-                        <input
-                          type="number"
-                          value={tripFormData.idaHora}
-                          readOnly
-                          className={styles.timeValue}
-                        />
-                        <div className={styles.timeButtons}>
-                          <button
-                            type="button"
-                            onClick={() => handleTimeIncrement("idaHora")}
-                            className={styles.timeButton}
-                          >
-                            <ChevronUpRegular />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleTimeDecrement("idaHora")}
-                            className={styles.timeButton}
-                          >
-                            <ChevronDownRegular />
-                          </button>
-                        </div>
-                      </div>
-                      <span className={styles.timeSeparator}>:</span>
-                      <div className={styles.timeInput}>
-                        <input
-                          type="number"
-                          value={tripFormData.idaMinutos
-                            .toString()
-                            .padStart(2, "0")}
-                          readOnly
-                          className={styles.timeValue}
-                        />
-                        <div className={styles.timeButtons}>
-                          <button
-                            type="button"
-                            onClick={() => handleTimeIncrement("idaMinutos")}
-                            className={styles.timeButton}
-                          >
-                            <ChevronUpRegular />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleTimeDecrement("idaMinutos")}
-                            className={styles.timeButton}
-                          >
-                            <ChevronDownRegular />
-                          </button>
-                        </div>
-                      </div>
-                      <SelectComponent
-                        value={tripFormData.idaAmPm}
-                        onChange={handleTripSelectChange("idaAmPm")}
-                        options={[
-                          { value: "AM", label: "AM" },
-                          { value: "PM", label: "PM" },
-                        ]}
-                        label=""
-                        placeholder=""
-                        className={styles.amPmSelect}
-                      />
+                    <span className={styles.timeSeparator}>:</span>
+                    <div className={styles.timeInput}>
+                      <button
+                        type="button"
+                        onClick={() => handleTimeIncrement("regresoMinutos")}
+                        className={styles.timeButton}
+                      >
+                        <ChevronUpRegular />
+                      </button>
+                      <span className={styles.timeValue}>
+                        {String(tripFormData.regresoMinutos || 0).padStart(2, "0")}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleTimeDecrement("regresoMinutos")}
+                        className={styles.timeButton}
+                      >
+                        <ChevronDownRegular />
+                      </button>
                     </div>
                   </div>
                 </div>
-                <div className={styles.col}>
-                  <InputComponent
-                    type="number"
-                    value={tripFormData.idaPasajeros}
-                    onChange={handleTripInputChange("idaPasajeros")}
-                    label="No. de pasajeros *"
-                    className={styles.input}
-                  />
-                </div>
               </div>
-            </div>
+            </>
+          )}
 
-            {/* Regreso - Only if round trip */}
-            {tripFormData.tipoViaje === "redondo" && (
-              <div className={styles.subSection}>
-                <h4 className={styles.subSectionTitle}>Regreso</h4>
-                <div className={styles.row}>
-                  <div className={styles.col}>
-                    <div className={styles.datePickerContainer}>
-                      <label className={styles.datePickerLabel}>Fecha *</label>
-                      <div className={styles.dateInputWrapper}>
-                        <input
-                          type="text"
-                          value={tripFormData.regresoFecha}
-                          onChange={handleDateInputChange("regresoFecha")}
-                          placeholder="DD/MM/YYYY"
-                          className={styles.dateInput}
-                        />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setShowRegresoCalendar(!showRegresoCalendar)
-                          }
-                          className={styles.calendarButton}
-                        >
-                          <CalendarLtrRegular />
-                        </button>
-                      </div>
-                      {showRegresoCalendar && (
-                        <div className={styles.calendarDropdown}>
-                          <Calendar
-                            value={
-                              tripFormData.regresoFecha
-                                ? parseDDMMYYYYToDate(
-                                    tripFormData.regresoFecha
-                                  ) || undefined
-                                : undefined
-                            }
-                            onSelectDate={handleDateChange("regresoFecha")}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className={styles.col}>
-                    <div className={styles.timeContainer}>
-                      <label className={styles.timeLabel}>Hora *</label>
-                      <div className={styles.timeInputs}>
-                        <div className={styles.timeInput}>
-                          <input
-                            type="number"
-                            value={tripFormData.regresoHora}
-                            readOnly
-                            className={styles.timeValue}
-                          />
-                          <div className={styles.timeButtons}>
-                            <button
-                              type="button"
-                              onClick={() => handleTimeIncrement("regresoHora")}
-                              className={styles.timeButton}
-                            >
-                              <ChevronUpRegular />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleTimeDecrement("regresoHora")}
-                              className={styles.timeButton}
-                            >
-                              <ChevronDownRegular />
-                            </button>
-                          </div>
-                        </div>
-                        <span className={styles.timeSeparator}>:</span>
-                        <div className={styles.timeInput}>
-                          <input
-                            type="number"
-                            value={tripFormData.regresoMinutos
-                              .toString()
-                              .padStart(2, "0")}
-                            readOnly
-                            className={styles.timeValue}
-                          />
-                          <div className={styles.timeButtons}>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleTimeIncrement("regresoMinutos")
-                              }
-                              className={styles.timeButton}
-                            >
-                              <ChevronUpRegular />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleTimeDecrement("regresoMinutos")
-                              }
-                              className={styles.timeButton}
-                            >
-                              <ChevronDownRegular />
-                            </button>
-                          </div>
-                        </div>
-                        <SelectComponent
-                          value={tripFormData.regresoAmPm}
-                          onChange={handleTripSelectChange("regresoAmPm")}
-                          options={[
-                            { value: "AM", label: "AM" },
-                            { value: "PM", label: "PM" },
-                          ]}
-                          label=""
-                          placeholder=""
-                          className={styles.amPmSelect}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className={styles.col}>
-                    <InputComponent
-                      type="number"
-                      value={tripFormData.regresoPasajeros}
-                      onChange={handleTripInputChange("regresoPasajeros")}
-                      label="No. de pasajeros *"
-                      className={styles.input}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+          <div className={styles.divider}>
+            <h2 className={styles.sectionTitle}>Asignación</h2>
           </div>
 
-          {/* Chofer y unidad Section */}
           <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Chofer y unidad</h3>
-
-            <div className={styles.row}>
-              <div className={styles.col}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.tipoUnidad}
-                  onChange={handleTripInputChange("tipoUnidad")}
-                  label="Tipo de unidad"
-                  placeholder=""
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.col}>
-                <SelectComponent
-                  value={tripFormData.nombreChofer}
-                  onChange={handleTripSelectChange("nombreChofer")}
-                  options={choferes}
-                  label="Nombre del chofer"
-                  placeholder="Seleccione..."
-                  className={styles.select}
-                />
-              </div>
-              <div className={styles.col}>
-                <SelectComponent
-                  value={tripFormData.unidadAsignada}
-                  onChange={handleTripSelectChange("unidadAsignada")}
-                  options={unidades}
-                  label="Unidad asignada"
-                  placeholder="Seleccione..."
-                  className={styles.select}
-                />
-              </div>
-            </div>
-
-            <div className={styles.row}>
-              <div className={styles.col}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.placa}
-                  onChange={handleTripInputChange("placa")}
-                  label="Placa"
-                  placeholder=""
-                  className={styles.input}
-                />
-              </div>
-            </div>
-
-            <div className={styles.row}>
-              <div className={styles.col}>
-                <div className={styles.textareaContainer}>
-                  <label className={styles.textareaLabel}>
-                    Observaciones para el chofer
-                  </label>
-                  <textarea
-                    value={tripFormData.observacionesChofer}
-                    onChange={(e) =>
-                      setTripFormData((prev) => ({
-                        ...prev,
-                        observacionesChofer: e.target.value,
-                      }))
-                    }
-                    className={styles.textarea}
-                    rows={4}
-                  />
-                </div>
-              </div>
-              <div className={styles.col}>
-                <div className={styles.textareaContainer}>
-                  <label className={styles.textareaLabel}>
-                    Observaciones para el cliente
-                  </label>
-                  <textarea
-                    value={tripFormData.observacionesCliente}
-                    onChange={(e) =>
-                      setTripFormData((prev) => ({
-                        ...prev,
-                        observacionesCliente: e.target.value,
-                      }))
-                    }
-                    className={styles.textarea}
-                    rows={4}
-                  />
-                </div>
-              </div>
-            </div>
+            <SelectComponent
+              label="Chofer"
+              options={choferes}
+              value={tripFormData.nombreChofer || ""}
+              onChange={handleTripSelectChange("nombreChofer")}
+              className={styles.input}
+            />
+            <SelectComponent
+              label="Unidad"
+              options={unidades}
+              value={tripFormData.unidadAsignada || ""}
+              onChange={handleTripSelectChange("unidadAsignada")}
+              className={styles.input}
+            />
           </div>
 
-          <div className={styles.buttonContainer}>
-            <button
+          <div className={styles.actionButtons}>
+            <ButtonComponent
               type="button"
               onClick={handleCancel}
-              className={`${styles.button} ${styles.cancelButton}`}
-            >
-              Atras
-            </button>
+              text="Cancelar"
+            />
             <ButtonComponent
               type="button"
               onClick={handleSaveDraft}
-              text="Guardar y agregar otro viaje"
-              className={`${styles.button} ${styles.draftButton}`}
+              text="Guardar borrador"
             />
             <ButtonComponent
               type="button"
               onClick={handleCreateTrip}
-              text="Finalizar"
-              className={`${styles.button} ${styles.submitButton}`}
+              text="Crear viaje"
             />
           </div>
         </form>

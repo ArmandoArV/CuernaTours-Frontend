@@ -3,6 +3,7 @@
   min-height: 100vh;
   overflow-x: hidden;
   width: 100%;
+  background-color: #f5f5f5;
 }
 
 .container {
@@ -10,241 +11,45 @@
   width: 100%;
   max-width: 62.5rem;
   min-height: fit-content;
-  padding: 1rem;
+  padding: 2rem;
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
   flex-shrink: 0;
-  border-radius: 0.5rem 0.5rem 0 0;
-  background: var(--Main-FFFFFF, #fff);
+  border-radius: 0.5rem;
+  background: #ffffff;
   margin: 0 auto;
   box-sizing: border-box;
 }
-
-/* Tablet styles */
-@media (min-width: 768px) {
-  .main {
-    padding: 1.5rem;
-  }
-  
-  .container {
-    padding: 1.5rem;
-  }
+.form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-sizing: border-box;
+  margin-top: 2em;
 }
 
-/* Desktop styles */
-@media (min-width: 1024px) {
-  .main {
-    padding: 20px;
-  }
-}
-
-/* Mobile-specific improvements */
-@media (max-width: 480px) {
-  .main {
-    padding: 0.5rem;
-  }
-  
-  .container {
-    padding: 0.75rem;
-    border-radius: 0;
-  }
-  
-  .backButton {
-    margin: 0.25em;
-    touch-action: manipulation;
-  }
-  
-  .button {
-    padding: 1rem 1.5rem;
-    font-size: 1.1rem;
-    touch-action: manipulation;
-    min-height: 44px; /* Minimum touch target size */
-  }
-  
-  .radioInput {
-    margin: 0.25rem;
-    transform: scale(1.2); /* Larger touch targets */
-  }
-  
-  .radioOption {
-    padding: 0.5rem 0;
-    min-height: 44px;
-    align-items: center;
-  }
-  
-  .title {
-    font-size: 1.25rem;
-    line-height: 1.2;
-  }
-  
-  .subtitle {
-    font-size: 0.8rem;
-    line-height: 1.3;
-  }
-}
-
-/* Ensure inputs and selects are responsive */
-.input, .select {
+.input {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
 }
 
-/* Date picker styles */
-.datePickerContainer {
-  position: relative;
-  width: 100%;
-}
-
-.datePickerLabel {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
-  font-size: 0.9rem;
-}
-
-.dateInputWrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.dateInput {
-  flex: 1;
-  padding: 0.75rem 2.5rem 0.75rem 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 0.25rem;
-  font-size: 0.9rem;
-  font-family: inherit;
-  box-sizing: border-box;
-  background-color: white;
-}
-
-.dateInput:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 1px #3b82f6;
-}
-
-.calendarButton {
-  position: absolute;
-  right: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
-  font-size: 1.1rem;
-  z-index: 1;
-}
-
-.calendarButton:hover {
-  color: #3b82f6;
-}
-
-.calendarDropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  z-index: 1000;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 0.25rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  margin-top: 0.25rem;
-}
-
-/* Tablet styles for date picker */
-@media (min-width: 768px) {
-  .datePickerLabel {
-    font-size: 1rem;
-  }
-  
-  .dateInput {
-    font-size: 1rem;
-  }
-}
-
-/* Additional responsive utilities */
 .section {
   display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 0.5rem;
-  box-sizing: border-box;
-}
-
-.textareaContainer {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 0.5rem;
-  box-sizing: border-box;
-}
-
-.textareaLabel {
-  font-weight: 500;
-  color: #333;
-  font-size: 0.9rem;
-}
-
-.textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 0.25rem;
-  font-family: inherit;
-  font-size: 0.9rem;
-  resize: vertical;
-  min-height: 100px;
-  box-sizing: border-box;
-}
-
-.buttonContainer {
-  display: flex;
-  flex-direction: column;
   gap: 1rem;
-  margin-top: 2rem;
   width: 100%;
-  box-sizing: border-box;
+  align-items: flex-end;
 }
 
-.button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 0.25rem;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  width: 100%;
-  box-sizing: border-box;
+.streetInputContainer {
+  flex: 1;
+  min-width: 0;
 }
 
-.cancelButton {
-  background-color: #f3f4f6;
-  color: #374151;
-}
-
-.cancelButton:hover {
-  background-color: #e5e7eb;
-}
-
-.nextButton {
-  background-color: #3b82f6;
-  color: white;
-}
-
-.nextButton:hover {
-  background-color: #2563eb;
+.numberInputContainer {
+  flex: 0 0 8rem;
 }
 
 .radioGroup {
@@ -258,12 +63,15 @@
   color: #333;
   font-size: 0.9rem;
   margin-bottom: 0.5rem;
+  width: 7em;
 }
 
 .radioOptions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.25rem;
+  align-items: flex-start; /* ensure options start from same edge */
+  justify-content: flex-start;
 }
 
 .radioOption {
@@ -272,328 +80,79 @@
   gap: 0.5rem;
   font-size: 0.9rem;
   cursor: pointer;
+  justify-content: flex-start; /* keep input and label together on the left */
 }
 
-.title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #111;
-  margin: 0;
-}
-
-.subtitle {
-  font-size: 0.9rem;
-  color: #666;
-  margin: 0.5rem 0 0 0;
-}
-
-.textarea{
-  font-size: 0.9rem;
-  background-color: transparent;
-  color: #000000;
-}
-
-
-/* Tablet styles for buttons and form elements */
-@media (min-width: 768px) {
-  .buttonContainer {
-    flex-direction: row;
-    justify-content: flex-end;
-    gap: 1rem;
-  }
-  
-  .button {
-    width: auto;
-    min-width: 120px;
-  }
-  
-  .radioOptions {
-    flex-direction: row;
-    gap: 1rem;
-  }
-  
-  .title {
-    font-size: 1.75rem;
-  }
-  
-  .subtitle {
-    font-size: 1rem;
-  }
-  
-  .textareaLabel {
-    font-size: 1rem;
-  }
-  
-  .textarea {
-    font-size: 1rem;
-  }
-  
-  .radioLabel {
-    font-size: 1rem;
-  }
-  
-  .radioOption {
-    font-size: 1rem;
-  }
-}
-
-.backButton {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  width: 2.5rem;
-  height: 2.5rem;
-  margin: 0.5em;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 2rem;
-}
-
-.radioInput {
-  margin: 0.5rem;
-  font-size: 1.2rem;
-  cursor: pointer;
-  display: inline-block;
-  width: auto;
-  height: auto;
-  accent-color: #000000;
-  background: #fff;
-}
-
-/* Tablet and desktop styles for radio inputs */
-@media (min-width: 768px) {
-  .radioInput {
-    margin: 0.8rem;
-    font-size: 1.8rem;
-  }
-}
-
-.radioGroupHorizontal {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  width: 100%;
-  height: auto;
-  gap: 0.5rem;
-}
-
-.radioLabelHorizontal {
-  width: 100%;
-  font-weight: 500;
-}
-
-/* Tablet and desktop styles for horizontal radio groups */
-@media (min-width: 768px) {
-  .radioGroupHorizontal {
-    flex-direction: row;
-    align-items: center;
-    width: 18em;
-  }
-  
-  .radioLabelHorizontal {
-    width: 60%;
-  }
-}
-
-.header {
-  display: flex;
-  width: 100%;
-  min-height: fit-content;
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* Tablet and desktop styles for header */
-@media (min-width: 768px) {
-  .header {
-    flex-direction: row;
-    align-items: center;
-    height: 20%;
-  }
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 1rem;
-  margin-top: 1rem;
-  flex: 1;
-  min-height: fit-content;
-  box-sizing: border-box;
-}
-
-/* Tablet and desktop styles for form */
-@media (min-width: 768px) {
-  .form {
-    gap: 1.5rem;
-  }
-}
-
-.row {
-  display: flex;
-  width: 100%;
-  gap: 1rem;
-  flex-direction: column;
-  align-items: stretch;
-  box-sizing: border-box;
-}
-
-.col {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 1rem;
-  box-sizing: border-box;
-}
-
-/* Time picker styles */
-.timeContainer {
+.buttonGroup {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-.timeLabel {
-  font-weight: 500;
-  color: #333;
-  font-size: 0.9rem;
-}
-
-.timeInputs {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.timeInput {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-
-.timeValue {
-  width: 3rem;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 0.25rem;
-  text-align: center;
-  font-size: 0.9rem;
-  background-color: #f9f9f9;
-}
-
-.timeButtons {
-  position: absolute;
-  right: 0.25rem;
-  top: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.timeButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
-  font-size: 0.8rem;
-}
-
-.timeButton:hover {
-  color: #3b82f6;
-}
-
-.timeSeparator {
-  font-weight: bold;
-  font-size: 1.2rem;
-  color: #333;
-}
-
-.amPmSelect {
-  min-width: 4rem;
-}
-
-/* Section titles */
-.sectionTitle {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.subSection {
   margin: 1rem 0;
 }
 
-.subSectionTitle {
+.divider {
+  width: 100%;
+  height: 1px;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.datePickerContainer {
+  position: relative;
+  width: 100%;
+}
+
+.dateInput {
+  position: relative;
+  width: 100%;
+}
+
+.dateInputField {
+  width: 100%;
+  cursor: text; /* allow text caret and typing */
+}
+
+.calendarButton {
+  position: absolute;
+  right: 0.75rem; /* Position from the right edge */
+  top: 50%; /* Start the top of the button at the vertical center of the parent */
+  background-color: transparent;
+  border: none;
+}
+
+.calendarButton:hover {
+  background-color: #f0f0f0;
+}
+
+.calendarDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #e1e1e1;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 0.25rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 1rem 0;
+}
+
+.subsectionTitle {
   font-size: 1rem;
   font-weight: 500;
   color: #666;
-  margin-bottom: 0.75rem;
+  margin: 0 0 0.5rem 0;
 }
 
-/* Radio section styles */
-.radioSection {
-  margin: 1rem 0;
+.textarea {
+  width: 100%;
+  min-height: 4rem;
+  resize: vertical;
 }
 
-.flightSection {
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: #f8f9fa;
-  border-radius: 0.25rem;
-  border: 1px solid #e9ecef;
-}
-
-.orderSummary {
-  padding: 1rem;
-  background-color: #f8f9fa;
-  border-radius: 0.25rem;
-  border: 1px solid #e9ecef;
-}
-
-.orderSummary p {
-  margin: 0.25rem 0;
-  font-size: 0.9rem;
-}
-
-/* Tablet styles for time picker */
-@media (min-width: 768px) {
-  .timeLabel {
-    font-size: 1rem;
-  }
-  
-  .timeValue {
-    font-size: 1rem;
-  }
-  
-  .sectionTitle {
-    font-size: 1.4rem;
-  }
-  
-  .subSectionTitle {
-    font-size: 1.1rem;
-  }
-}
-
-/* Tablet and desktop styles for rows and columns */
-@media (min-width: 768px) {
-  .row {
-    flex-direction: row;
-    gap: 1.5rem;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  .col {
-    gap: 1.5rem;
-  }
-}

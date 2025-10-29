@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 export default function CreateOrderContent() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const { orderData, setOrderData } = useOrderContext();
-    const router = useRouter();
+  const router = useRouter();
 
   // Use context data as form data
   const [formData, setFormData] = useState(orderData);
@@ -285,7 +285,7 @@ export default function CreateOrderContent() {
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <Link href="/dashboard" passHref>
+          <Link href="/dashboard/createOrder" passHref>
             <button className={styles.backButton}>
               <ArrowHookUpLeftRegular color="black" />
             </button>
@@ -299,7 +299,7 @@ export default function CreateOrderContent() {
           </div>
         </div>
         <form className={styles.form}>
-          <div className={styles.section}>
+          <div className={styles.placeSection}>
             <SelectComponent
               value={formData.empresa}
               onChange={handleSelectChange("empresa")}

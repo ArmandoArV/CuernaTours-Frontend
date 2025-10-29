@@ -8,7 +8,9 @@ import { LoginUserType } from "@/app/Types/LoginUserType";
 import Link from "next/link";
 import { showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
 import { setCookie } from "@/app/Utils/CookieUtil";
+import { useRouter } from "next/navigation";
 export default function HomeWrapper() {
+  const router = useRouter();
   const [formData, setFormData] = React.useState<LoginUserType>({
     email: "",
     password: "",
@@ -100,7 +102,7 @@ export default function HomeWrapper() {
           `Bienvenido, ${data.data.user.display_name}!`,
           () => {
             // Redirect to dashboard after alert is closed
-            window.location.href = "/dashboard";
+            router.push("/dashboard");
           }
         );
       } else {
