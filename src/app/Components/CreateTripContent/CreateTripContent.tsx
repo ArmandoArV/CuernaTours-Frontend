@@ -13,68 +13,16 @@ import { Calendar } from "@fluentui/react-calendar-compat";
 import Link from "next/link";
 import { showErrorAlert, showSuccessAlert } from "@/app/Utils/AlertUtil";
 import { getCookie } from "@/app/Utils/CookieUtil";
+import { mapTripFormToPayload, mapOrderFormToPayload, OrderFormData } from "@/app/Types/OrderTripTypes";
+import { useOrderContext } from "@/app/Contexts/OrderContext";
+import ButtonComponent from "../ButtonComponent/ButtonComponent";
 
 export default function CreateTripContent() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-  // Order data from previous step
-  const [orderData, setOrderData] = useState<any>(null);
+  const { orderData, tripData, setTripData, clearData } = useOrderContext();
 
   // Trip-specific form data
-  const [tripFormData, setTripFormData] = useState({
-    // Lugar de Origen
-    origenNombreLugar: "",
-    origenCalle: "",
-    origenNumero: "",
-    origenColonia: "",
-    origenCodigoPostal: "",
-    origenCiudad: "",
-    origenEstado: "",
-    origenEsVuelo: false,
-    origenNumeroVuelo: "",
-    origenAerolinea: "",
-    origenLugarVuelo: "",
-    origenNotas: "",
-
-    // Lugar de Destino
-    destinoNombreLugar: "",
-    destinoCalle: "",
-    destinoNumero: "",
-    destinoColonia: "",
-    destinoCodigoPostal: "",
-    destinoCiudad: "",
-    destinoEstado: "",
-    destinoEsVuelo: false,
-    destinoNumeroVuelo: "",
-    destinoAerolinea: "",
-    destinoLugarVuelo: "",
-    destinoNotas: "",
-
-    // Viaje
-    tipoViaje: "sencillo", // sencillo | redondo
-
-    // Ida
-    idaFecha: "",
-    idaHora: 8,
-    idaMinutos: 0,
-    idaAmPm: "AM",
-    idaPasajeros: "",
-
-    // Regreso (solo si es redondo)
-    regresoFecha: "",
-    regresoHora: 8,
-    regresoMinutos: 0,
-    regresoAmPm: "AM",
-    regresoPasajeros: "",
-
-    // Chofer y unidad
-    tipoUnidad: "",
-    nombreChofer: "",
-    unidadAsignada: "",
-    placa: "",
-    observacionesChofer: "",
-    observacionesCliente: "",
-  });
+  const [tripFormData, setTripFormData] = useState(tripData);
 
   // Dropdown data
   const [lugares, setLugares] = useState<
@@ -197,33 +145,53 @@ export default function CreateTripContent() {
     }
   }, [API_URL]);
 
-  // Load order data from localStorage when component mounts
+  // Load data and sync with context
   useEffect(() => {
-    const storedOrderData = localStorage.getItem("orderFormData");
-    if (storedOrderData) {
-      try {
-        const parsedData = JSON.parse(storedOrderData);
-        setOrderData(parsedData);
-      } catch (error) {
-        console.error("Error parsing order data:", error);
-        showErrorAlert("Error", "Error al cargar los datos del pedido");
+    console.log("CreateTripContent - OrderData:", orderData);
+    console.log("CreateTripContent - TripData:", tripData);
+    
+    // Give context some time to load, then check
+    const checkOrderData = () => {
+      // Also check localStorage for debugging
+      const localStorageData = typeof window !== 'undefined' ? localStorage.getItem('orderData') : null;
+      console.log("LocalStorage orderData:", localStorageData);
+      
+      // Check if orderData exists and has required fields
+      const hasOrderData = orderData && 
+        (orderData.empresa || 
+         orderData.nombreContacto || 
+         orderData.costoViaje);
+         
+      if (!hasOrderData) {
+        console.log("No order data found, redirecting...");
+        console.log("Available orderData:", orderData);
+        console.log("Checking localStorage directly:", localStorageData);
+        showErrorAlert(
+          "Error",
+          "No se encontraron datos del pedido. Redirigiendo..."
+        );
+        setTimeout(() => {
+          window.location.href = "/dashboard/createOrder";
+        }, 2000);
+        return;
       }
-    } else {
-      // Redirect back if no order data found
-      showErrorAlert(
-        "Error",
-        "No se encontraron datos del pedido. Redirigiendo..."
-      );
-      setTimeout(() => {
-        window.location.href = "/dashboard/createOrder";
-      }, 2000);
-    }
+      
+      console.log("Order data validation passed, proceeding...");
+    };
+
+    // Delay the check to allow context to load
+    const timeoutId = setTimeout(checkOrderData, 500); // Increased delay
+
+    // Sync form data with context data
+    setTripFormData(tripData);
 
     // Fetch dropdown data
     fetchLugares();
     fetchChoferes();
     fetchUnidades();
-  }, [fetchLugares, fetchChoferes, fetchUnidades]);
+
+    return () => clearTimeout(timeoutId);
+  }, [fetchLugares, fetchChoferes, fetchUnidades, orderData, tripData]);
 
   // Close calendars when clicking outside
   useEffect(() => {
@@ -321,7 +289,8 @@ export default function CreateTripContent() {
     };
 
   const handleDateInputChange =
-    (field: "idaFecha" | "regresoFecha") => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (field: "idaFecha" | "regresoFecha") =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       setTripFormData((prev) => ({
         ...prev,
         [field]: e.target.value,
@@ -329,39 +298,107 @@ export default function CreateTripContent() {
     };
 
   const handleCancel = () => {
-    // Clear stored data and go back
-    localStorage.removeItem("orderFormData");
+    // Save current trip data before going back
+    setTripData(tripFormData);
     window.location.href = "/dashboard/createOrder";
   };
 
-  const handleSubmit = async () => {
+  const handleSaveDraft = () => {
+    // Update context with current trip data
+    setTripData(tripFormData);
+    showSuccessAlert("Guardado", "Borrador guardado correctamente");
+  };
+
+  const handleCreateTrip = async () => {
     try {
-      // Combine order data and trip data for the final POST request
-      const completeData = {
-        order: orderData,
-        trip: tripFormData,
+      // Validate required fields
+      if (!orderData) {
+        showErrorAlert("Error", "No se encontraron datos del pedido");
+        return;
+      }
+
+      if (
+        !tripFormData.idaFecha ||
+        !tripFormData.origenNombreLugar ||
+        !tripFormData.destinoNombreLugar
+      ) {
+        showErrorAlert(
+          "Error",
+          "Por favor complete todos los campos obligatorios"
+        );
+        return;
+      }
+
+      // Get access token from cookies
+      const accessToken = getCookie("accessToken");
+
+      // Prepare headers
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
       };
 
-      console.log("Complete form data:", completeData);
+      // Add authorization header if token exists
+      if (accessToken) {
+        headers["Authorization"] = `Bearer ${accessToken}`;
+      }
 
-      // Here you would make the POST request to your API
-      // const response = await fetch(`${API_URL}/api/create-order-trip`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(completeData),
-      // });
+      // Step 1: Create contract first
+      const orderPayload = mapOrderFormToPayload(orderData as OrderFormData);
+      console.log("Order payload:", orderPayload);
 
-      showSuccessAlert("Éxito", "Orden y viaje creados correctamente");
-      localStorage.removeItem("orderFormData");
-      // Redirect to dashboard or order list
-      window.location.href = "/dashboard";
+      const orderResponse = await fetch(`${API_URL}/contracts/create`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(orderPayload),
+      });
+
+      if (!orderResponse.ok) {
+        throw new Error(`Contract API Error: ${orderResponse.status}`);
+      }
+
+      const orderResult = await orderResponse.json();
+      
+      if (!orderResult.success) {
+        throw new Error(orderResult.message || "Error al crear el contrato");
+      }
+
+      const contractId = orderResult.data.contract_id || orderResult.data.id;
+
+      // Step 2: Create trip with the new contract ID
+      const tripPayload = mapTripFormToPayload(tripFormData, contractId);
+      console.log("Trip payload:", tripPayload);
+
+      const tripResponse = await fetch(`${API_URL}/trips`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(tripPayload),
+      });
+
+      if (!tripResponse.ok) {
+        throw new Error(`Trip API Error: ${tripResponse.status}`);
+      }
+
+      const tripResult = await tripResponse.json();
+      
+      if (tripResult.success) {
+        showSuccessAlert("Éxito", "Contrato y viaje creados correctamente");
+        clearData(); // Clear context data
+        // Redirect to dashboard
+        window.location.href = "/dashboard";
+      } else {
+        throw new Error(tripResult.message || "Error al crear el viaje");
+      }
     } catch (error) {
-      console.error("Error creating order and trip:", error);
-      showErrorAlert("Error", "Error al crear la orden y el viaje");
+      console.error("Error creating contract and trip:", error);
+      showErrorAlert(
+        "Error",
+        error instanceof Error ? error.message : "Error al crear el contrato y viaje"
+      );
     }
   };
+
+  // Keep the old handleSubmit for backward compatibility (if needed)
+  const handleSubmit = handleCreateTrip;
 
   return (
     <main className={styles.main}>
@@ -795,7 +832,8 @@ export default function CreateTripContent() {
                         <Calendar
                           value={
                             tripFormData.idaFecha
-                              ? parseDDMMYYYYToDate(tripFormData.idaFecha) || undefined
+                              ? parseDDMMYYYYToDate(tripFormData.idaFecha) ||
+                                undefined
                               : undefined
                           }
                           onSelectDate={handleDateChange("idaFecha")}
@@ -903,7 +941,9 @@ export default function CreateTripContent() {
                         />
                         <button
                           type="button"
-                          onClick={() => setShowRegresoCalendar(!showRegresoCalendar)}
+                          onClick={() =>
+                            setShowRegresoCalendar(!showRegresoCalendar)
+                          }
                           className={styles.calendarButton}
                         >
                           <CalendarLtrRegular />
@@ -914,7 +954,9 @@ export default function CreateTripContent() {
                           <Calendar
                             value={
                               tripFormData.regresoFecha
-                                ? parseDDMMYYYYToDate(tripFormData.regresoFecha) || undefined
+                                ? parseDDMMYYYYToDate(
+                                    tripFormData.regresoFecha
+                                  ) || undefined
                                 : undefined
                             }
                             onSelectDate={handleDateChange("regresoFecha")}
@@ -1106,15 +1148,20 @@ export default function CreateTripContent() {
               onClick={handleCancel}
               className={`${styles.button} ${styles.cancelButton}`}
             >
-              Cancelar
+              Atras
             </button>
-            <button
+            <ButtonComponent
               type="button"
-              onClick={handleSubmit}
-              className={`${styles.button} ${styles.nextButton}`}
-            >
-              Crear Orden y Viaje
-            </button>
+              onClick={handleSaveDraft}
+              text="Guardar y agregar otro viaje"
+              className={`${styles.button} ${styles.draftButton}`}
+            />
+            <ButtonComponent
+              type="button"
+              onClick={handleCreateTrip}
+              text="Finalizar"
+              className={`${styles.button} ${styles.submitButton}`}
+            />
           </div>
         </form>
       </div>

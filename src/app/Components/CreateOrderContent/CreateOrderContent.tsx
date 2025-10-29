@@ -5,31 +5,18 @@ import InputComponent from "../InputComponent/InputComponent";
 import SelectComponent from "../SelectComponent/SelectComponent";
 import { ArrowHookUpLeftRegular } from "@fluentui/react-icons";
 import Link from "next/link";
-import { showErrorAlert } from "../../Utils/AlertUtil";
+import { showErrorAlert, showSuccessAlert } from "../../Utils/AlertUtil";
 import { getCookie } from "@/app/Utils/CookieUtil";
+import { OrderFormData, mapOrderFormToPayload } from "@/app/Types/OrderTripTypes";
+import { useOrderContext } from "@/app/Contexts/OrderContext";
+import { useRouter } from "next/navigation";
 export default function CreateOrderContent() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const { orderData, setOrderData } = useOrderContext();
+    const router = useRouter();
 
-  const [formData, setFormData] = useState({
-    empresa: "",
-    nombreContacto: "",
-    primerApellido: "",
-    segundoApellido: "",
-    telefono: "",
-    tieneWhatsapp: "Si",
-    correoElectronico: "",
-    comentarios: "",
-    tipoPago: "",
-    aplicaIva: "Si",
-    costoViaje: "",
-    llevaComision: "Si",
-    nombreRecibeComision: "",
-    tipoComision: "Porcentaje",
-    porcentaje: "",
-    montoArreglado: "",
-    coordinadorViaje: "",
-    observacionesInternas: "",
-  });
+  // Use context data as form data
+  const [formData, setFormData] = useState(orderData);
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showErrors, setShowErrors] = useState(false);
@@ -225,10 +212,15 @@ export default function CreateOrderContent() {
 
   const handleNext = () => {
     if (validateForm()) {
-      // Store order data in localStorage for the trip creation step
-      localStorage.setItem("orderFormData", JSON.stringify(formData));
-      // Proceed to next step
-      window.location.href = "/dashboard/createOrder/createTrip";
+      console.log("Saving form data to context:", formData);
+      // Update context with current form data
+      setOrderData(formData);
+      
+      // Give a small delay to ensure context is updated
+      setTimeout(() => {
+        // Proceed to next step
+        router.push("/dashboard/createOrder/createTrip");
+      }, 100);
     }
   };
 
@@ -278,7 +270,16 @@ export default function CreateOrderContent() {
 
   useEffect(() => {
     fetchClients();
-  }, [fetchClients]);
+    
+    // Sync form data with context data
+    console.log("CreateOrderContent - OrderData from context:", orderData);
+    setFormData(orderData);
+  }, [fetchClients, orderData]);
+
+  // Also sync when formData changes
+  useEffect(() => {
+    console.log("CreateOrderContent - FormData changed:", formData);
+  }, [formData]);
 
   return (
     <main className={styles.main}>
