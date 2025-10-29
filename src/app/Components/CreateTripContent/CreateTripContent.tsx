@@ -172,7 +172,7 @@ export default function CreateTripContent() {
     const timeoutId = setTimeout(checkOrderData, 500);
 
     // Sync form data with context data, ensuring proper defaults
-    setTripFormData(prev => ({
+    setTripFormData((prev) => ({
       ...prev,
       ...tripData,
       numeroPasajeros: tripData.regresoPasajeros || prev.numeroPasajeros || "",
@@ -682,143 +682,90 @@ export default function CreateTripContent() {
           <div className={styles.divider}>
             <h2 className={styles.subsectionTitle}>Ida</h2>
           </div>
-
           <div className={styles.section}>
-            <div className={styles.datePickerContainer}>
-              <DatePickerComponent
-                id="idaFecha"
-                label="Fecha de ida"
-                value={tripFormData.idaFecha || ""}
-                onChange={(value) => {
-                  console.log("Date changed:", value);
-                  setTripFormData((prev) => ({
-                    ...prev,
-                    idaFecha: value,
-                  }));
-                }}
-                placeholder="dd/mm/yyyy"
-                required
-              />
-            </div>
+            <DatePickerComponent
+              id="idaFecha"
+              label="Fecha"
+              value={tripFormData.idaFecha || ""}
+              onChange={(value) => {
+                console.log("Date changed:", value);
+                setTripFormData((prev) => ({
+                  ...prev,
+                  idaFecha: value,
+                }));
+              }}
+              placeholder="dd/mm/yyyy"
+              required
+            />
+            <InputComponent
+              type="number"
+              value={String(tripFormData.idaHora ?? "")}
+              onChange={handleTripInputChange("idaHora")}
+              label="Hora"
+              className={styles.input}
+            />
+            <InputComponent
+              type="number"
+              value={String(tripFormData.idaMinutos ?? "")}
+              onChange={handleTripInputChange("idaMinutos")}
+              label="Minutos"
+              className={styles.input}
+            />
+            <SelectComponent
+              label="AM/PM"
+              options={[
+                { value: "AM", label: "AM" },
+                { value: "PM", label: "PM" },
+              ]}
+              value={tripFormData.idaAmPm || "AM"}
+              onChange={handleTripSelectChange("idaAmPm")}
+              className={styles.input}
+            />
           </div>
-
-          <div className={styles.section}>
-            <div className={styles.timePickerContainer}>
-              <label className={styles.radioLabel}>Hora de ida</label>
-              <div className={styles.timePicker}>
-                <div className={styles.timeInput}>
-                  <button
-                    type="button"
-                    onClick={() => handleTimeIncrement("idaHora")}
-                    className={styles.timeButton}
-                  >
-                    <ChevronUpRegular />
-                  </button>
-                  <span className={styles.timeValue}>
-                    {String(tripFormData.idaHora || 12).padStart(2, "0")}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleTimeDecrement("idaHora")}
-                    className={styles.timeButton}
-                  >
-                    <ChevronDownRegular />
-                  </button>
-                </div>
-                <span className={styles.timeSeparator}>:</span>
-                <div className={styles.timeInput}>
-                  <button
-                    type="button"
-                    onClick={() => handleTimeIncrement("idaMinutos")}
-                    className={styles.timeButton}
-                  >
-                    <ChevronUpRegular />
-                  </button>
-                  <span className={styles.timeValue}>
-                    {String(tripFormData.idaMinutos || 0).padStart(2, "0")}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleTimeDecrement("idaMinutos")}
-                    className={styles.timeButton}
-                  >
-                    <ChevronDownRegular />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {tripFormData.tipoViaje === "roundTrip" && (
             <>
               <div className={styles.divider}>
                 <h2 className={styles.subsectionTitle}>Regreso</h2>
               </div>
-
               <div className={styles.section}>
-                <div className={styles.datePickerContainer}>
-                  <DatePickerComponent
-                    id="regresoFecha"
-                    label="Fecha de regreso *"
-                    value={tripFormData.regresoFecha || ""}
-                    onChange={(value) => {
-                      console.log("Return date changed:", value);
-                      setTripFormData((prev) => ({
-                        ...prev,
-                        regresoFecha: value,
-                      }));
-                    }}
-                    placeholder="dd/mm/yyyy"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className={styles.section}>
-                <div className={styles.timePickerContainer}>
-                  <label className={styles.radioLabel}>Hora de regreso</label>
-                  <div className={styles.timePicker}>
-                    <div className={styles.timeInput}>
-                      <button
-                        type="button"
-                        onClick={() => handleTimeIncrement("regresoHora")}
-                        className={styles.timeButton}
-                      >
-                        <ChevronUpRegular />
-                      </button>
-                      <span className={styles.timeValue}>
-                        {String(tripFormData.regresoHora || 12).padStart(2, "0")}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleTimeDecrement("regresoHora")}
-                        className={styles.timeButton}
-                      >
-                        <ChevronDownRegular />
-                      </button>
-                    </div>
-                    <span className={styles.timeSeparator}>:</span>
-                    <div className={styles.timeInput}>
-                      <button
-                        type="button"
-                        onClick={() => handleTimeIncrement("regresoMinutos")}
-                        className={styles.timeButton}
-                      >
-                        <ChevronUpRegular />
-                      </button>
-                      <span className={styles.timeValue}>
-                        {String(tripFormData.regresoMinutos || 0).padStart(2, "0")}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleTimeDecrement("regresoMinutos")}
-                        className={styles.timeButton}
-                      >
-                        <ChevronDownRegular />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <DatePickerComponent
+                  id="regresoFecha"
+                  label="Fecha de regreso *"
+                  value={tripFormData.regresoFecha || ""}
+                  onChange={(value) => {
+                    console.log("Return date changed:", value);
+                    setTripFormData((prev) => ({
+                      ...prev,
+                      regresoFecha: value,
+                    }));
+                  }}
+                  placeholder="dd/mm/yyyy"
+                  required
+                />
+                <InputComponent
+                  type="number"
+                  value={String(tripFormData.regresoHora ?? "")}
+                  onChange={handleTripInputChange("regresoHora")}
+                  label="Hora"
+                  className={styles.input}
+                />
+                <InputComponent
+                  type="number"
+                  value={String(tripFormData.regresoMinutos ?? "")}
+                  onChange={handleTripInputChange("regresoMinutos")}
+                  label="Minutos"
+                  className={styles.input}
+                />
+                <SelectComponent
+                  label="AM/PM"
+                  options={[
+                    { value: "AM", label: "AM" },
+                    { value: "PM", label: "PM" },
+                  ]}
+                  value={tripFormData.regresoAmPm || "AM"}
+                  onChange={handleTripSelectChange("regresoAmPm")}
+                  className={styles.input}
+                />
               </div>
             </>
           )}
@@ -827,6 +774,20 @@ export default function CreateTripContent() {
             <h2 className={styles.sectionTitle}>Asignación</h2>
           </div>
 
+          <div className={styles.section}>
+            <InputComponent
+              type="text"
+              value={tripFormData.tipoUnidad || ""}
+              onChange={handleTripInputChange("tipoUnidad")}
+              label={
+                <p>
+                  Tipo de unidad (Provisional){" "}
+                  <strong style={{ color: "red" }}>*</strong>
+                </p>
+              }
+              className={styles.input}
+            />
+          </div>
           <div className={styles.section}>
             <SelectComponent
               label="Chofer"
@@ -842,24 +803,53 @@ export default function CreateTripContent() {
               onChange={handleTripSelectChange("unidadAsignada")}
               className={styles.input}
             />
+            <InputComponent
+              type="text"
+              value={tripFormData.placa || ""}
+              onChange={handleTripInputChange("placa")}
+              label="Placa"
+              className={styles.input}
+            />
           </div>
-
-          <div className={styles.actionButtons}>
-            <ButtonComponent
-              type="button"
-              onClick={handleCancel}
-              text="Cancelar"
+          <div className={styles.section}>
+            <InputComponent
+              type="textarea"
+              value={tripFormData.observacionesChofer || ""}
+              onChange={handleTripInputChange("observacionesChofer")}
+              label="Notas adicionales"
+              className={styles.textarea}
             />
-            <ButtonComponent
-              type="button"
-              onClick={handleSaveDraft}
-              text="Guardar borrador"
+          </div>
+          <div className={styles.section}>
+            <InputComponent
+              type="textarea"
+              value={tripFormData.observacionesCliente || ""}
+              onChange={handleTripInputChange("observacionesCliente")}
+              label="Observaciones para el cliente"
+              className={styles.textarea}
             />
-            <ButtonComponent
-              type="button"
-              onClick={handleCreateTrip}
-              text="Crear viaje"
-            />
+          </div>
+          <div className={styles.sectionButtons}>
+            <div className={styles.actionButtons}>
+              <ButtonComponent
+                type="button"
+                onClick={handleCancel}
+                text="Atras"
+                className={`${styles.button} ${styles.cancelButton}`}
+              />
+              <ButtonComponent
+                type="button"
+                onClick={handleSaveDraft}
+                text="Guardar y agregar otro viaje"
+                className={`${styles.button} ${styles.cancelButton}`}
+              />
+              <ButtonComponent
+                type="button"
+                onClick={handleCreateTrip}
+                text="Finalizar"
+                className={`${styles.button} ${styles.createButton}`}
+              />
+            </div>
           </div>
         </form>
       </div>
