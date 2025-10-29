@@ -1,39 +1,11 @@
+/* DatePicker Container */
 .container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   position: relative;
   width: 100%;
+  max-width: 280px;
+  font-family: var(--font-raleway), 'Raleway', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
 
-.inputField {
-  width: 100%;
-}
-
-.label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  font-size: 14px;
-  color: #374151;
-}
-
-.textInput {
-  width: 100%;
-  padding: 10px 40px 10px 12px; /* leave space on right for calendar button */
-  border: 1px solid #e6e6e6;
-  border-radius: 4px;
-  background: #fff;
-  font-size: 14px;
-  color: #374151;
-}
-
-.textInput:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.06);
-}
-
-.calendarButton {
-  display: none; /* no longer used when using input[type=date] */
-}
-
-.dropdown {
-  display: none; /* removed - kept for compatibility if needed later */
-}

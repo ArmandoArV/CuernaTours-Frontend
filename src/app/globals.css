@@ -7,6 +7,33 @@
   --gold: #96781a;
   --Main-96781A: #96781a;
   --Background-F5F7FA : #f5f7fa;
+
+  /* FluentUI Design Tokens with Raleway font */
+  --colorNeutralForeground1: #242424;
+  --colorNeutralForeground2: #605e5c;
+  --colorNeutralForeground3: #8a8886;
+  --colorNeutralForegroundDisabled: #a19f9d;
+  --colorNeutralForegroundOnBrand: #ffffff;
+  --colorNeutralBackground1: #ffffff;
+  --colorNeutralBackground1Hover: #f3f2f1;
+  --colorNeutralBackground2: #f5f5f5;
+  --colorNeutralBackground2Hover: #edebe9;
+  --colorNeutralStroke1: #d1d1d1;
+  --colorNeutralStroke2: #e1dfdd;
+  --colorBrandBackground: #0078d4;
+  --colorBrandBackgroundSelected: #106ebe;
+  --colorBrandForeground1: #0078d4;
+  --colorStrokeFocus2: #0078d4;
+  --fontFamilyBase: var(--font-raleway), 'Raleway', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --fontSizeBase200: 12px;
+  --fontSizeBase300: 14px;
+  --fontWeightRegular: 400;
+  --fontWeightSemibold: 600;
+  --lineHeightBase200: 16px;
+  --lineHeightBase300: 20px;
+  --borderRadiusSmall: 2px;
+  --borderRadiusMedium: 4px;
+  --shadow4: 0 2px 4px rgba(0, 0, 0, 0.14), 0 0 2px rgba(0, 0, 0, 0.12);
 }
 
 html,

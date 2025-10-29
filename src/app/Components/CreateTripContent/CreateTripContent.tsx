@@ -687,11 +687,7 @@ export default function CreateTripContent() {
             <div className={styles.datePickerContainer}>
               <DatePickerComponent
                 id="idaFecha"
-                label={
-                  <p>
-                    Fecha de ida <strong style={{ color: "red" }}>*</strong>
-                  </p>
-                }
+                label="Fecha de ida"
                 value={tripFormData.idaFecha || ""}
                 onChange={(value) => {
                   console.log("Date changed:", value);
@@ -701,7 +697,6 @@ export default function CreateTripContent() {
                   }));
                 }}
                 placeholder="dd/mm/yyyy"
-                minDate={new Date()}
                 required
               />
             </div>
@@ -764,11 +759,7 @@ export default function CreateTripContent() {
                 <div className={styles.datePickerContainer}>
                   <DatePickerComponent
                     id="regresoFecha"
-                    label={
-                      <p>
-                        Fecha de regreso <strong style={{ color: "red" }}>*</strong>
-                      </p>
-                    }
+                    label="Fecha de regreso *"
                     value={tripFormData.regresoFecha || ""}
                     onChange={(value) => {
                       console.log("Return date changed:", value);
@@ -778,11 +769,6 @@ export default function CreateTripContent() {
                       }));
                     }}
                     placeholder="dd/mm/yyyy"
-                    minDate={
-                      tripFormData.idaFecha
-                        ? parseDDMMYYYYToDate(tripFormData.idaFecha) || new Date()
-                        : new Date()
-                    }
                     required
                   />
                 </div>

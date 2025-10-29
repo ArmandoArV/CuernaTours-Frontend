@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Raleway } from "next/font/google";
 import "./globals.css";
+import FluentUIProvider from "./Components/Providers/FluentUIProvider";
 
 const raleway = Raleway({
   variable: "--font-raleway",
@@ -24,7 +25,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={raleway.variable}>{children}</body>
+      <body className={raleway.variable}>
+        <FluentUIProvider>
+          {children}
+        </FluentUIProvider>
+      </body>
     </html>
   );
 }

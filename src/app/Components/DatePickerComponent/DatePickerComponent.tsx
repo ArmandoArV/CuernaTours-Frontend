@@ -1,35 +1,39 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
+import { useMemo } from "react";
+import { DatePicker } from "@fluentui/react-datepicker-compat";
+import { Field, Input } from "@fluentui/react-components";
 import styles from "./DatePickerComponent.module.css";
-import { Input } from "@fluentui/react-components";
 
 type Props = {
   id?: string;
-  label?: React.ReactNode;
+  label?: string;
   value?: string; // dd/mm/yyyy
   onChange?: (value: string) => void;
   placeholder?: string;
-  minDate?: Date;
   required?: boolean;
 };
 
 const formatDateToDDMMYYYY = (date: Date): string => {
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = date.getFullYear();
   return `${day}/${month}/${year}`;
 };
 
-const parseDDMMYYYYToDate = (dateString: string): Date | null => {
-  const parts = dateString.split("/");
+const parseDDMMYYYYToDate = (val: string): Date | null => {
+  const parts = val.split("/");
   if (parts.length !== 3) return null;
-  const day = parseInt(parts[0], 10);
-  const month = parseInt(parts[1], 10) - 1;
-  const year = parseInt(parts[2], 10);
-  if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
-  if (day < 1 || day > 31 || month < 0 || month > 11 || year < 1900) return null;
-  const date = new Date(year, month, day);
-  if (date.getDate() !== day || date.getMonth() !== month || date.getFullYear() !== year) {
+  const d = Number(parts[0]),
+    m = Number(parts[1]) - 1,
+    y = Number(parts[2]);
+  const date = new Date(y, m, d);
+  if (
+    isNaN(date.getTime()) ||
+    date.getDate() !== d ||
+    date.getMonth() !== m ||
+    date.getFullYear() !== y
+  ) {
     return null;
   }
   return date;
@@ -40,61 +44,54 @@ export default function DatePickerComponent({
   label,
   value = "",
   onChange,
-  placeholder = "dd/mm/yyyy",
-  minDate,
+  placeholder = "Select a date",
   required = false,
 }: Props) {
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  useEffect(() => {
-    const handleDocClick = (e: MouseEvent) => {
-      const target = e.target as Node | null;
-      if (!containerRef.current) return;
-      if (target && containerRef.current.contains(target)) return;
-      setOpen(false);
-    };
-    document.addEventListener("click", handleDocClick);
-    return () => document.removeEventListener("click", handleDocClick);
-  }, []);
+  const selectedDate = value
+    ? parseDDMMYYYYToDate(value) || undefined
+    : undefined;
 
-  // Convert dd/mm/yyyy to ISO date (yyyy-mm-dd) for input[type=date]
-  const ddmmyyyyToIso = (str: string): string => {
-    const d = parseDDMMYYYYToDate(str);
-    if (!d) return "";
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  };
+  // Memoize restrictedDates: generate dates from (today - 20 years) up to yesterday.
+  // This keeps the array small (~7.3k entries) and still covers typical past selections.
+  const restrictedDates = useMemo(() => {
+    const arr: Date[] = [];
+    const start = new Date(today);
+    start.setFullYear(start.getFullYear() - 20);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(today);
+    end.setDate(end.getDate() - 1); // yesterday
 
-  const isoToDdmmYYYY = (iso: string): string => {
-    if (!iso) return "";
-    const parts = iso.split("-");
-    if (parts.length !== 3) return "";
-    const [yyyy, mm, dd] = parts;
-    return `${dd}/${mm}/${yyyy}`;
-  };
-
-  const handleInputIsoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const iso = e.target.value; // yyyy-mm-dd or ''
-    const formatted = iso ? isoToDdmmYYYY(iso) : "";
-    if (onChange) onChange(formatted);
-  };
-
-  const inputIsoValue = value ? ddmmyyyyToIso(value) : "";
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      arr.push(new Date(d));
+    }
+    return arr;
+  }, [today]);
 
   return (
-    <div className={styles.container} ref={containerRef}>
-      {label && <label className={styles.label} htmlFor={id}>{label}</label>}
-      <Input
-        id={id}
-        type="date"
-        value={inputIsoValue}
-        onChange={handleInputIsoChange as any}
-        className={styles.inputField}
+    <div className={styles.container}>
+      <Field
+        label={label}
         required={required}
-      />
+      >
+        <DatePicker
+          value={selectedDate}
+          minDate={today}
+          placeholder={placeholder}
+          // Restricted dates are passed to the calendar slot so the internal Calendar marks them disabled
+          calendar={{ restrictedDates }}
+          onSelectDate={(date: Date | null | undefined) => {
+            if (date && date >= today) {
+              onChange?.(formatDateToDDMMYYYY(date));
+            }
+          }}
+          className={styles.calendar}
+          formatDate={(date?: Date) => date ? formatDateToDDMMYYYY(date) : ""}
+          parseDateFromString={(str: string) => parseDDMMYYYYToDate(str)}
+        />
+      </Field>
     </div>
   );
 }
