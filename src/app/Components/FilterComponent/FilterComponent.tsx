@@ -75,32 +75,19 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     [handleFilterChange]
   );
 
-  // Get active filter tags for display
-  const activeFilterTags = useMemo(() => {
-    const tags: ActiveFilter[] = [];
+  // Helper to get formatted display value for a given filter
+  const getDisplayValueFor = useCallback(
+    (filter: FilterConfig, value: string | string[] | undefined) => {
+      if (!value || (Array.isArray(value) && value.length === 0)) return "";
+      const v = Array.isArray(value) ? value.join(", ") : (value as string);
 
-    Object.entries(activeFilters).forEach(([key, value]) => {
-      if (!value || (Array.isArray(value) && value.length === 0)) return;
-
-      const filterConfig = filters.find((f) => f.key === key);
-      if (!filterConfig) return;
-
-      const displayValue = filterConfig.formatDisplay
-        ? filterConfig.formatDisplay(value as string)
-        : key === "fecha" || key.toLowerCase().includes("fecha")
-        ? formatDate(value as string)
-        : (value as string);
-
-      tags.push({
-        key,
-        value: value as string,
-        label: filterConfig.label,
-        displayValue,
-      });
-    });
-
-    return tags;
-  }, [activeFilters, filters, formatDate]);
+      if (filter.formatDisplay) return filter.formatDisplay(v);
+      if (filter.key === "fecha" || filter.key.toLowerCase().includes("fecha"))
+        return formatDate(v);
+      return v;
+    },
+    [formatDate]
+  );
 
   // Check if any filters are active
   const hasActiveFilters = Object.keys(activeFilters).length > 0;
@@ -128,6 +115,22 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
               </option>
             ))}
           </select>
+
+          {/* Show the active filter immediately below its select */}
+          {activeFilters[filter.key] && (
+            <div className={styles["active-filter-inline"]}>
+              <span className={styles["filter-tag"]}>
+                {filter.label}: {getDisplayValueFor(filter, activeFilters[filter.key] as string)}
+                <button
+                  className={styles["filter-tag-remove"]}
+                  onClick={() => removeFilter(filter.key)}
+                  aria-label={`Remover filtro ${filter.label}`}
+                >
+                  ×
+                </button>
+              </span>
+            </div>
+          )}
         </div>
       ))}
 
@@ -143,23 +146,8 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         </button>
       )}
 
-      {/* Active Filter Tags */}
-      {showActiveFilters && activeFilterTags.length > 0 && (
-        <div className={styles["active-filters"]}>
-          {activeFilterTags.map((tag) => (
-            <span key={tag.key} className={styles["filter-tag"]}>
-              {tag.label}: {tag.displayValue}
-              <button
-                className={styles["filter-tag-remove"]}
-                onClick={() => removeFilter(tag.key)}
-                aria-label={`Remover filtro ${tag.label}`}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
+      {/* Previously there was an aggregated active-filters area here. Active filters
+          are now rendered inline under each select. */}
     </div>
   );
 };

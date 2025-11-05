@@ -196,7 +196,7 @@ export default function DashboardContent() {
             <button
               style={{
                 padding: "8px 16px",
-                backgroundColor: "#374151",
+                backgroundColor: "#96781a",
                 color: "white",
                 border: "none",
                 borderRadius: "6px",

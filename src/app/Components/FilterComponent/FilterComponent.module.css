@@ -109,10 +109,10 @@
 
 .clear-filters-btn {
   padding: 10px 20px;
-  background-color: #f8fafc;
-  border: 1px solid #e5e7eb;
-  border-radius: 25px;
-  color: #6b7280;
+  background-color: transparent;
+  border: 1px solid var(--Main-1A2E47);
+  border-radius: 6px;
+  color: var(--Main-1A2E47);
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
