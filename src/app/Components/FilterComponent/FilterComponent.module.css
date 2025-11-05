@@ -4,7 +4,9 @@
   gap: 12px;
   padding: 0;
   border-radius: 8px;
-  margin-bottom: 0;
+  /* Leave space under filters for inline tags so following content (table)
+     doesn't overlap. Increase if your tag height or spacing changes. */
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 
@@ -20,7 +22,9 @@
   min-width: 120px;
   height: 40px;
   box-sizing: border-box;
+
 }
+
 
 .filter-wrapper::after {
   content: "▼";
@@ -145,16 +149,19 @@
 }
 
 .filter-tag {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  padding: 6px 12px;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 16px;
   background-color: #6366f1;
   color: white;
-  border-radius: 20px;
-  font-size: 12px;
+  border-radius: 4px;
+  font-size: 13px;
   font-weight: 500;
-  gap: 6px;
+  gap: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
 }
 
 .filter-tag-remove {
@@ -171,6 +178,41 @@
 .filter-tag-remove:hover {
   opacity: 0.8;
 }
+
+/* Inline active filter container positioned below the select inside the wrapper */
+.active-filter-inline {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  transform: none;
+  z-index: 50; /* Higher so tags float above other content */
+  width: 100%; /* match the width of the select/wrapper */
+  text-align: left;
+  white-space: normal; /* allow wrapping */
+  display: flex;
+  justify-content: center; /* center the inner .filter-tag if it doesn't take full width */
+}
+
+/* Truncate long filter values with ellipsis and show full value on hover */
+.filter-tag-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.filter-tag-value {
+  display: inline-block;
+  max-width: calc(100% - 64px); /* leave room for label and remove button */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* If you prefer the tag to take the full width of the select, uncomment:
+.active-filter-inline { width: 100%; left: 0; transform: none; }
+*/
 
 /* Additional browser compatibility fixes */
 @supports not (selector(:has(*))) {

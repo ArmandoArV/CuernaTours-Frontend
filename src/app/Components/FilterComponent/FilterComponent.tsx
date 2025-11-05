@@ -120,7 +120,15 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
           {activeFilters[filter.key] && (
             <div className={styles["active-filter-inline"]}>
               <span className={styles["filter-tag"]}>
-                {filter.label}: {getDisplayValueFor(filter, activeFilters[filter.key] as string)}
+                <span className={styles["filter-tag-text"]}>
+                  {filter.label}: 
+                  <span
+                    className={styles["filter-tag-value"]}
+                    title={getDisplayValueFor(filter, activeFilters[filter.key] as string)}
+                  >
+                    {getDisplayValueFor(filter, activeFilters[filter.key] as string)}
+                  </span>
+                </span>
                 <button
                   className={styles["filter-tag-remove"]}
                   onClick={() => removeFilter(filter.key)}
