@@ -34,6 +34,8 @@ function transformApiData(apiData: any[]): any[] {
           ? `${trip.driver.name} ${trip.driver.lastname}`
           : "",
         Estatus: STATUS_MAP[trip.status?.id] || trip.status?.name || "",
+        // Include contract_id for the details functionality
+        contract_id: contract.contract_id,
       });
     });
   });
@@ -135,15 +137,7 @@ export default function DashboardContent() {
     ),
   ];
 
-  const handleViewDetails = (rowData: any) => {
-    console.log("Ver detalles de:", rowData);
-    alert(`Ver detalles de: ${rowData["Empresa o Cliente"]}`);
-  };
-
-  const handleEdit = (rowData: any) => {
-    console.log("Editar:", rowData);
-    alert(`Editar: ${rowData["Empresa o Cliente"]}`);
-  };
+  // Handlers removed: table will show inline details when the eye button is clicked.
 
   const handleFiltersChange = (
     activeFilters: Record<string, string | string[]>
@@ -181,9 +175,7 @@ export default function DashboardContent() {
         filterConfigs={filterConfigs}
         enableFiltering={true}
         enableSearch={true}
-        showActions={true}
-        onViewDetails={handleViewDetails}
-        onEdit={handleEdit}
+  showActions={true}
         onSearch={handleSearch}
         emptyMessage="No hay viajes disponibles"
         enablePagination={true}

@@ -247,3 +247,12 @@
   font-size: 16px;
   color: #666;
 }
+
+/* Details row styling (inserted directly under a selected row) */
+.detailsRowCell {
+  padding: 10px 16px;
+  background-color: #fbfdff;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+

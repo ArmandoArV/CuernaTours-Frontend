@@ -22,15 +22,7 @@ export default function AdminContent() {
 
   const adminColumns = ["Usuario", "Rol", "Email", "Estado", "Último Login"];
 
-  const handleViewUser = (rowData: any) => {
-    console.log("Ver usuario:", rowData);
-    alert(`Ver detalles de: ${rowData["Usuario"]}`);
-  };
-
-  const handleEditUser = (rowData: any) => {
-    console.log("Editar usuario:", rowData);
-    alert(`Editar: ${rowData["Usuario"]}`);
-  };
+  // Handlers removed: use TableComponent's inline selection (click eye) or pass callbacks from parent if needed
 
   return (
     <TableComponent
@@ -38,9 +30,7 @@ export default function AdminContent() {
       description="Administración de usuarios del sistema"
       data={adminData}
       columns={adminColumns}
-      showActions={true}
-      onViewDetails={handleViewUser}
-      onEdit={handleEditUser}
+  showActions={true}
       emptyMessage="No hay usuarios registrados"
     />
   );
