@@ -321,10 +321,6 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               setSelectedRowError(null);
                               setSelectedRowLoading(true);
 
-                              // Debug: Log the row data being clicked
-                              console.log("🔍 Row clicked for details:", row);
-                              console.log("🔍 Available row keys:", Object.keys(row));
-
                               // Determine if row contains an identifier we can use to fetch full details
                               const idKeys = [
                                 "contract_id",
@@ -347,18 +343,15 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   row[k] !== ""
                                 ) {
                                   foundId = row[k];
-                                  console.log(`✅ Found ID key "${k}" with value:`, foundId);
                                   break;
                                 }
                               }
 
                               if (!foundId) {
-                                console.log("❌ No contract ID found in row data");
                               }
 
                               // If no id found, just select the row object we already have
                               if (!foundId) {
-                                console.log("📄 Using row data as fallback (no ID found)");
                                 setSelectedRow(row);
                                 setSelectedRowLoading(false);
                                 onViewDetails && onViewDetails(row);
@@ -369,10 +362,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               const baseUrl = (
                                 process.env.NEXT_PUBLIC_API_URL || ""
                               ).replace(/\/$/, "");
-                              console.log("🌐 Base URL:", baseUrl);
                               
                               if (!baseUrl) {
-                                console.log("❌ No base URL found, using row data as fallback");
                                 // Can't fetch without base URL; fallback to selecting row
                                 setSelectedRow(row);
                                 setSelectedRowLoading(false);
@@ -381,7 +372,6 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               }
 
                               const url = `${baseUrl}/contracts/details/${foundId}`;
-                              console.log("🚀 Fetching contract details from:", url);
 
                               try {
                                 const token = getCookie("accessToken");
@@ -395,32 +385,20 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   method: "GET",
                                   headers,
                                 });
-                                console.log("📡 API Response status:", resp.status, resp.statusText);
                                 
                                 if (!resp.ok) {
                                   throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
                                 }
                                 const json = await resp.json();
-                                console.log("📦 Raw API response:", json);
                                 
                                 if (json && json.success && json.data) {
-                                  console.log("✅ Contract data retrieved:", json.data);
-                                  console.log("📊 Data structure:", {
-                                    hasContractId: json.data.hasOwnProperty('contract_id'),
-                                    hasClientName: json.data.hasOwnProperty('client_name'),
-                                    hasTrips: json.data.hasOwnProperty('trips'),
-                                    tripsCount: json.data.trips ? json.data.trips.length : 0,
-                                  });
                                   // The API returns the specific contract data
                                   setSelectedRow(json.data);
                                   onViewDetails && onViewDetails(json.data);
                                 } else {
-                                  console.log("❌ Invalid response format:", json);
                                   throw new Error("Invalid response format");
                                 }
                               } catch (err: any) {
-                                console.error("❌ Error fetching contract details:", err);
-                                console.log("📄 Using row data as fallback due to error");
                                 setSelectedRowError(
                                   err?.message || String(err)
                                 );
@@ -428,7 +406,6 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                 setSelectedRow(row);
                               } finally {
                                 setSelectedRowLoading(false);
-                                console.log("🏁 API call completed, loading state cleared");
                               }
                             }}
                             onMouseEnter={(e) => {
