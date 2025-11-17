@@ -1,6 +1,8 @@
 "use client";
 import React from "react";
 import styles from "./DetailsPanel.module.css";
+import DateDisplayComponent from "@/app/Components/DateDisplayComponent";
+import { TripCollection, type TripData } from "@/app/Types/TripTypes";
 
 interface DetailsPanelProps {
   data: any;
@@ -95,11 +97,21 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
     driver,
   } = extractedData;
 
+  // Create TripCollection instance
+  const tripCollection = new TripCollection(trips as TripData[] || []);
+  
+  // Get trip information using the Trip classes
+  const tripType = tripCollection.tripType;
+  const dateRange = tripCollection.dateRange;
+  const arrivalDate = dateRange.start ? dateRange.start.toISOString() : null;
+  const returnDate = dateRange.end && tripCollection.count > 1 ? dateRange.end.toISOString() : null;
+
   console.log("🎨 Extracted data for display:", {
     client_name,
     contract_status_name,
     contract_id,
     tripsCount: trips ? trips.length : 0,
+    tripType,
     isDetailedData,
     // Show a few key fields for debugging
     amount,
@@ -109,281 +121,181 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
 
   return (
     <div className={styles.detailsPanel}>
-      <div className={styles.detailsHeader}>
-        <h3 className={styles.detailsTitle}>Detalles del contrato</h3>
-        <button className={styles.closeButton} onClick={onClose}>
-          ×
-        </button>
+      <div
+        className={styles.closeButton}
+        onClick={onClose}
+        title="Cerrar panel de detalles"
+      >
+        &times;
       </div>
+      <div className={styles.topSection}>
+        <div className={styles.topLeftSection}>
+          <div className={styles.section}>
+            {client_name && (
+              <div className={styles.field}>
+                <h1>{client_name}</h1>
+              </div>
+            )}
+            <div className={styles.field}></div>
+            {(() => {
+              const phone =
+                data?.phone ||
+                data?.contact_phone ||
+                data?.telefono ||
+                data?.["Teléfono"] ||
+                data?.contactNumber;
+              const email =
+                data?.email ||
+                data?.contact_email ||
+                data?.correo ||
+                data?.["Correo"] ||
+                data?.contactEmail;
 
-      <div className={styles.detailsGrid}>
-        <div className={styles.detailItem}>
-          <span className={styles.detailValue}>{client_name || "N/A"}</span>
-        </div>
-        {isDetailedData ? (
-          <>
-            <div className={styles.detailItem}>
-              <span className={styles.detailKey}>Tipo Cliente</span>
-              <span className={styles.detailValue}>
-                {client_type_name || "N/A"}
-              </span>
-            </div>
-            <div className={styles.detailItem}>
-              <span className={styles.detailKey}>Tipo Pago</span>
-              <span className={styles.detailValue}>
-                {payment_type_name || "N/A"}
-              </span>
-            </div>
-            <div className={styles.detailItem}>
-              <span className={styles.detailKey}>Coordinador</span>
-              <span className={styles.detailValue}>
-                {coordinator_name && coordinator_lastname
-                  ? `${coordinator_name} ${coordinator_lastname}`
-                  : "N/A"}
-              </span>
-            </div>
-            <div className={styles.detailItem}>
-              <span className={styles.detailKey}>Creado Por</span>
-              <span className={styles.detailValue}>
-                {creator_name && creator_lastname
-                  ? `${creator_name} ${creator_lastname}`
-                  : "N/A"}
-              </span>
-            </div>
-            <div className={styles.detailItem}>
-              <span className={styles.detailKey}>Monto</span>
-              <span className={styles.detailValue}>
-                {amount ? `$${amount}` : "N/A"}
-              </span>
-            </div>
-            <div className={styles.detailItem}>
-              <span className={styles.detailKey}>IVA</span>
-              <span className={styles.detailValue}>
-                {IVA === 0 ? "No" : IVA === 1 ? "Sí" : "N/A"}
-              </span>
-            </div>
-            {contract_id && (
-              <div className={styles.detailItem}>
-                <span className={styles.detailKey}>ID Contrato</span>
-                <span className={styles.detailValue}>{contract_id}</span>
-              </div>
-            )}
-            {created_at && (
-              <div className={styles.detailItem}>
-                <span className={styles.detailKey}>Fecha Creación</span>
-                <span className={styles.detailValue}>
-                  {new Date(created_at).toLocaleDateString("es-ES", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </span>
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            {origin && (
-              <div className={styles.detailItem}>
-                <span className={styles.detailKey}>Origen</span>
-                <span className={styles.detailValue}>{origin}</span>
-              </div>
-            )}
-            {destination && (
-              <div className={styles.detailItem}>
-                <span className={styles.detailKey}>Destino</span>
-                <span className={styles.detailValue}>{destination}</span>
-              </div>
-            )}
-            {date && (
-              <div className={styles.detailItem}>
-                <span className={styles.detailKey}>Fecha</span>
-                <span className={styles.detailValue}>{date}</span>
-              </div>
-            )}
-            {unit && (
-              <div className={styles.detailItem}>
-                <span className={styles.detailKey}>Unidad</span>
-                <span className={styles.detailValue}>{unit}</span>
-              </div>
-            )}
-            {driver && (
-              <div className={styles.detailItem}>
-                <span className={styles.detailKey}>Chofer</span>
-                <span className={styles.detailValue}>{driver}</span>
-              </div>
-            )}
-          </>
-        )}
-
-        <div className={styles.detailItem}>
-          <span className={styles.detailKey}>Estatus</span>
-          <span className={styles.detailValue}>
-            {contract_status_name || "N/A"}
-          </span>
-        </div>
-      </div>
-
-      {/* Notes - only show for detailed data */}
-      {isDetailedData && (
-        <>
-          {internal_observations && internal_observations.trim() !== "" && (
-            <div className={styles.compactArrayItem}>
-              <strong>Observaciones Internas:</strong>
-              <p className={styles.detailValue}>{internal_observations}</p>
-            </div>
-          )}
-          {observations && observations.trim() !== "" && (
-            <div className={styles.compactArrayItem}>
-              <strong>Observaciones Cliente:</strong>
-              <p className={styles.detailValue}>{observations}</p>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Trips - only show for detailed data */}
-      {isDetailedData && trips && trips.length > 0 && (
-        <div className={styles.compactArrayContainer}>
-          <h4>Servicios / Viajes</h4>
-          {trips.map((trip: any, index: number) => {
-            console.log(`🚗 Trip ${index + 1} data:`, trip);
-            return (
-              <div key={index} className={styles.compactArrayItem}>
-                <div className={styles.arrayItemHeader}>
-                  <strong>
-                    Viaje {index + 1}:{" "}
-                    {new Date(trip.service_date).toLocaleDateString("es-ES")} -{" "}
-                    {trip.unit_type}
-                    {trip.origin_time && ` (${trip.origin_time})`}
-                  </strong>
-                </div>
-
-                <div className={styles.compactNestedGrid}>
-                  <div className={styles.compactDetailItem}>
-                    <span className={styles.compactDetailKey}>Pasajeros</span>
-                    <span className={styles.compactDetailValue}>
-                      {trip.passengers}
-                    </span>
+              if (!phone && !email) {
+                return (
+                  <div className={styles.contactItem}>
+                    Sin contacto disponible
                   </div>
+                );
+              }
 
-                  <div className={styles.compactDetailItem}>
-                    <span className={styles.compactDetailKey}>Estado</span>
-                    <span className={styles.compactDetailValue}>
-                      {trip.status?.name || "N/A"}
-                    </span>
-                  </div>
-
-                  <div className={styles.compactDetailItem}>
-                    <span className={styles.compactDetailKey}>Origen</span>
-                    <span className={styles.compactDetailValue}>
-                      {trip.origin?.name || "N/A"}
-                    </span>
-                  </div>
-
-                  <div className={styles.compactDetailItem}>
-                    <span className={styles.compactDetailKey}>Destino</span>
-                    <span className={styles.compactDetailValue}>
-                      {trip.destination?.name || "N/A"}
-                    </span>
-                  </div>
-
-                  <div className={styles.compactDetailItem}>
-                    <span className={styles.compactDetailKey}>Conductor</span>
-                    <span className={styles.compactDetailValue}>
-                      {trip.driver?.name && trip.driver?.lastname
-                        ? `${trip.driver.name} ${trip.driver.lastname}`
-                        : "No asignado"}
-                    </span>
-                  </div>
-
-                  {trip.driver?.phone && (
-                    <div className={styles.compactDetailItem}>
-                      <span className={styles.compactDetailKey}>Teléfono</span>
-                      <span className={styles.compactDetailValue}>
-                        {trip.driver.phone}
-                      </span>
+              return (
+                <div className={styles.contactInfo}>
+                  {phone && (
+                    <div className={styles.contactItem}>
+                      <strong>Tel:</strong>{" "}
+                      <a href={`tel:${phone}`} className={styles.contactLink}>
+                        {phone}
+                      </a>
                     </div>
                   )}
-
-                  <div className={styles.compactDetailItem}>
-                    <span className={styles.compactDetailKey}>Unidad</span>
-                    <span className={styles.compactDetailValue}>
-                      {trip.vehicle?.alias && trip.vehicle?.license_plate
-                        ? `${trip.vehicle.alias} (${trip.vehicle.license_plate})`
-                        : "No asignada"}
-                    </span>
-                  </div>
-
-                  {trip.flight && (
-                    <>
-                      <div className={styles.compactDetailItem}>
-                        <span className={styles.compactDetailKey}>Vuelo</span>
-                        <span className={styles.compactDetailValue}>
-                          {trip.flight.flight_number} - {trip.flight.airline}
-                        </span>
-                      </div>
-                      <div className={styles.compactDetailItem}>
-                        <span className={styles.compactDetailKey}>Llegada</span>
-                        <span className={styles.compactDetailValue}>
-                          {new Date(trip.flight.arrival_time).toLocaleString(
-                            "es-ES",
-                            {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            }
-                          )}
-                        </span>
-                      </div>
-                      {trip.flight.flight_origin && (
-                        <div className={styles.compactDetailItem}>
-                          <span className={styles.compactDetailKey}>
-                            Origen Vuelo
-                          </span>
-                          <span className={styles.compactDetailValue}>
-                            {trip.flight.flight_origin}
-                          </span>
-                        </div>
-                      )}
-                      {trip.flight.notes && trip.flight.notes.trim() !== "" && (
-                        <div className={styles.compactDetailItem}>
-                          <span className={styles.compactDetailKey}>
-                            Notas Vuelo
-                          </span>
-                          <span className={styles.compactDetailValue}>
-                            {trip.flight.notes}
-                          </span>
-                        </div>
-                      )}
-                    </>
+                  |
+                  {email && (
+                    <div className={styles.contactItem}>
+                      <strong>Email:</strong>{" "}
+                      <a
+                        href={`mailto:${email}`}
+                        className={styles.contactLink}
+                      >
+                        {email}
+                      </a>
+                    </div>
                   )}
                 </div>
-
-                {trip.notes && trip.notes.trim() !== "" && (
-                  <p className={styles.compactDetailValue}>
+              );
+            })()}
+          </div>
+        </div>
+        <div className={styles.topRightSection}>
+          <div className={styles.section}>
+            <>
+              <div className={styles.field}>
+                <div className={styles.label}>Costo del viaje:</div>
+                <strong className={styles.value}>
+                  {amount !== null && amount !== undefined
+                    ? `$${amount.toFixed(2)}`
+                    : "N/A"}
+                </strong>
+              </div>
+            </>
+          </div>
+          <div className={styles.section}>
+            <div className={styles.field}>
+              <div className={styles.label}>Tipo de viaje:</div>
+              <strong className={styles.value}>{tripType}</strong>
+            </div>
+          </div>
+          <div className={styles.section}>
+            <div className={styles.datesContainer}>
+              <div className={styles.dateField}>
+                <div className={styles.label}>Fecha de llegada:</div>
+                <DateDisplayComponent date={arrivalDate || created_at} />
+              </div>
+              {returnDate && (
+                <>
+                  <div className={styles.dateFieldSeparator} />
+                  <div className={styles.dateFieldRight}>
+                    <div className={styles.label}>Fecha de regreso:</div>
+                    <DateDisplayComponent date={returnDate} />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className={styles.bottomSection}>
+        {!tripCollection.isEmpty && (
+          <div className={styles.section}>
+            <div className={styles.sectionTitle}>Detalles del Viaje</div>
+            <div className={styles.tripDetails}>
+              <div className={styles.tripInfo}>
+                <div className={styles.label}>Pasajeros:</div>
+                <div className={styles.value}>{tripCollection.totalPassengers}</div>
+              </div>
+              <div className={styles.tripInfo}>
+                <div className={styles.label}>Vehículos:</div>
+                <div className={styles.value}>
+                  {tripCollection.vehicles.map(vehicle => vehicle.alias).join(", ")}
+                </div>
+              </div>
+              <div className={styles.tripInfo}>
+                <div className={styles.label}>Conductores:</div>
+                <div className={styles.value}>
+                  {tripCollection.drivers.map(driver => `${driver.name} ${driver.lastname}`).join(", ")}
+                </div>
+              </div>
+            </div>
+            {tripCollection.trips.map((trip, index) => (
+              <div key={trip.tripId} className={styles.tripCard}>
+                <div className={styles.tripHeader}>
+                  <h4>Viaje {index + 1}</h4>
+                  <span className={styles.tripStatus}>{trip.statusName}</span>
+                </div>
+                <div className={styles.tripRoute}>
+                  <div className={styles.routeInfo}>
+                    <strong>Ruta:</strong> {trip.routeSummary}
+                  </div>
+                  <div className={styles.routeTime}>
+                    <strong>Hora:</strong> {trip.originTime}
+                  </div>
+                </div>
+                {trip.hasFlightInfo && (
+                  <div className={styles.flightInfo}>
+                    <strong>Vuelo:</strong> {trip.flightInfo}
+                    <br />
+                    <strong>Origen:</strong> {trip.flightOrigin}
+                    {trip.flightNotes && (
+                      <>
+                        <br />
+                        <strong>Terminal:</strong> {trip.flightNotes}
+                      </>
+                    )}
+                  </div>
+                )}
+                {trip.notes && (
+                  <div className={styles.tripNotes}>
                     <strong>Notas:</strong> {trip.notes}
-                  </p>
-                )}
-                {trip.internal_notes && trip.internal_notes.trim() !== "" && (
-                  <p className={styles.compactDetailValue}>
-                    <strong>Notas Internas:</strong> {trip.internal_notes}
-                  </p>
-                )}
-
-                {trip.driver_accepted !== null && (
-                  <p className={styles.compactDetailValue}>
-                    <strong>Estado Chofer:</strong>{" "}
-                    {trip.driver_accepted === 1 ? "Aceptado" : "Pendiente"}
-                  </p>
+                  </div>
                 )}
               </div>
-            );
-          })}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+
+        {internal_observations && (
+          <div className={styles.section}>
+            <div className={styles.sectionTitle}>Observaciones internas</div>
+            <div className={styles.sectionContent}>{internal_observations}</div>
+          </div>
+        )}
+        {observations && (
+          <div className={styles.section}>
+            <div className={styles.sectionTitle}>Observaciones</div>
+            <div className={styles.sectionContent}>{observations}</div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

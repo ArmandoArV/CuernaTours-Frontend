@@ -2,231 +2,105 @@
   padding: 12px;
   border-radius: 6px;
   background: #fff;
-}
-
-/* Header (unchanged from your code) */
-.detailsHeader {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.detailsTitle {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .closeButton {
-  background: none;
+  align-self: flex-end;
+  background: transparent;
   border: none;
-  font-size: 20px;
-  font-weight: bold;
-  color: #666;
+  font-size: 38px;
   cursor: pointer;
-  padding: 0;
-  width: 24px;
-  height: 24px;
+}
+
+.topSection {
   display: flex;
+  flex-direction: row;
+  gap: 12px;
   align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s ease;
+  justify-content: space-between;
+  height: 25%;
+  background-color: antiquewhite;
+  padding: 10px;
 }
 
-.closeButton:hover {
-  background-color: #f5f5f5;
-  color: #333;
+.bottomSection {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  height: 75%;
+  background-color: aqua;
+  padding: 10px;
 }
 
-.loading {
-  text-align: center;
-  padding: 20px;
-  color: #666;
-  font-style: italic;
+.topLeftSection {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  width: 50%;
 }
 
-.error {
-  color: #dc3545;
-  text-align: center;
-  padding: 12px;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  border-radius: 4px;
-  font-size: 14px;
+.topRightSection {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 50%;
 }
 
-/* New Layout Styles */
-.panelContent {
+.section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  font-size: 14px;
+  justify-content: center;
+  gap: 8px;
+  width: 25%;
   padding: 8px;
 }
 
-.headerRow {
+.datesContainer {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  flex-direction: row;
+  gap: 8px;
+  width: 100%;
+  justify-content: space-around;
+  align-items: center;
 }
 
-.clientName {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.contactInfo {
-  color: #6b7280;
-  font-size: 13px;
-}
-
-.tripSummary {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-  text-align: right;
-}
-
-.tripCost {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.tripType {
-  font-size: 13px;
-  padding: 4px 8px;
-  background: #eef6ff;
-  border-radius: 4px;
-  color: #0860d1;
-}
-
-.dateBox {
-  font-size: 13px;
-  text-align: center;
-}
-
-/* Middle Grid */
-.middleGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 32px;
-  line-height: 1.4;
-}
-
-/* Observations */
-.observationsBox {
-  background: #fafafa;
-  border-radius: 6px;
-  padding: 12px;
-  font-size: 14px;
-}
-
-/* Details Grid Layout */
-.detailsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.detailItem {
+.dateField {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
 }
 
-.detailKey {
-  font-size: 12px;
-  font-weight: 600;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.dateFieldSeparator {
+  width: 2px;
+  height: 60px;
+  background-color: var(--Text-ADADAD);
 }
 
-.detailValue {
-  font-size: 14px;
-  color: #333;
-  font-weight: 500;
-}
-
-/* Compact Array Styles */
-.compactArrayContainer {
-  margin-top: 20px;
-}
-
-.compactArrayContainer h4 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-}
-
-.compactArrayItem {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 12px;
-  border-left: 4px solid #007bff;
-}
-
-.arrayItemHeader {
-  margin-bottom: 12px;
-}
-
-.compactNestedGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.compactDetailItem {
+.dateFieldRight {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  justify-content: center;
 }
 
-.compactDetailKey {
-  font-size: 11px;
+.label {
+  font-size: 14px;
+  color: var(--Text-6B6B6B);
+  height: 21px;
+  width: 85px;
+}
+
+.value {
+  font-size: 21px;
+  color: var(--Text-000000);
   font-weight: 600;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.compactDetailValue {
-  font-size: 13px;
-  color: #333;
-  font-weight: 400;
-}
-
-@media (max-width: 768px) {
-  .headerRow {
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .middleGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .tripSummary {
-    flex-direction: row;
-    justify-content: space-between;
-    width: 100%;
-  }
-
-  .detailsGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .compactNestedGrid {
-    grid-template-columns: 1fr;
-  }
+  height: 24px;
 }
