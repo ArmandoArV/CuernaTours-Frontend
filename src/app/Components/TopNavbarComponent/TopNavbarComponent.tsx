@@ -3,11 +3,19 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronDown20Regular, PersonRegular, ArrowExitFilled } from "@fluentui/react-icons";
+import {
+  ChevronDown20Regular,
+  PersonRegular,
+  ArrowExitFilled,
+} from "@fluentui/react-icons";
 import { TopNavbarProps, TopNavbarItem } from "../../Types/TopNavbarType";
 import styles from "./TopNavbar.module.css";
 import { getCookie, deleteCookie } from "@/app/Utils/CookieUtil";
-import { showConfirmAlert, showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
+import {
+  showConfirmAlert,
+  showSuccessAlert,
+  showErrorAlert,
+} from "@/app/Utils/AlertUtil";
 
 const TopNavbarComponent: React.FC<TopNavbarProps> = ({
   userInfo: propsUserInfo,
@@ -25,18 +33,47 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
   useEffect(() => {
     const loadUserInfo = () => {
       try {
-        const userCookie = getCookie('user');
+        const userCookie = getCookie("user");
         if (userCookie) {
           const userData = JSON.parse(userCookie);
+          console.log("Loaded user data from cookie:", userData);
+
+          // Map the user data structure to match component expectations
+          const displayName =
+            userData.display_name ||
+            userData.username ||
+            `${userData.name || ""} ${userData.lastname || ""}`.trim() ||
+            userData.email?.split("@")[0] ||
+            "Usuario";
+
+          // Map role based on roleId or existing role data
+          const getRoleName = (roleId: number) => {
+            const roleMap: { [key: number]: string } = {
+              1: "Maestro",
+              2: "Administrador",
+              3: "Chofer",
+              4: "Oficina",
+            };
+            return roleMap[roleId] || "Usuario";
+          };
+
+          const userRole =
+            userData.role?.name ||
+            userData.role ||
+            (userData.roleId ? getRoleName(userData.roleId) : "Usuario");
+
           setUserInfo({
-            name: userData.display_name || `${userData.name || ''} ${userData.lastname || ''}`.trim(),
-            role: userData.role?.name || userData.role || 'Usuario',
+            name: displayName,
+            role: userRole,
             avatar: userData.avatar || null,
-            email: userData.email || '',
+            email: userData.email || "",
+            userId: userData.userId,
+            roleId: userData.roleId,
+            username: userData.username,
           });
         }
       } catch (error) {
-        console.error('Error parsing user data from cookie:', error);
+        console.error("Error parsing user data from cookie:", error);
         // Fallback to props if cookie parsing fails
         if (propsUserInfo) {
           setUserInfo(propsUserInfo);
@@ -61,7 +98,11 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
       }
 
       // Close user menu when clicking outside
-      if (isUserMenuOpen && userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        isUserMenuOpen &&
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setIsUserMenuOpen(false);
       }
     };
@@ -91,24 +132,24 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
   const handleProfileClick = () => {
     setIsUserMenuOpen(false);
     // Navigate to profile page using Next.js router
-    router.push('/profile');
+    router.push("/profile");
   };
 
   const clearAllCookies = () => {
     // Clear all authentication-related cookies
-    deleteCookie('user', { path: '/' });
-    deleteCookie('accessToken', { path: '/' });
-    deleteCookie('token', { path: '/' });
-    deleteCookie('auth', { path: '/' });
-    deleteCookie('session', { path: '/' });
-    
+    deleteCookie("user", { path: "/" });
+    deleteCookie("accessToken", { path: "/" });
+    deleteCookie("token", { path: "/" });
+    deleteCookie("auth", { path: "/" });
+    deleteCookie("session", { path: "/" });
+
     // Clear user info state
     setUserInfo(null);
   };
 
   const handleLogoutClick = () => {
     setIsUserMenuOpen(false);
-    
+
     // Show confirmation dialog
     showConfirmAlert(
       "Cerrar Sesión",
@@ -118,68 +159,68 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
         try {
           // Get the API URL from environment or use a default
           const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-          
+
           // Get token for authentication
-          const token = getCookie('accessToken') || getCookie('token');
-          
+          const token = getCookie("accessToken") || getCookie("token");
+
           // Make API call to logout endpoint
           const response = await fetch(`${apiUrl}/auth/logout`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              ...(token && { 'Authorization': `Bearer ${token}` }),
+              "Content-Type": "application/json",
+              ...(token && { Authorization: `Bearer ${token}` }),
             },
           });
 
           if (response.ok) {
             const data = await response.json();
-            
+
             // Clear cookies regardless of API response
             clearAllCookies();
-            
+
             // Show success message using the API message
             showSuccessAlert(
               "Sesión Cerrada",
               data.message || "Has cerrado sesión exitosamente.",
               () => {
                 // Navigate to home page after success message
-                router.push('/');
+                router.push("/");
               }
             );
           } else {
             // Handle logout API error but still clear local data
-            console.error('Logout API failed, but clearing local session');
-            
+            console.error("Logout API failed, but clearing local session");
+
             // Clear all cookies anyway for security
             clearAllCookies();
-            
+
             showSuccessAlert(
               "Sesión Cerrada",
               "Has cerrado sesión exitosamente.",
               () => {
-                router.push('/');
+                router.push("/");
               }
             );
           }
         } catch (error) {
-          console.error('Logout error:', error);
-          
+          console.error("Logout error:", error);
+
           // Clear local session even if API call fails
           clearAllCookies();
-          
+
           // Show error message but still redirect
           showErrorAlert(
             "Error de Conexión",
             "No se pudo conectar con el servidor, pero tu sesión local ha sido eliminada.",
             () => {
-              router.push('/');
+              router.push("/");
             }
           );
         }
       },
       () => {
         // Cancel function - do nothing
-        console.log('Logout cancelled');
+        console.log("Logout cancelled");
       }
     );
   };
@@ -213,14 +254,20 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
               </div>
               <ChevronDown20Regular />
             </div>
-            
+
             {isUserMenuOpen && (
               <div className={styles.userDropdown}>
-                <div className={styles.dropdownItem} onClick={handleProfileClick}>
+                <div
+                  className={styles.dropdownItem}
+                  onClick={handleProfileClick}
+                >
                   <PersonRegular className={styles.dropdownIcon} />
                   Perfil
                 </div>
-                <div className={styles.dropdownItem} onClick={handleLogoutClick}>
+                <div
+                  className={styles.dropdownItem}
+                  onClick={handleLogoutClick}
+                >
                   <ArrowExitFilled className={styles.dropdownIcon} />
                   Cerrar Sesión
                 </div>

@@ -1,11 +1,12 @@
 .detailsPanel {
-  padding: 12px;
+  padding: 16px;
   border-radius: 6px;
-  background: #fff;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 500px;
+  width: 100%;
+  overflow-y: auto;
 }
 
 .closeButton {
@@ -19,23 +20,21 @@
 .topSection {
   display: flex;
   flex-direction: row;
-  gap: 12px;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  height: 25%;
-  background-color: antiquewhite;
-  padding: 10px;
+  min-height: 10%;
+
 }
 
 .bottomSection {
   display: flex;
   flex-direction: row;
   gap: 12px;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  height: 75%;
-  background-color: aqua;
-  padding: 10px;
+  flex: 1;
+  min-height: 90%;
+  height: auto;
 }
 
 .topLeftSection {
@@ -56,10 +55,48 @@
 .section {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
-  width: 25%;
+  flex: 1;
+  min-width: 200px;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.tripDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
   padding: 8px;
+  border-radius: 4px;
+}
+
+.tripInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.label {
+  font-size: 12px;
+  color: var(--Text-6B6B6B);
+  margin-bottom: 4px;
+  width: 100%;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.value {
+  display: flex;
+  font-size: 16px;
+  color: var(--Text-000000);
+  font-weight: 600;
+  width: 100%;
+  text-align: left;
+  word-wrap: break-word;
+  line-height: 1.2;
 }
 
 .datesContainer {
@@ -103,4 +140,83 @@
   color: var(--Text-000000);
   font-weight: 600;
   height: 24px;
+}
+
+.tripCard {
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-left: 4px solid #007acc;
+}
+
+.tripHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.tripHeader h4 {
+  margin: 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.tripStatus {
+  background-color: #28a745;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.flightInfo {
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tripNotes {
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: 8px;
+  border-left: 3px solid #ffc107;
+  font-size: 13px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.sectionContent {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.contactInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.contactItem {
+  font-size: 14px;
+  color: #333;
+}
+
+.contactLink {
+  color: #007acc;
+  text-decoration: none;
+}
+
+.contactLink:hover {
+  text-decoration: underline;
 }
