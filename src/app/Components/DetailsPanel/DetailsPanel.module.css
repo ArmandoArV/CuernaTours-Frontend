@@ -47,7 +47,6 @@
   min-height: 300px;
   padding: 16px;
   flex-wrap: wrap;
-  overflow: hidden;
 }
 
 .topLeftSection {
@@ -75,7 +74,7 @@
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  gap: 8px;
+  gap: 12px;
   flex: 1;
   min-width: 250px;
   max-width: calc(33.333% - 12px);
@@ -83,7 +82,7 @@
   border-radius: 6px;
   box-sizing: border-box;
   height: fit-content;
-  overflow: hidden;
+
 }
 
 .sectionsTop {
@@ -91,15 +90,14 @@
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  gap: 8px;
+  gap: 12px;
   flex: 1;
   min-width: 200px;
   max-width: 100%;
-  padding: 12px;
+  padding: 16px;
   border-radius: 6px;
   box-sizing: border-box;
   height: fit-content;
-  overflow: hidden;
 }
 
 .tripDetails {
@@ -115,25 +113,30 @@
 .tripInfo {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   width: 100%;
   box-sizing: border-box;
   padding: 0;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+}
+
+.tripInfo:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .label {
   font-size: 12px;
   color: #6c757d;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   width: 100%;
-  max-width: 100%;
   text-align: left;
   display: block;
   font-weight: 500;
   word-wrap: break-word;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.2;
 }
 
 .value {
@@ -142,15 +145,13 @@
   color: #212529;
   font-weight: 600;
   width: 100%;
-  max-width: 100%;
   text-align: left;
   word-wrap: break-word;
   word-break: break-word;
   overflow-wrap: break-word;
-  hyphens: auto;
-  line-height: 1.2;
-  margin-bottom: 0;
-  overflow: hidden;
+  white-space: normal;
+  line-height: 1.4;
+  margin-bottom: 8px;
 }
 
 .datesContainer {
@@ -182,19 +183,7 @@
   justify-content: center;
 }
 
-.label {
-  font-size: 14px;
-  color: var(--Text-6B6B6B);
-  height: 21px;
-  width: 85px;
-}
 
-.value {
-  font-size: 21px;
-  color: var(--Text-000000);
-  font-weight: 600;
-  height: 24px;
-}
 
 .tripCard {
   border-radius: 6px;
@@ -207,13 +196,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
 }
 
 .tripHeader h4 {
   margin: 0;
   color: #333;
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .flightInfo {
@@ -266,7 +257,6 @@
 
 .field {
   width: 100%;
-  overflow: hidden;
 }
 
 .field h1 {
