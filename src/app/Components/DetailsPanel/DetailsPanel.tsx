@@ -65,16 +65,9 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
 
   return (
     <div className={styles.detailsPanel}>
-      <div
-        className={styles.closeButton}
-        onClick={onClose}
-        title="Cerrar panel de detalles"
-      >
-        &times;
-      </div>
       <div className={styles.topSection}>
         <div className={styles.topLeftSection}>
-          <div className={styles.section}>
+          <div className={styles.sectionsTop}>
             {((contract && contract.clientName) ||
               extractedData.client_name) && (
               <div className={styles.field}>
@@ -134,7 +127,7 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
           </div>
         </div>
         <div className={styles.topRightSection}>
-          <div className={styles.section}>
+          <div className={styles.sectionsTop}>
             <>
               <div className={styles.field}>
                 <div className={styles.label}>Costo del viaje:</div>
@@ -144,7 +137,7 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
               </div>
             </>
           </div>
-          <div className={styles.section}>
+          <div className={styles.sectionsTop}>
             <div className={styles.field}>
               <div className={styles.label}>Tipo de viaje:</div>
               <strong className={styles.value}>
@@ -152,11 +145,12 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
               </strong>
             </div>
           </div>
-          <div className={styles.section}>
+          <div className={styles.sectionsTop}>
             <div className={styles.datesContainer}>
               <div className={styles.dateField}>
-                <div className={styles.label}>Fecha de llegada:</div>
+                <div className={styles.label}>{""}</div>
                 <DateDisplayComponent
+                  className={styles.value}
                   date={
                     contract
                       ? contract.serviceDate.start?.toISOString() ||
@@ -229,7 +223,6 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
             <div key={trip.tripId} className={styles.section}>
               <div className={styles.tripHeader}>
                 <h4>Viaje {index + 1}</h4>
-                <span className={styles.tripStatus}>{trip.statusName}</span>
               </div>
               <div className={styles.tripDetails}>
                 <div className={styles.tripInfo}>
@@ -253,12 +246,28 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
             (trip, index) =>
               trip.hasFlightInfo && (
                 <div key={`flight-${index}`} className={styles.section}>
-                  <strong className={styles.label}>Es Vuelo:</strong>
+                  <p className={styles.label}>Es Vuelo:</p>
                   <br />
-                  <div className={styles.value}>
+                  <strong className={styles.value}>
                     {trip.flightInfo}, {trip.flightOrigin},{" "}
                     {trip.flightNotes || "N/A"}
-                  </div>
+                  </strong>
+                  {contract && contract.hasInternalObservations && (
+                    <div style={{ marginTop: "16px" }}>
+                      <div className={styles.label}>Observaciones internas</div>
+                      <div className={styles.value}>
+                        {contract.internalObservations}
+                      </div>
+                    </div>
+                  )}
+                  {contract && contract.hasObservations && (
+                    <div style={{ marginTop: "12px" }}>
+                      <div className={styles.label}>Observaciones</div>
+                      <div className={styles.value}>
+                        {contract.observations}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )
           )}
