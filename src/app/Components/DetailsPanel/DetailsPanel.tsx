@@ -166,7 +166,7 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
                 <>
                   <div className={styles.dateFieldSeparator} />
                   <div className={styles.dateFieldRight}>
-                    <div className={styles.label}>Fecha de regreso:</div>
+                    <div className={styles.label}>{" "}</div>
                     <DateDisplayComponent
                       date={
                         contract

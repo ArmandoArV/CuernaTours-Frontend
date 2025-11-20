@@ -1,31 +1,43 @@
 .dateDisplay {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .dayNumber {
-  font-size: 48px;
+  font-size: 32px;
   font-weight: bold;
   color: #333;
   line-height: 1;
+  min-width: 40px;
+  text-align: center;
 }
 
 .dateInfo {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 .month {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   color: #666;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .time {
-  font-size: 12px;
+  font-size: 10px;
   color: #888;
   font-family: monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
