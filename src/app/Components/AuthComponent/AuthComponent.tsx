@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getCookie, setCookie } from "@/app/Utils/CookieUtil";
+import { authService, ApiError } from "@/services/api";
 
 type AuthRouteProps = {
   children: React.ReactNode;
@@ -13,45 +13,10 @@ export default function AuthComponent({ children }: AuthRouteProps) {
   
   useEffect(() => {
     const validateToken = async () => {
-      const accessToken = getCookie("accessToken");
-      
-      if (!accessToken) {
-        setIsAuthenticated(false);
-        router.push("/");
-        return;
-      }
-
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
-        
-        if (!baseUrl) {
-          console.error("NEXT_PUBLIC_API_URL not configured");
-          setIsAuthenticated(false);
-          router.push("/");
-          return;
-        }
+        const data = await authService.validate();
 
-        const response = await fetch(`${baseUrl}/auth/validate`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${accessToken}`
-          }
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success && data.data.tokenValid) {
-          // Token is valid, update user data if needed
-          if (data.data.user) {
-            setCookie("user", JSON.stringify(data.data.user), {
-              expires: 7,
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'lax',
-              path: '/'
-            });
-          }
-          
+        if (data.tokenValid) {
           setIsAuthenticated(true);
           
           // Auto redirect to dashboard if we're on the home page
@@ -59,13 +24,15 @@ export default function AuthComponent({ children }: AuthRouteProps) {
             router.push("/dashboard");
           }
         } else {
-          // Token is invalid, clear cookies and redirect to login
+          authService.clearSession();
           setIsAuthenticated(false);
           router.push("/");
         }
       } catch (error) {
         console.error("Token validation error:", error);
-        // On network error, assume token is invalid for security
+        
+        // Clear session and redirect to login on any error
+        authService.clearSession();
         setIsAuthenticated(false);
         router.push("/");
       }

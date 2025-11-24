@@ -16,6 +16,7 @@ import {
   showSuccessAlert,
   showErrorAlert,
 } from "@/app/Utils/AlertUtil";
+import { authService } from "@/services/api";
 
 const TopNavbarComponent: React.FC<TopNavbarProps> = ({
   userInfo: propsUserInfo,
@@ -157,61 +158,24 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
       "Sí, cerrar sesión",
       async () => {
         try {
-          // Get the API URL from environment or use a default
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+          await authService.logout();
 
-          // Get token for authentication
-          const token = getCookie("accessToken") || getCookie("token");
-
-          // Make API call to logout endpoint
-          const response = await fetch(`${apiUrl}/auth/logout`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token && { Authorization: `Bearer ${token}` }),
-            },
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-
-            // Clear cookies regardless of API response
-            clearAllCookies();
-
-            // Show success message using the API message
-            showSuccessAlert(
-              "Sesión Cerrada",
-              data.message || "Has cerrado sesión exitosamente.",
-              () => {
-                // Navigate to home page after success message
-                router.push("/");
-              }
-            );
-          } else {
-            // Handle logout API error but still clear local data
-            console.error("Logout API failed, but clearing local session");
-
-            // Clear all cookies anyway for security
-            clearAllCookies();
-
-            showSuccessAlert(
-              "Sesión Cerrada",
-              "Has cerrado sesión exitosamente.",
-              () => {
-                router.push("/");
-              }
-            );
-          }
+          // Show success message
+          showSuccessAlert(
+            "Sesión Cerrada",
+            "Has cerrado sesión exitosamente.",
+            () => {
+              // Navigate to home page after success message
+              router.push("/");
+            }
+          );
         } catch (error) {
           console.error("Logout error:", error);
 
-          // Clear local session even if API call fails
-          clearAllCookies();
-
-          // Show error message but still redirect
-          showErrorAlert(
-            "Error de Conexión",
-            "No se pudo conectar con el servidor, pero tu sesión local ha sido eliminada.",
+          // Show success message anyway since local session is cleared
+          showSuccessAlert(
+            "Sesión Cerrada",
+            "Has cerrado sesión exitosamente.",
             () => {
               router.push("/");
             }

@@ -11,7 +11,6 @@ import {
 import DatePickerComponent from "../DatePickerComponent/DatePickerComponent";
 import Link from "next/link";
 import { showErrorAlert, showSuccessAlert } from "@/app/Utils/AlertUtil";
-import { getCookie } from "@/app/Utils/CookieUtil";
 import {
   mapTripFormToPayload,
   mapOrderFormToPayload,
@@ -20,9 +19,9 @@ import {
 import { useOrderContext } from "@/app/Contexts/OrderContext";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import { useRouter } from "next/navigation";
+import { referenceService, contractsService, tripsService, ApiError } from "@/services/api";
 
 export default function CreateTripContent() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const { orderData, tripData, setTripData, clearData } = useOrderContext();
   const router = useRouter();
 
@@ -48,96 +47,33 @@ export default function CreateTripContent() {
   // Fetch functions
   const fetchLugares = useCallback(async () => {
     try {
-      const accessToken = getCookie("accessToken");
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
-      }
-
-      const response = await fetch(`${API_URL}/lugares`, {
-        method: "GET",
-        headers,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.data) {
-          const lugarOptions = data.data.map((lugar: any) => ({
-            value: lugar.id.toString(),
-            label: lugar.nombre,
-          }));
-          setLugares(lugarOptions);
-        }
-      }
+      const data = await referenceService.getPlaces();
+      const lugarOptions = referenceService.transformPlacesForSelect(data);
+      setLugares(lugarOptions);
     } catch (error) {
       console.error("Error fetching lugares:", error);
     }
-  }, [API_URL]);
+  }, []);
 
   const fetchChoferes = useCallback(async () => {
     try {
-      const accessToken = getCookie("accessToken");
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
-      }
-
-      const response = await fetch(`${API_URL}/choferes`, {
-        method: "GET",
-        headers,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.data) {
-          const choferOptions = data.data.map((chofer: any) => ({
-            value: chofer.id.toString(),
-            label: chofer.nombre,
-          }));
-          setChoferes(choferOptions);
-        }
-      }
+      const data = await referenceService.getDrivers();
+      const choferOptions = referenceService.transformDriversForSelect(data);
+      setChoferes(choferOptions);
     } catch (error) {
       console.error("Error fetching choferes:", error);
     }
-  }, [API_URL]);
+  }, []);
 
   const fetchUnidades = useCallback(async () => {
     try {
-      const accessToken = getCookie("accessToken");
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
-      }
-
-      const response = await fetch(`${API_URL}/unidades`, {
-        method: "GET",
-        headers,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.data) {
-          const unidadOptions = data.data.map((unidad: any) => ({
-            value: unidad.id.toString(),
-            label: `${unidad.tipo} - ${unidad.placa}`,
-          }));
-          setUnidades(unidadOptions);
-        }
-      }
+      const data = await referenceService.getVehicles();
+      const unidadOptions = referenceService.transformVehiclesForSelect(data);
+      setUnidades(unidadOptions);
     } catch (error) {
       console.error("Error fetching unidades:", error);
     }
-  }, [API_URL]);
+  }, []);
 
   // Load data and sync with context
   useEffect(() => {
@@ -296,68 +232,35 @@ export default function CreateTripContent() {
         return;
       }
 
-      const accessToken = getCookie("accessToken");
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
-      }
-
       // Step 1: Create contract first
       const orderPayload = mapOrderFormToPayload(orderData as OrderFormData);
       console.log("Order payload:", orderPayload);
 
-      const orderResponse = await fetch(`${API_URL}/contracts/create`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(orderPayload),
-      });
-
-      if (!orderResponse.ok) {
-        throw new Error(`Contract API Error: ${orderResponse.status}`);
-      }
-
-      const orderResult = await orderResponse.json();
-
-      if (!orderResult.success) {
-        throw new Error(orderResult.message || "Error al crear el contrato");
-      }
-
-      const contractId = orderResult.data.contract_id || orderResult.data.id;
+      const orderResult = await contractsService.create(orderPayload);
+      const contractId = orderResult.contract_id || orderResult.id;
 
       // Step 2: Create trip with the new contract ID
       const tripPayload = mapTripFormToPayload(tripFormData, contractId);
       console.log("Trip payload:", tripPayload);
 
-      const tripResponse = await fetch(`${API_URL}/trips`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(tripPayload),
-      });
+      await tripsService.create(tripPayload);
 
-      if (!tripResponse.ok) {
-        throw new Error(`Trip API Error: ${tripResponse.status}`);
-      }
-
-      const tripResult = await tripResponse.json();
-
-      if (tripResult.success) {
-        showSuccessAlert("Éxito", "Contrato y viaje creados correctamente");
-        clearData();
-        router.push("/dashboard");
-      } else {
-        throw new Error(tripResult.message || "Error al crear el viaje");
-      }
+      showSuccessAlert("Éxito", "Contrato y viaje creados correctamente");
+      clearData();
+      router.push("/dashboard");
     } catch (error) {
       console.error("Error creating contract and trip:", error);
-      showErrorAlert(
-        "Error",
-        error instanceof Error
-          ? error.message
-          : "Error al crear el contrato y viaje"
-      );
+      
+      if (error instanceof ApiError) {
+        showErrorAlert("Error", error.message);
+      } else {
+        showErrorAlert(
+          "Error",
+          error instanceof Error
+            ? error.message
+            : "Error al crear el contrato y viaje"
+        );
+      }
     }
   };
 

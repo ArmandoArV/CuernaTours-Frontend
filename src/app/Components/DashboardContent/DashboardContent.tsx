@@ -4,7 +4,7 @@ import FilterableTableComponent from "../FilterableTable/FilterableTableComponen
 import { FilterConfig, FilterPresets } from "../FilterComponent";
 import { AddFilled } from "@fluentui/react-icons";
 import Link from "next/link";
-import { getCookie } from "@/app/Utils/CookieUtil";
+import { contractsService, ApiError } from "@/services/api";
 
 // Status mapping based on provided ids
 const STATUS_MAP: Record<number, string> = {
@@ -48,45 +48,23 @@ export default function DashboardContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   // Fetch data from API
   useEffect(() => {
     const fetchContracts = async () => {
       try {
         setLoading(true);
-
-        // Get access token from cookies
-        const accessToken = getCookie("accessToken");
-
-        // Prepare headers
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-        };
-
-        // Add authorization header if token exists
-        if (accessToken) {
-          headers["Authorization"] = `Bearer ${accessToken}`;
-        }
-
-        const response = await fetch(`${API_URL}/contracts/details`, {
-          method: "GET",
-          headers,
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        if (result.success && result.data) {
-          setContractsData(result.data);
-        } else {
-          throw new Error("Invalid response format");
-        }
+        const data = await contractsService.getAll();
+        setContractsData(data);
+        setError(null);
       } catch (err) {
         console.error("Error fetching contracts:", err);
-        setError(err instanceof Error ? err.message : "An error occurred");
+        
+        if (err instanceof ApiError) {
+          setError(err.message);
+        } else {
+          setError(err instanceof Error ? err.message : "An error occurred");
+        }
+        
         // Fallback to empty array in case of error
         setContractsData([]);
       } finally {

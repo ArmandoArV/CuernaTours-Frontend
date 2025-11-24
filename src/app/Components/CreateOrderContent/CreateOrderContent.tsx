@@ -6,12 +6,11 @@ import SelectComponent from "../SelectComponent/SelectComponent";
 import { ArrowHookUpLeftRegular } from "@fluentui/react-icons";
 import Link from "next/link";
 import { showErrorAlert, showSuccessAlert } from "../../Utils/AlertUtil";
-import { getCookie } from "@/app/Utils/CookieUtil";
 import { OrderFormData, mapOrderFormToPayload } from "@/app/Types/OrderTripTypes";
 import { useOrderContext } from "@/app/Contexts/OrderContext";
 import { useRouter } from "next/navigation";
+import { referenceService, ApiError } from "@/services/api";
 export default function CreateOrderContent() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const { orderData, setOrderData } = useOrderContext();
   const router = useRouter();
 
@@ -231,42 +230,17 @@ export default function CreateOrderContent() {
 
   const fetchClients = useCallback(async () => {
     try {
-      // Get access token from cookies
-      const accessToken = getCookie("accessToken");
-
-      // Prepare headers
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-
-      // Add authorization header if token exists
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
-      }
-
-      const response = await fetch(`${API_URL}/clients`, {
-        method: "GET",
-        headers,
-      });
-      if (!response.ok) {
-        throw new Error("Error fetching clients");
-      }
-      const data = await response.json();
-
-      if (data.success && data.data) {
-        // Transform client data to the format expected by SelectComponent
-        const clientOptions = data.data.map((client: any) => ({
-          value: client.client_id.toString(),
-          label: client.name,
-        }));
-        setClients(clientOptions);
-      }
+      const data = await referenceService.getClients();
+      const clientOptions = referenceService.transformClientsForSelect(data);
+      setClients(clientOptions);
     } catch (error) {
       console.error("Error fetching clients:", error);
-      // Set empty array if fetch fails
+      if (error instanceof ApiError) {
+        showErrorAlert("Error", `No se pudieron cargar los clientes: ${error.message}`);
+      }
       setClients([]);
     }
-  }, [API_URL]);
+  }, []);
 
   useEffect(() => {
     fetchClients();
