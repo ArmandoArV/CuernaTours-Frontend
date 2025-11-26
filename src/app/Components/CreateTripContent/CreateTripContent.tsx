@@ -28,6 +28,7 @@ import {
   ApiError,
 } from "@/services/api";
 import { Button } from "@fluentui/react-components";
+import ConfirmationModal from "../ConfirmationModal/ConfirmationModal";
 
 export default function CreateTripContent() {
   const { orderData, tripData, setTripData, clearData } = useOrderContext();
@@ -76,6 +77,9 @@ export default function CreateTripContent() {
   const [unidades, setUnidades] = useState<
     Array<{ value: string; label: string }>
   >([]);
+
+  // Confirmation modal state
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   // Fetch functions
   const fetchLugares = useCallback(async () => {
@@ -172,10 +176,15 @@ export default function CreateTripContent() {
 
   const handleTripSelectChange =
     (field: string) => (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setTripFormData((prev) => ({
-        ...prev,
-        [field]: e.target.value,
-      }));
+      console.log(`🔍 Select field ${field} changed to:`, e.target.value);
+      setTripFormData((prev) => {
+        const updated = {
+          ...prev,
+          [field]: e.target.value,
+        };
+        console.log(`✅ Updated tripFormData:`, updated);
+        return updated;
+      });
     };
 
   const handleRadioChange = (field: string, value: boolean) => {
@@ -357,8 +366,14 @@ export default function CreateTripContent() {
     return `${h.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
   };
 
-  const handleCreateTrip = async () => {
-    console.log("🚀 DEBUG - handleCreateTrip function called!");
+  const handleFinalizarClick = () => {
+    console.log("🔘 Finalizar button clicked - showing confirmation modal");
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmCreateTrip = async () => {
+    console.log("🚀 DEBUG - handleConfirmCreateTrip function called!");
+    setShowConfirmModal(false);
     try {
       if (!orderData) {
         console.log("❌ No orderData found");
@@ -1144,16 +1159,23 @@ export default function CreateTripContent() {
               />
               <ButtonComponent
                 type="button"
-                onClick={() => {
-                  console.log("🔘 Finalizar button clicked!");
-                  handleCreateTrip();
-                }}
+                onClick={handleFinalizarClick}
                 text="Finalizar"
                 className={`${styles.button} ${styles.createButton}`}
               />
             </div>
           </div>
         </form>
+
+        <ConfirmationModal
+          isOpen={showConfirmModal}
+          onClose={() => setShowConfirmModal(false)}
+          onConfirm={handleConfirmCreateTrip}
+          orderData={orderData}
+          tripFormData={tripFormData}
+          paradas={paradas}
+          lugares={lugares}
+        />
       </div>
     </main>
   );

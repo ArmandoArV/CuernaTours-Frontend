@@ -1,0 +1,269 @@
+/* OVERLAY */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+/* MAIN CARD */
+.modal {
+  background: white;
+  /* Use a subtle box shadow for a card effect */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  width: 95%;
+  max-width: 450px; /* Adjusted max width to be closer to the image */
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+/* CLOSE BUTTON */
+.closeButton {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: #555;
+  padding: 0; /* Remove default button padding */
+}
+
+/* TITLE */
+.modalTitle {
+  padding: 1.5rem 1.5rem 0.5rem 1.5rem; /* Reduced bottom padding */
+  font-size: 1.4rem; /* Slightly larger title */
+  font-weight: 600;
+  color: #1A2E47;
+}
+
+/* CONTENT */
+.modalContent {
+  padding: 0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.topSection,
+.middleSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* LEFT COLUMN */
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* RIGHT COLUMN */
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.costValue {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1A2E47;
+  margin-top: 0.25rem;
+}
+
+/* LABELS & VALUES */
+.summaryLabel {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #666;
+  margin: 0;
+}
+
+.summaryValue {
+  font-size: 0.9rem;
+  color: #888;
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ROUTE SECTION */
+.routeSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  padding-left: 0;
+}
+
+/* Connecting line for stops */
+.routeSection::before {
+  content: '';
+  position: absolute;
+  top: 28px;
+  left: 18px;
+  bottom: 28px;
+  width: 2px;
+  background-color: #1A2E47;
+  z-index: 0;
+}
+
+.routeItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 1;
+  padding: 0.35rem 0;
+}
+
+.routeBubble {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
+  background-color: #1A2E47;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: 0 0 0 4px white;
+}
+
+.routeText {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 400;
+}
+
+/* RADIO + CHECKBOX */
+.radioBlock {
+  grid-column: 1 / 3; /* Spanning both columns at the bottom */
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.radioTitle {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 0.3rem;
+}
+
+.radioOption {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #1A2E47;
+}
+
+.radioOption input[type="radio"] {
+  /* Custom color for radio/checkbox appearance */
+  accent-color: #96781A; 
+}
+
+.checkboxRow {
+  grid-column: 1 / 3;
+  margin-top: 1rem;
+  padding-bottom: 1.5rem; /* Added bottom padding to separate from buttons */
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #1A2E47;
+  font-size: 0.9rem;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  accent-color: #96781A;
+}
+
+/* BUTTON FOOTER */
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 0 1.5rem 1rem 1.5rem; /* Adjusted padding to be only at the sides and bottom */
+  border-top: 1px solid #eee; /* Separator line for buttons */
+  padding-top: 1rem;
+}
+
+.button {
+  min-width: 110px;
+  padding: 0.7rem 1.7rem;
+  font-size: 0.95rem;
+  border-radius: 4px;
+  border: 2px solid;
+  cursor: pointer;
+  font-weight: 500; /* Match the text weight in the image */
+}
+
+.editButton {
+  /* Lighter, goldish color for "Edit" button */
+  background: transparent;
+  border-color: #96781A;
+  color: #96781A;
+}
+
+.editButton:hover {
+  background-color: #f7f3e8; /* Light hover background */
+}
+
+.confirmButton {
+  /* Darker, brownish-gold for "Confirmar" button */
+  background-color: #96781A;
+  border-color: #96781A;
+  color: white;
+  /* Subtle box-shadow for a raised effect */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+}
+
+.confirmButton:hover {
+  background-color: #7c5f14;
+  border-color: #7c5f14;
+}
+
+/* MEDIA QUERY */
+@media (max-width: 480px) {
+    .topSection,
+    .middleSection {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .routeSection::before {
+        left: 18px;
+    }
+    
+    .modalActions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .button {
+        width: 100%;
+    }
+}
