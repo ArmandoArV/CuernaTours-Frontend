@@ -1,7 +1,50 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { 
+  Spinner, 
+  Text, 
+  Card, 
+  CardHeader,
+  makeStyles,
+  tokens 
+} from "@fluentui/react-components";
 import { authService, ApiError } from "@/services/api";
+
+const useLoadingStyles = makeStyles({
+  container: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh',
+    backgroundColor: tokens.colorNeutralBackground2,
+    padding: tokens.spacingHorizontalXL,
+  },
+  card: {
+    padding: tokens.spacingVerticalXXL,
+    minWidth: '300px',
+    textAlign: 'center',
+    boxShadow: tokens.shadow16,
+    borderRadius: tokens.borderRadiusLarge,
+  },
+  content: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: tokens.spacingVerticalL,
+  },
+  title: {
+    color: tokens.colorNeutralForeground1,
+    fontWeight: tokens.fontWeightSemibold,
+  },
+  subtitle: {
+    color: tokens.colorNeutralForeground2,
+    fontSize: tokens.fontSizeBase200,
+  },
+  spinnerContainer: {
+    marginBottom: tokens.spacingVerticalM,
+  },
+});
 
 type AuthRouteProps = {
   children: React.ReactNode;
@@ -10,6 +53,7 @@ type AuthRouteProps = {
 export default function AuthComponent({ children }: AuthRouteProps) {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const styles = useLoadingStyles();
   
   useEffect(() => {
     const validateToken = async () => {
@@ -43,15 +87,22 @@ export default function AuthComponent({ children }: AuthRouteProps) {
 
   if (isAuthenticated === null) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '18px',
-        color: '#666'
-      }}>
-        Validando sesión...
+      <div className={styles.container}>
+        <Card className={styles.card}>
+          <CardHeader>
+            <div className={styles.content}>
+              <div className={styles.spinnerContainer}>
+                <Spinner size="extra-large" />
+              </div>
+              <Text size={500} className={styles.title}>
+                CuernaTours
+              </Text>
+              <Text size={300} className={styles.subtitle}>
+                Validando sesión, por favor espera...
+              </Text>
+            </div>
+          </CardHeader>
+        </Card>
       </div>
     );
   }

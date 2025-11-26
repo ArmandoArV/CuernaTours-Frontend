@@ -79,6 +79,11 @@
   align-items: flex-end;
 }
 
+.section.paradasList {
+  flex-direction: column;
+  align-items: stretch;
+}
+
 .streetInputContainer {
   flex: 1;
   min-width: 0;
@@ -106,10 +111,20 @@
   gap: 0.5rem;
 }
 
-.cancelButton {
+.actionButton {
   color: var(--Main-96781A);
   border: 2px solid var(--Main-96781A);
   background-color: transparent;
+  font-size: 1.2rem;
+}
+
+
+
+.cancelButton {
+  color: var(--Main-1A2E47);
+  border: 2px solid var(--Main-1A2E47);
+  background-color: transparent;
+  font-size: 1.2rem;
 }
 
 .cancelButton:hover {
@@ -132,6 +147,16 @@
 
 .createButton:hover {
   background-color: #7c5f14;
+}
+
+.actionButton {
+  color: var(--Main-1A2E47);
+  border: 2px solid var(--Main-1A2E47);
+  background-color: transparent;
+}
+
+.actionButton:hover {
+  background-color: #e5e7eb;
 }
 
 .radioLabel {
@@ -245,6 +270,65 @@
   width: 100%;
   flex-direction: row;
   justify-content: flex-end;
+}
+
+.addButton {
+  background-color: var(--Main-1A2E47);
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.addButton:hover {
+  background-color: #e6f3ff;
+}
+
+.paradaForm {
+  border-radius: 0.5rem;
+  padding: 2rem;
+  margin-top: 1rem;
+}
+
+.paradaItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.paradaInfo {
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-right: 1rem;
+}
+
+.paradaAddress {
+  color: #666;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.removeButton {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.removeButton:hover {
+  background-color: #c82333;
 }
 
 /* Tablet and desktop styles for header */

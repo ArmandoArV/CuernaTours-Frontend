@@ -231,12 +231,12 @@ export const mapTripFormToPayload = (tripFormData: any, contractId: number): Cre
     service_date: convertDateFormat(tripFormData.idaFecha),
     origin_id: parseInt(tripFormData.origenNombreLugar) || 0,
     origin_time: convertTimeFormat(
-      tripFormData.idaHora,
-      tripFormData.idaMinutos,
-      tripFormData.idaAmPm
+      tripFormData.idaHora || 8,
+      tripFormData.idaMinutos || 0,
+      tripFormData.idaAmPm || "AM"
     ),
     destination_id: parseInt(tripFormData.destinoNombreLugar) || 0,
-    passengers: parseInt(tripFormData.idaPasajeros) || 1,
+    passengers: parseInt(tripFormData.numeroPasajeros || tripFormData.idaPasajeros) || 1,
     unit_type: tripFormData.tipoUnidad || undefined,
     vehicle_id: tripFormData.unidadAsignada ? parseInt(tripFormData.unidadAsignada) : undefined,
     driver_id: tripFormData.nombreChofer ? parseInt(tripFormData.nombreChofer) : undefined,

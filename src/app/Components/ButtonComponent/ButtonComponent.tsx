@@ -8,6 +8,7 @@ export default function ButtonComponent({
   className = "", // Default to empty string if no custom class is provided
   disabled = false, // Default to false if no disabled flag is provided
   type = "button", // Default to "button" if no type is provided
+  icon
 }: IButtonProps) {
   return (
     <button
@@ -16,6 +17,7 @@ export default function ButtonComponent({
       className={`${styles.button} ${className}`} // Combine default and custom classes
       disabled={disabled}
     >
+      {icon && <span className={styles.icon}>{icon}</span>}
       {text}
     </button>
   );

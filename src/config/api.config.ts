@@ -61,9 +61,16 @@ export const API_ENDPOINTS = {
   // Reference data endpoints
   REFERENCE: {
     CLIENTS: '/clients',
-    PLACES: '/lugares',
-    DRIVERS: '/choferes',
-    VEHICLES: '/unidades',
+    PLACES: '/places',
+    DRIVERS: '/drivers',
+    VEHICLES: '/vehicles',
+  },
+  
+  // Places endpoints
+  PLACES: {
+    BASE: '/places',
+    BY_ID: (id: number) => `/places/${id}`,
+    SEARCH: '/places/search',
   },
 } as const;
 

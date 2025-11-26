@@ -1,7 +1,8 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getCookie, setCookie } from "@/app/Utils/CookieUtil";
+import { getCookie } from "@/app/Utils/CookieUtil";
+import { authService } from "@/services/api";
 
 export default function HomeAuthCheck() {
   const router = useRouter();
@@ -15,34 +16,11 @@ export default function HomeAuthCheck() {
       }
 
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
-        
-        if (!baseUrl) {
-          console.error("NEXT_PUBLIC_API_URL not configured");
-          return;
-        }
+        // Use the centralized auth service for validation
+        const validationResult = await authService.validate();
 
-        const response = await fetch(`${baseUrl}/auth/validate`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${accessToken}`
-          }
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success && data.data.tokenValid) {
-          // Token is valid, update user data and redirect
-          if (data.data.user) {
-            setCookie("user", JSON.stringify(data.data.user), {
-              expires: 7,
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'lax',
-              path: '/'
-            });
-          }
-          
+        if (validationResult.tokenValid) {
+          // Token is valid, user data is automatically updated by the service
           // Auto redirect to dashboard
           router.push("/dashboard");
         }
@@ -50,6 +28,7 @@ export default function HomeAuthCheck() {
       } catch (error) {
         console.error("Token validation error:", error);
         // On error, user stays on home page
+        // The auth service automatically clears invalid tokens
       }
     };
 

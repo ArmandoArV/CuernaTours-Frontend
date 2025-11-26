@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import styles from "./CreateTripContent.module.css";
 import InputComponent from "../InputComponent/InputComponent";
 import SelectComponent from "../SelectComponent/SelectComponent";
+import { AddFilled, DeleteRegular } from "@fluentui/react-icons";
 import {
   ArrowHookUpLeftRegular,
   ChevronUpRegular,
@@ -15,11 +16,18 @@ import {
   mapTripFormToPayload,
   mapOrderFormToPayload,
   OrderFormData,
+  CreateOrderPayload,
 } from "@/app/Types/OrderTripTypes";
 import { useOrderContext } from "@/app/Contexts/OrderContext";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import { useRouter } from "next/navigation";
-import { referenceService, contractsService, tripsService, ApiError } from "@/services/api";
+import {
+  referenceService,
+  contractsService,
+  tripsService,
+  ApiError,
+} from "@/services/api";
+import { Button } from "@fluentui/react-components";
 
 export default function CreateTripContent() {
   const { orderData, tripData, setTripData, clearData } = useOrderContext();
@@ -31,6 +39,31 @@ export default function CreateTripContent() {
     numeroPasajeros: tripData.regresoPasajeros || "",
     idaFecha: tripData.idaFecha || "",
     regresoFecha: tripData.regresoFecha || "",
+  });
+
+  // Paradas (stops) management
+  interface Parada {
+    id: string;
+    nombreLugar: string;
+    calle: string;
+    numero: string;
+    colonia: string;
+    codigoPostal: string;
+    ciudad: string;
+    estado: string;
+  }
+
+  const [paradas, setParadas] = useState<Parada[]>([]);
+  const [showParadaForm, setShowParadaForm] = useState(false);
+  const [newParada, setNewParada] = useState<Parada>({
+    id: "",
+    nombreLugar: "",
+    calle: "",
+    numero: "",
+    colonia: "",
+    codigoPostal: "",
+    ciudad: "",
+    estado: "",
   });
 
   // Dropdown data
@@ -119,7 +152,6 @@ export default function CreateTripContent() {
     fetchLugares();
     fetchChoferes();
     fetchUnidades();
-
     return () => clearTimeout(timeoutId);
   }, [fetchLugares, fetchChoferes, fetchUnidades, orderData, tripData, router]);
 
@@ -213,18 +245,139 @@ export default function CreateTripContent() {
     showSuccessAlert("Guardado", "Borrador guardado correctamente");
   };
 
+  // Parada handlers
+  const handleAddParada = () => {
+    setShowParadaForm(true);
+    setNewParada({
+      id: `parada-${Date.now()}`,
+      nombreLugar: "",
+      calle: "",
+      numero: "",
+      colonia: "",
+      codigoPostal: "",
+      ciudad: "",
+      estado: "",
+    });
+  };
+
+  const handleParadaInputChange =
+    (field: keyof Parada) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      setNewParada((prev) => ({
+        ...prev,
+        [field]: e.target.value,
+      }));
+    };
+
+  const handleSaveParada = () => {
+    if (!newParada.nombreLugar || !newParada.calle || !newParada.ciudad) {
+      showErrorAlert(
+        "Error",
+        "Por favor complete los campos obligatorios de la parada"
+      );
+      return;
+    }
+
+    setParadas((prev) => [...prev, newParada]);
+    setShowParadaForm(false);
+    setNewParada({
+      id: "",
+      nombreLugar: "",
+      calle: "",
+      numero: "",
+      colonia: "",
+      codigoPostal: "",
+      ciudad: "",
+      estado: "",
+    });
+    showSuccessAlert("Éxito", "Parada agregada correctamente");
+  };
+
+  const handleCancelParada = () => {
+    setShowParadaForm(false);
+    setNewParada({
+      id: "",
+      nombreLugar: "",
+      calle: "",
+      numero: "",
+      colonia: "",
+      codigoPostal: "",
+      ciudad: "",
+      estado: "",
+    });
+  };
+
+  const handleRemoveParada = (paradaId: string) => {
+    setParadas((prev) => prev.filter((p) => p.id !== paradaId));
+    showSuccessAlert("Éxito", "Parada eliminada correctamente");
+  };
+
+  const createTripForParada = async (
+    parada: Parada,
+    contractId: number,
+    baseTrip: any
+  ) => {
+    const tripPayload = {
+      ...baseTrip,
+      // Map parada data to destination fields
+      destinoNombreLugar: parada.nombreLugar,
+      destinoCalle: parada.calle,
+      destinoNumero: parada.numero,
+      destinoColonia: parada.colonia,
+      destinoCodigoPostal: parada.codigoPostal,
+      destinoCiudad: parada.ciudad,
+      destinoEstado: parada.estado,
+    };
+
+    // Create the mapped payload and ensure contract_id is included
+    const mappedPayload = mapTripFormToPayload(tripPayload, contractId);
+    
+    console.log("🔍 DEBUG - Parada trip payload:", JSON.stringify(mappedPayload, null, 2));
+    
+    // Ensure contract_id is explicitly set
+    if (!mappedPayload.contract_id) {
+      mappedPayload.contract_id = contractId;
+    }
+
+    return await tripsService.create(mappedPayload);
+  };
+
+  // Helper functions for data conversion
+  const convertDateFormat = (ddmmyyyy: string): string => {
+    if (!ddmmyyyy) return "";
+    const parts = ddmmyyyy.split("/");
+    if (parts.length !== 3) return "";
+    return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+  };
+
+  const convertTimeFormat = (hour: number, minutes: number, ampm: string): string => {
+    let h = hour;
+    if (ampm === "PM" && h !== 12) h += 12;
+    if (ampm === "AM" && h === 12) h = 0;
+    return `${h.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
+  };
+
   const handleCreateTrip = async () => {
+    console.log("🚀 DEBUG - handleCreateTrip function called!");
     try {
       if (!orderData) {
+        console.log("❌ No orderData found");
         showErrorAlert("Error", "No se encontraron datos del pedido");
         return;
       }
+
+      console.log("🔍 Checking required trip fields:", {
+        idaFecha: tripFormData.idaFecha,
+        origenNombreLugar: tripFormData.origenNombreLugar,
+        destinoNombreLugar: tripFormData.destinoNombreLugar
+      });
 
       if (
         !tripFormData.idaFecha ||
         !tripFormData.origenNombreLugar ||
         !tripFormData.destinoNombreLugar
       ) {
+        console.log("❌ Missing required trip fields");
         showErrorAlert(
           "Error",
           "Por favor complete todos los campos obligatorios"
@@ -232,25 +385,130 @@ export default function CreateTripContent() {
         return;
       }
 
-      // Step 1: Create contract first
+      console.log("✅ All required trip fields present");
+
+      // Debug: Log the original form data
+      console.log("🔍 DEBUG - Original Order Data:", orderData);
+      console.log("🔍 DEBUG - Original Trip Data:", tripFormData);
+
+      // Step 1: Create contract with trip data included
       const orderPayload = mapOrderFormToPayload(orderData as OrderFormData);
-      console.log("Order payload:", orderPayload);
+      
+      // Create trip details payload to include in contract creation
+      const tripDetailsPayload: any = {
+        service_date: convertDateFormat(tripFormData.idaFecha),
+        origin_time: convertTimeFormat(
+          tripFormData.idaHora || 8,
+          tripFormData.idaMinutos || 0,
+          tripFormData.idaAmPm || "AM"
+        ),
+        passengers: parseInt(tripFormData.numeroPasajeros) || 1,
+        unit_type: tripFormData.tipoUnidad || undefined,
+        driver_id: tripFormData.nombreChofer ? parseInt(tripFormData.nombreChofer) : undefined,
+        vehicle_id: tripFormData.unidadAsignada ? parseInt(tripFormData.unidadAsignada) : undefined,
+        observations: tripFormData.observacionesChofer || undefined,
+        internal_observations: tripFormData.observacionesCliente || undefined,
+        origin: {
+          place_id: parseInt(tripFormData.origenNombreLugar),
+          name: tripFormData.origenNombreLugar,
+          address: `${tripFormData.origenCalle} ${tripFormData.origenNumero}`,
+          city: tripFormData.origenCiudad,
+          state: tripFormData.origenEstado,
+          zip_code: tripFormData.origenCodigoPostal,
+        },
+        destination: {
+          place_id: parseInt(tripFormData.destinoNombreLugar),
+          name: tripFormData.destinoNombreLugar,
+          address: `${tripFormData.destinoCalle} ${tripFormData.destinoNumero}`,
+          city: tripFormData.destinoCiudad,
+          state: tripFormData.destinoEstado,
+          zip_code: tripFormData.destinoCodigoPostal,
+        },
+        is_round_trip: tripFormData.tipoViaje === "roundTrip",
+        return_date: tripFormData.tipoViaje === "roundTrip" ? convertDateFormat(tripFormData.regresoFecha) : undefined,
+        return_time: tripFormData.tipoViaje === "roundTrip" ? convertTimeFormat(
+          tripFormData.regresoHora || 8,
+          tripFormData.regresoMinutos || 0,
+          tripFormData.regresoAmPm || "AM"
+        ) : undefined,
+      };
+
+      // Add flight details if it's a flight
+      if (tripFormData.origenEsVuelo) {
+        tripDetailsPayload.flight = {
+          flight_number: tripFormData.origenNumeroVuelo,
+          airline: tripFormData.origenAerolinea,
+          flight_origin: tripFormData.origenLugarVuelo,
+          notes: tripFormData.origenNotas,
+        };
+      }
+
+      // Include trip data in the contract creation payload
+      orderPayload.trip = tripDetailsPayload;
+
+      console.log(
+        "📤 DEBUG - Complete payload (contract + trip):",
+        JSON.stringify(orderPayload, null, 2)
+      );
+
+      // Check for missing required fields
+      const fieldChecks = {
+        client_id: orderPayload.client_id,
+        payment_type_id: orderPayload.payment_type_id,
+        IVA: orderPayload.IVA,
+        amount: orderPayload.amount,
+        trip: orderPayload.trip,
+      };
+
+      const missingFields = Object.entries(fieldChecks)
+        .filter(([key, value]) => {
+          if (key === "IVA") return value === undefined || value === null;
+          return (
+            value === undefined ||
+            value === null ||
+            value === 0 ||
+            (typeof value === "string" && value === "")
+          );
+        })
+        .map(([key]) => key);
+
+      if (missingFields.length > 0) {
+        console.error("❌ Missing required fields:", missingFields);
+        console.error("📊 Field values:", fieldChecks);
+        showErrorAlert(
+          "Error de validación",
+          `Faltan campos requeridos: ${missingFields.join(
+            ", "
+          )}. Revise los datos del formulario.`
+        );
+        return;
+      }
 
       const orderResult = await contractsService.create(orderPayload);
       const contractId = orderResult.contract_id || orderResult.id;
 
-      // Step 2: Create trip with the new contract ID
-      const tripPayload = mapTripFormToPayload(tripFormData, contractId);
-      console.log("Trip payload:", tripPayload);
+      console.log("✅ Contract and main trip created successfully with ID:", contractId);
 
-      await tripsService.create(tripPayload);
+      // Step 2: Create additional trips for each parada if any
+      if (paradas.length > 0) {
+        console.log(`🔄 Creating ${paradas.length} additional parada trips...`);
+        const baseTrip = { ...tripFormData };
+        for (const parada of paradas) {
+          await createTripForParada(parada, contractId, baseTrip);
+        }
+        showSuccessAlert(
+          "Éxito",
+          `Contrato, viaje principal y ${paradas.length} parada(s) creados correctamente`
+        );
+      } else {
+        showSuccessAlert("Éxito", "Contrato y viaje creados correctamente");
+      }
 
-      showSuccessAlert("Éxito", "Contrato y viaje creados correctamente");
       clearData();
       router.push("/dashboard");
     } catch (error) {
       console.error("Error creating contract and trip:", error);
-      
+
       if (error instanceof ApiError) {
         showErrorAlert("Error", error.message);
       } else {
@@ -625,6 +883,144 @@ export default function CreateTripContent() {
               className={styles.input}
             />
           </div>
+          <div className={styles.divider}>
+            <h2 className={styles.subsectionTitle}>Paradas</h2>
+          </div>
+
+          {/* List of existing paradas */}
+          {paradas.length > 0 && (
+            <div className={`${styles.section} ${styles.paradasList}`}>
+              <h3 className={styles.subsectionTitle}>
+                Paradas agregadas ({paradas.length})
+              </h3>
+              {paradas.map((parada, index) => (
+                <div key={parada.id} className={styles.paradaItem}>
+                  <div className={styles.paradaInfo}>
+                    <strong>Parada {index + 1}:</strong> {parada.nombreLugar}
+                    <br />
+                    <span className={styles.paradaAddress}>
+                      {parada.calle} {parada.numero}, {parada.colonia},{" "}
+                      {parada.ciudad}, {parada.estado}
+                    </span>
+                  </div>
+                  <ButtonComponent
+                    type="button"
+                    onClick={() => handleRemoveParada(parada.id)}
+                    icon={<DeleteRegular />}
+                    text=""
+                    className={`${styles.button} ${styles.cancelButton}`}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className={styles.section}>
+            <ButtonComponent
+              type="button"
+              onClick={handleAddParada}
+              text=""
+              icon={<AddFilled />}
+              className={`${styles.button} ${styles.addButton}`}
+            />
+          </div>
+
+          {/* Parada Form */}
+          {showParadaForm && (
+            <div className={styles.paradaForm}>
+              <h3 className={styles.subsectionTitle}>Nueva Parada</h3>
+
+              <div className={styles.section}>
+                <SelectComponent
+                  label="Nombre lugar"
+                  options={lugares}
+                  value={newParada.nombreLugar}
+                  onChange={handleParadaInputChange("nombreLugar")}
+                  required
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.section}>
+                <InputComponent
+                  type="text"
+                  value={newParada.calle}
+                  onChange={handleParadaInputChange("calle")}
+                  label={
+                    <p>
+                      Calle <strong style={{ color: "red" }}>*</strong>
+                    </p>
+                  }
+                  containerClassName={styles.streetInputContainer}
+                />
+                <InputComponent
+                  type="text"
+                  value={newParada.numero}
+                  onChange={handleParadaInputChange("numero")}
+                  label="Número"
+                  containerClassName={styles.numberInputContainer}
+                />
+              </div>
+
+              <div className={styles.section}>
+                <InputComponent
+                  type="text"
+                  value={newParada.colonia}
+                  onChange={handleParadaInputChange("colonia")}
+                  label="Colonia"
+                  className={styles.input}
+                  containerClassName={styles.streetInputContainer}
+                />
+                <InputComponent
+                  type="text"
+                  value={newParada.codigoPostal}
+                  onChange={handleParadaInputChange("codigoPostal")}
+                  label="Código Postal"
+                  className={styles.input}
+                  containerClassName={styles.numberInputContainer}
+                />
+              </div>
+
+              <div className={styles.section}>
+                <InputComponent
+                  type="text"
+                  value={newParada.ciudad}
+                  onChange={handleParadaInputChange("ciudad")}
+                  label={
+                    <p>
+                      Ciudad <strong style={{ color: "red" }}>*</strong>
+                    </p>
+                  }
+                  className={styles.input}
+                />
+                <InputComponent
+                  type="text"
+                  value={newParada.estado}
+                  onChange={handleParadaInputChange("estado")}
+                  label="Estado"
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.sectionButtons}>
+                <div className={styles.actionButtons}>
+                  <ButtonComponent
+                    type="button"
+                    onClick={handleCancelParada}
+                    icon={<DeleteRegular />}
+                    text=""
+                    className={`${styles.button} ${styles.cancelButton}`}
+                  />
+                  <ButtonComponent
+                    type="button"
+                    onClick={handleSaveParada}
+                    text="Guardar parada"
+                    className={`${styles.button} ${styles.createButton}`}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
           {tripFormData.tipoViaje === "roundTrip" && (
             <>
               <div className={styles.divider}>
@@ -738,17 +1134,20 @@ export default function CreateTripContent() {
                 type="button"
                 onClick={handleCancel}
                 text="Atras"
-                className={`${styles.button} ${styles.cancelButton}`}
+                className={`${styles.button} ${styles.actionButton}`}
               />
               <ButtonComponent
                 type="button"
                 onClick={handleSaveDraft}
                 text="Guardar y agregar otro viaje"
-                className={`${styles.button} ${styles.cancelButton}`}
+                className={`${styles.button} ${styles.actionButton}`}
               />
               <ButtonComponent
                 type="button"
-                onClick={handleCreateTrip}
+                onClick={() => {
+                  console.log("🔘 Finalizar button clicked!");
+                  handleCreateTrip();
+                }}
                 text="Finalizar"
                 className={`${styles.button} ${styles.createButton}`}
               />

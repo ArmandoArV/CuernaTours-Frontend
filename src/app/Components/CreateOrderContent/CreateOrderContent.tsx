@@ -259,7 +259,7 @@ export default function CreateOrderContent() {
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <Link href="/dashboard/createOrder" passHref>
+          <Link href="/dashboard" passHref>
             <button className={styles.backButton}>
               <ArrowHookUpLeftRegular color="black" />
             </button>
