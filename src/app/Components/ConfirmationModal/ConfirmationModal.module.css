@@ -41,7 +41,7 @@
   padding: 1.5rem 1.5rem 0.5rem 1.5rem; /* Reduced bottom padding */
   font-size: 1.4rem; /* Slightly larger title */
   font-weight: 600;
-  color: #1A2E47;
+  color: #1a2e47;
 }
 
 /* CONTENT */
@@ -83,7 +83,7 @@
 .costValue {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1A2E47;
+  color: #1a2e47;
   margin-top: 0.25rem;
 }
 
@@ -114,13 +114,13 @@
 
 /* Connecting line for stops */
 .routeSection::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 28px;
   left: 18px;
   bottom: 28px;
   width: 2px;
-  background-color: #1A2E47;
+  background-color: #1a2e47;
   z-index: 0;
 }
 
@@ -137,7 +137,7 @@
   height: 36px;
   min-width: 36px;
   border-radius: 50%;
-  background-color: #1A2E47;
+  background-color: #1a2e47;
   color: white;
   display: flex;
   align-items: center;
@@ -175,12 +175,12 @@
   gap: 0.4rem;
   cursor: pointer;
   font-size: 0.9rem;
-  color: #1A2E47;
+  color: #1a2e47;
 }
 
 .radioOption input[type="radio"] {
   /* Custom color for radio/checkbox appearance */
-  accent-color: #96781A; 
+  accent-color: #96781a;
 }
 
 .checkboxRow {
@@ -193,12 +193,12 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  color: #1A2E47;
+  color: #1a2e47;
   font-size: 0.9rem;
 }
 
 .checkboxLabel input[type="checkbox"] {
-  accent-color: #96781A;
+  accent-color: #96781a;
 }
 
 /* BUTTON FOOTER */
@@ -224,8 +224,8 @@
 .editButton {
   /* Lighter, goldish color for "Edit" button */
   background: transparent;
-  border-color: #96781A;
-  color: #96781A;
+  border-color: #96781a;
+  color: #96781a;
 }
 
 .editButton:hover {
@@ -234,11 +234,11 @@
 
 .confirmButton {
   /* Darker, brownish-gold for "Confirmar" button */
-  background-color: #96781A;
-  border-color: #96781A;
+  background-color: #96781a;
+  border-color: #96781a;
   color: white;
   /* Subtle box-shadow for a raised effect */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .confirmButton:hover {
@@ -248,22 +248,22 @@
 
 /* MEDIA QUERY */
 @media (max-width: 480px) {
-    .topSection,
-    .middleSection {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .routeSection::before {
-        left: 18px;
-    }
-    
-    .modalActions {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    
-    .button {
-        width: 100%;
-    }
+  .topSection,
+  .middleSection {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .routeSection::before {
+    left: 18px;
+  }
+
+  .modalActions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .button {
+    width: 100%;
+  }
 }
