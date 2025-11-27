@@ -15,8 +15,8 @@
   /* Use a subtle box shadow for a card effect */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
-  width: 95%;
-  max-width: 450px; /* Adjusted max width to be closer to the image */
+  width: 100%;
+  max-width: 650px; /* Adjusted max width to be closer to the image */
   max-height: 85vh;
   overflow-y: auto;
   position: relative;
