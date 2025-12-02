@@ -18,11 +18,11 @@ import type { PaymentType } from '@/app/backend_models/payment.model';
 export interface PrefillableData {
   drivers: DriverReference[];
   vehicles: VehicleReference[];
-  paymentTypes: PaymentTypeReference[];
-  clientTypes: ClientTypeReference[];
-  contractStatuses: ContractStatusReference[];
-  tripStatuses: TripStatusReference[];
-  coordinators?: User[];
+  payment_types: PaymentTypeReference[];
+  client_types: ClientTypeReference[];
+  contract_statuses: ContractStatusReference[];
+  trip_statuses: TripStatusReference[];
+  coordinators?: UserReference[];
 }
 
 // API response types for reference data
@@ -133,10 +133,23 @@ class ReferenceService {
    * Get client by ID with contacts
    */
   async getClientById(clientId: number): Promise<ClientWithContacts> {
-    const response = await apiClient.get<ClientWithContacts>(
-      API_ENDPOINTS.CLIENTS.BY_ID(clientId)
-    );
-    return validateResponse<ClientWithContacts>(response);
+    // Fetch both client data and contacts
+    const [clientResponse, contactsResponse] = await Promise.all([
+      apiClient.get<Client>(API_ENDPOINTS.CLIENTS.BY_ID(clientId)),
+      apiClient.get<Contact[]>(API_ENDPOINTS.CLIENTS.CONTACTS(clientId))
+    ]);
+    
+    const client = validateResponse<Client>(clientResponse);
+    const contacts = validateResponse<Contact[]>(contactsResponse);
+    
+    // Find primary contact
+    const primary_contact = contacts.find(c => c.is_primary) || contacts[0];
+    
+    return {
+      ...client,
+      contacts,
+      primary_contact
+    };
   }
 
   /**

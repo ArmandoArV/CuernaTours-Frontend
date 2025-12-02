@@ -262,17 +262,22 @@ export default function CreateOrderContent() {
   };
 
   const handleClientSelect = async (clientId: string, option?: SearchableSelectOption) => {
-    setFormData(prev => ({ ...prev, empresa: clientId }));
+    console.log("handleClientSelect called with:", { clientId, option });
     
     // Auto-fill contact information if available
     if (option?.data) {
       try {
+        console.log("Fetching client details for ID:", clientId);
         const clientDetails = await referenceService.getClientById(parseInt(clientId));
+        console.log("Client details received:", clientDetails);
+        
         const primaryContact = clientDetails.primary_contact || clientDetails.contacts?.[0];
+        console.log("Primary contact:", primaryContact);
         
         if (primaryContact) {
           setFormData(prev => ({
             ...prev,
+            empresa: clientId,
             nombreContacto: primaryContact.name || '',
             primerApellido: primaryContact.first_lastname || '',
             segundoApellido: primaryContact.second_lastname || '',
@@ -280,10 +285,15 @@ export default function CreateOrderContent() {
             correoElectronico: primaryContact.email || '',
             tieneWhatsapp: primaryContact.is_whatsapp_available ? 'Si' : 'No',
           }));
+        } else {
+          setFormData(prev => ({ ...prev, empresa: clientId }));
         }
       } catch (error) {
         console.error("Error fetching client details:", error);
+        setFormData(prev => ({ ...prev, empresa: clientId }));
       }
+    } else {
+      setFormData(prev => ({ ...prev, empresa: clientId }));
     }
   };
 
@@ -501,8 +511,8 @@ export default function CreateOrderContent() {
               value={formData.tipoPago}
               onChange={handleSelectChange("tipoPago")}
               options={
-                prefillableData?.paymentTypes
-                  ? referenceService.transformPaymentTypesForSelect(prefillableData.paymentTypes)
+                prefillableData?.payment_types
+                  ? referenceService.transformPaymentTypesForSelect(prefillableData.payment_types)
                   : []
               }
               label="Tipo de pago"

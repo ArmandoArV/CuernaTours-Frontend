@@ -366,9 +366,9 @@ export default function CreateTripContent() {
             <SearchableSelectComponent
               label="Nombre lugar"
               value={tripFormData.origenNombreLugar || ""}
-              onChange={(option) => handlePlaceSelect("origenNombreLugar", option.value, option)}
+              onChange={(value, option) => handlePlaceSelect("origenNombreLugar", value, option)}
               onSearch={handlePlaceSearch}
-              onCreateNew={() => handleCreatePlace('origen')}
+              onCreate={() => handleCreatePlace('origen')}
               required
               placeholder="Buscar lugar de origen..."
               className={styles.input}
@@ -528,9 +528,9 @@ export default function CreateTripContent() {
             <SearchableSelectComponent
               label="Nombre lugar"
               value={tripFormData.destinoNombreLugar || ""}
-              onChange={(option) => handlePlaceSelect("destinoNombreLugar", option.value, option)}
+              onChange={(value, option) => handlePlaceSelect("destinoNombreLugar", value, option)}
               onSearch={handlePlaceSearch}
-              onCreateNew={() => handleCreatePlace('destino')}
+              onCreate={() => handleCreatePlace('destino')}
               required
               placeholder="Buscar lugar de destino..."
               className={styles.input}

@@ -12,7 +12,7 @@ export interface SearchableSelectOption {
 
 interface SearchableSelectComponentProps {
   value: string;
-  onChange: (value: string, option?: SearchableSelectOption) => void;
+  onChange: (value: string, option?: SearchableSelectOption) => void | Promise<void>;
   onSearch: (query: string) => Promise<SearchableSelectOption[]>;
   onCreate?: () => void; // Callback for "Create New" button
   placeholder?: string;
