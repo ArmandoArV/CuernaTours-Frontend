@@ -326,29 +326,29 @@ export default function CreateTripContent() {
     contractId: number,
     baseTrip: any
   ) => {
-    const tripPayload = {
-      ...baseTrip,
-      // Map parada data to destination fields
-      destinoNombreLugar: parada.nombreLugar,
-      destinoCalle: parada.calle,
-      destinoNumero: parada.numero,
-      destinoColonia: parada.colonia,
-      destinoCodigoPostal: parada.codigoPostal,
-      destinoCiudad: parada.ciudad,
-      destinoEstado: parada.estado,
+    // Create trip payload for this parada using the trips service format
+    const paradaTripPayload: any = {
+      contract_id: contractId,
+      service_date: convertDateFormat(baseTrip.idaFecha),
+      origin_time: convertTimeFormat(
+        baseTrip.idaHora || 8,
+        baseTrip.idaMinutos || 0,
+        baseTrip.idaAmPm || "AM"
+      ),
+      origin_id: parseInt(baseTrip.origenNombreLugar),
+      destination_id: parseInt(parada.nombreLugar), // parada's place_id becomes the destination
+      passengers: parseInt(baseTrip.numeroPasajeros) || 1,
+      unit_type: baseTrip.tipoUnidad || undefined,
+      driver_id: baseTrip.nombreChofer ? parseInt(baseTrip.nombreChofer) : undefined,
+      vehicle_id: baseTrip.unidadAsignada ? parseInt(baseTrip.unidadAsignada) : undefined,
+      observations: baseTrip.observacionesChofer || undefined,
+      internal_observations: baseTrip.observacionesCliente || undefined,
+      contract_trip_status_id: 1, // Default status
     };
-
-    // Create the mapped payload and ensure contract_id is included
-    const mappedPayload = mapTripFormToPayload(tripPayload, contractId);
     
-    console.log("🔍 DEBUG - Parada trip payload:", JSON.stringify(mappedPayload, null, 2));
-    
-    // Ensure contract_id is explicitly set
-    if (!mappedPayload.contract_id) {
-      mappedPayload.contract_id = contractId;
-    }
+    console.log("🔍 DEBUG - Parada trip payload:", JSON.stringify(paradaTripPayload, null, 2));
 
-    return await tripsService.create(mappedPayload);
+    return await tripsService.create(paradaTripPayload);
   };
 
   // Helper functions for data conversion
@@ -425,19 +425,9 @@ export default function CreateTripContent() {
         internal_observations: tripFormData.observacionesCliente || undefined,
         origin: {
           place_id: parseInt(tripFormData.origenNombreLugar),
-          name: tripFormData.origenNombreLugar,
-          address: `${tripFormData.origenCalle} ${tripFormData.origenNumero}`,
-          city: tripFormData.origenCiudad,
-          state: tripFormData.origenEstado,
-          zip_code: tripFormData.origenCodigoPostal,
         },
         destination: {
           place_id: parseInt(tripFormData.destinoNombreLugar),
-          name: tripFormData.destinoNombreLugar,
-          address: `${tripFormData.destinoCalle} ${tripFormData.destinoNumero}`,
-          city: tripFormData.destinoCiudad,
-          state: tripFormData.destinoEstado,
-          zip_code: tripFormData.destinoCodigoPostal,
         },
         is_round_trip: tripFormData.tipoViaje === "roundTrip",
         return_date: tripFormData.tipoViaje === "roundTrip" ? convertDateFormat(tripFormData.regresoFecha) : undefined,

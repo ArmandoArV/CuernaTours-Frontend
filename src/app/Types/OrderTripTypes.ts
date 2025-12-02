@@ -151,6 +151,8 @@ export interface CreateOrderPayload {
   coordinator_id?: number;
   observations?: string;
   internal_observations?: string;
+  send_notification?: boolean;
+  has_received_money?: boolean;
   commission?: CommissionPayload;
   trip?: TripDetailsPayload;
 }
@@ -169,6 +171,8 @@ export const mapOrderFormToPayload = (formData: OrderFormData): CreateOrderPaylo
     observations: formData.comentarios || undefined,
     internal_observations: formData.observacionesInternas || undefined,
     coordinator_id: formData.coordinadorViaje ? getCoordinatorId(formData.coordinadorViaje) : undefined,
+    send_notification: false, // Default to false, can be overridden
+    has_received_money: false, // Default to false, can be overridden
   };
 
   // Add commission if applicable
