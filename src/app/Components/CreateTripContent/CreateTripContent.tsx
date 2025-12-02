@@ -14,8 +14,7 @@ import DatePickerComponent from "../DatePickerComponent/DatePickerComponent";
 import Link from "next/link";
 import { showErrorAlert, showSuccessAlert } from "@/app/Utils/AlertUtil";
 import {
-  mapTripFormToPayload,
-  mapOrderFormToPayload,
+  mapCompleteOrderToPayload,
   OrderFormData,
 } from "@/app/Types/OrderTripTypes";
 import { useOrderContext } from "@/app/Contexts/OrderContext";
@@ -311,18 +310,12 @@ export default function CreateTripContent() {
         return;
       }
 
-      // Step 1: Create contract first
-      const orderPayload = mapOrderFormToPayload(orderData as OrderFormData);
-      console.log("Order payload:", orderPayload);
+      // Create contract with embedded trip using new comprehensive endpoint
+      const contractPayload = mapCompleteOrderToPayload(orderData as OrderFormData, tripFormData);
+      console.log("Contract payload:", contractPayload);
 
-      const orderResult = await contractsService.create(orderPayload);
-      const contractId = orderResult.contract_id || orderResult.id;
-
-      // Step 2: Create trip with the new contract ID
-      const tripPayload = mapTripFormToPayload(tripFormData, contractId);
-      console.log("Trip payload:", tripPayload);
-
-      await tripsService.create(tripPayload);
+      const result = await contractsService.create(contractPayload);
+      console.log("Contract created:", result);
 
       showSuccessAlert("Éxito", "Contrato y viaje creados correctamente");
       clearData();
