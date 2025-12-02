@@ -69,7 +69,7 @@ class ContractsService {
    * Get all contracts with details
    */
   async getAll(options?: QueryOptions): Promise<ContractWithDetails[]> {
-    let endpoint = API_ENDPOINTS.CONTRACTS.DETAILS;
+    let endpoint = API_ENDPOINTS.CONTRACTS.ALL_DETAILS;
     
     // Add query parameters if provided
     if (options) {

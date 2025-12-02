@@ -3,6 +3,8 @@ import { useState, useCallback, useEffect } from "react";
 import styles from "./CreateOrderContent.module.css";
 import InputComponent from "../InputComponent/InputComponent";
 import SelectComponent from "../SelectComponent/SelectComponent";
+import SearchableSelectComponent, { SearchableSelectOption } from "../SearchableSelectComponent/SearchableSelectComponent";
+import CreateClientModal from "../CreateClientModal/CreateClientModal";
 import { ArrowHookUpLeftRegular } from "@fluentui/react-icons";
 import Link from "next/link";
 import { showErrorAlert, showSuccessAlert } from "../../Utils/AlertUtil";
@@ -10,6 +12,7 @@ import { OrderFormData, mapOrderFormToPayload } from "@/app/Types/OrderTripTypes
 import { useOrderContext } from "@/app/Contexts/OrderContext";
 import { useRouter } from "next/navigation";
 import { referenceService, ApiError } from "@/services/api";
+import type { PrefillableData, ClientTypeReference, PaymentTypeReference } from "@/services/api/reference.service";
 export default function CreateOrderContent() {
   const { orderData, setOrderData } = useOrderContext();
   const router = useRouter();
@@ -19,9 +22,9 @@ export default function CreateOrderContent() {
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showErrors, setShowErrors] = useState(false);
-  const [clients, setClients] = useState<
-    Array<{ value: string; label: string }>
-  >([]);
+  const [prefillableData, setPrefillableData] = useState<PrefillableData | null>(null);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
 
   const validateForm = () => {
     const missingFields: string[] = [];
@@ -228,27 +231,88 @@ export default function CreateOrderContent() {
     console.log("Cancel clicked");
   };
 
-  const fetchClients = useCallback(async () => {
+  const fetchPrefillableData = useCallback(async () => {
     try {
-      const data = await referenceService.getClients();
-      const clientOptions = referenceService.transformClientsForSelect(data);
-      setClients(clientOptions);
+      setIsLoadingData(true);
+      const data = await referenceService.getPrefillableData();
+      setPrefillableData(data);
     } catch (error) {
-      console.error("Error fetching clients:", error);
+      console.error("Error fetching prefillable data:", error);
       if (error instanceof ApiError) {
-        showErrorAlert("Error", `No se pudieron cargar los clientes: ${error.message}`);
+        showErrorAlert("Error", `No se pudieron cargar los datos: ${error.message}`);
       }
-      setClients([]);
+      setPrefillableData(null);
+    } finally {
+      setIsLoadingData(false);
     }
   }, []);
 
+  const handleClientSearch = async (query: string): Promise<SearchableSelectOption[]> => {
+    try {
+      const results = await referenceService.searchClients(query);
+      return results.map(client => ({
+        value: client.client_id.toString(),
+        label: client.name,
+        data: client,
+      }));
+    } catch (error) {
+      console.error("Error searching clients:", error);
+      return [];
+    }
+  };
+
+  const handleClientSelect = async (clientId: string, option?: SearchableSelectOption) => {
+    setFormData(prev => ({ ...prev, empresa: clientId }));
+    
+    // Auto-fill contact information if available
+    if (option?.data) {
+      try {
+        const clientDetails = await referenceService.getClientById(parseInt(clientId));
+        const primaryContact = clientDetails.primary_contact || clientDetails.contacts?.[0];
+        
+        if (primaryContact) {
+          setFormData(prev => ({
+            ...prev,
+            nombreContacto: primaryContact.name || '',
+            primerApellido: primaryContact.first_lastname || '',
+            segundoApellido: primaryContact.second_lastname || '',
+            telefono: primaryContact.phone || '',
+            correoElectronico: primaryContact.email || '',
+            tieneWhatsapp: primaryContact.is_whatsapp_available ? 'Si' : 'No',
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching client details:", error);
+      }
+    }
+  };
+
+  const handleCreateClient = () => {
+    setIsClientModalOpen(true);
+  };
+
+  const handleClientCreated = (clientId: number, clientName: string, contactData?: any) => {
+    // Auto-fill form with newly created client
+    setFormData(prev => ({
+      ...prev,
+      empresa: clientId.toString(),
+      nombreContacto: contactData?.name || '',
+      primerApellido: contactData?.first_lastname || '',
+      segundoApellido: contactData?.second_lastname || '',
+      telefono: contactData?.phone || '',
+      correoElectronico: contactData?.email || '',
+      tieneWhatsapp: contactData?.is_whatsapp_available ? 'Si' : 'No',
+    }));
+    setIsClientModalOpen(false);
+  };
+
   useEffect(() => {
-    fetchClients();
+    fetchPrefillableData();
     
     // Sync form data with context data
     console.log("CreateOrderContent - OrderData from context:", orderData);
     setFormData(orderData);
-  }, [fetchClients, orderData]);
+  }, [fetchPrefillableData, orderData]);
 
   // Also sync when formData changes
   useEffect(() => {
@@ -274,13 +338,17 @@ export default function CreateOrderContent() {
         </div>
         <form className={styles.form}>
           <div className={styles.placeSection}>
-            <SelectComponent
+            <SearchableSelectComponent
               value={formData.empresa}
-              onChange={handleSelectChange("empresa")}
-              options={clients}
+              onChange={handleClientSelect}
+              onSearch={handleClientSearch}
+              onCreate={handleCreateClient}
               label="Empresa o cliente"
-              placeholder="Seleccione..."
+              placeholder="Buscar cliente..."
               required={true}
+              createButtonText="Crear Nuevo Cliente"
+              noResultsText="No se encontraron clientes"
+              loadingText="Buscando..."
               className={`${styles.select} ${
                 showErrors && errors.empresa ? styles.selectError : ""
               }`}
@@ -432,11 +500,11 @@ export default function CreateOrderContent() {
             <SelectComponent
               value={formData.tipoPago}
               onChange={handleSelectChange("tipoPago")}
-              options={[
-                { value: "efectivo", label: "Efectivo" },
-                { value: "transferencia", label: "Transferencia" },
-                { value: "tarjeta", label: "Tarjeta" },
-              ]}
+              options={
+                prefillableData?.paymentTypes
+                  ? referenceService.transformPaymentTypesForSelect(prefillableData.paymentTypes)
+                  : []
+              }
               label="Tipo de pago"
               placeholder="Seleccione..."
               required={true}
@@ -637,11 +705,14 @@ export default function CreateOrderContent() {
             <SelectComponent
               value={formData.coordinadorViaje}
               onChange={handleSelectChange("coordinadorViaje")}
-              options={[
-                { value: "coordinador1", label: "Coordinador 1" },
-                { value: "coordinador2", label: "Coordinador 2" },
-                { value: "coordinador3", label: "Coordinador 3" },
-              ]}
+              options={
+                prefillableData?.coordinators
+                  ? prefillableData.coordinators.map(coord => ({
+                      value: coord.user_id.toString(),
+                      label: `${coord.name} ${coord.first_lastname}`,
+                    }))
+                  : []
+              }
               label="Coordinador del viaje"
               placeholder="Seleccione..."
               className={styles.select}
@@ -685,6 +756,13 @@ export default function CreateOrderContent() {
           </div>
         </form>
       </div>
+
+      <CreateClientModal
+        isOpen={isClientModalOpen}
+        onClose={() => setIsClientModalOpen(false)}
+        onClientCreated={handleClientCreated}
+        clientTypes={prefillableData?.clientTypes || []}
+      />
     </main>
   );
 }
