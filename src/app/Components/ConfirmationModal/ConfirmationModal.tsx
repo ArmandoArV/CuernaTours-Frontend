@@ -33,7 +33,6 @@ export default function ConfirmationModal({
   paradas,
   lugares = [],
 }: ConfirmationModalProps) {
-
   if (!isOpen) return null;
 
   return (
@@ -96,7 +95,7 @@ export default function ConfirmationModal({
                   {tripFormData?.tipoViaje === "roundTrip" &&
                   tripFormData?.regresoFecha
                     ? tripFormData.regresoFecha
-                    : "00/00/00, 00:00"}
+                    : "SOLO IDA"}
                 </div>
               </div>
             </div>
@@ -106,7 +105,9 @@ export default function ConfirmationModal({
               <div className={styles.routeSection}>
                 {/* Origin */}
                 <div className={styles.routeItem}>
-                  <div className={styles.routeBubble}>1</div>
+                  <div className={styles.outsideBubble}>
+                    <div className={styles.routeBubble}>1</div>
+                  </div>
                   <span className={styles.routeText}>
                     {lugares.find(
                       (l) => l.value === tripFormData?.origenNombreLugar
@@ -121,7 +122,9 @@ export default function ConfirmationModal({
                   paradas.length > 0 &&
                   paradas.map((parada, index) => (
                     <div key={parada.id} className={styles.routeItem}>
-                      <div className={styles.routeBubble}>{index + 2}</div>
+                      <div className={styles.outsideBubble}>
+                        <div className={styles.routeBubble}>{index + 2}</div>
+                      </div>
                       <span className={styles.routeText}>
                         {lugares.find((l) => l.value === parada.nombreLugar)
                           ?.label || parada.nombreLugar}
@@ -131,7 +134,9 @@ export default function ConfirmationModal({
 
                 {/* Destination */}
                 <div className={styles.routeItem}>
-                  <div className={styles.routeBubble}>{paradas.length + 2}</div>
+                  <div className={styles.outsideBubble}>
+                    <div className={styles.routeBubble}>{paradas.length + 2}</div>
+                  </div>
                   <span className={styles.routeText}>
                     {lugares.find(
                       (l) => l.value === tripFormData?.destinoNombreLugar
@@ -150,14 +155,16 @@ export default function ConfirmationModal({
               <span className={styles.radioTitle}>
                 Mandar notificación al cliente *
               </span>
-              <label className={styles.radioOption}>
-                <input type="radio" name="notif" defaultChecked />
-                <span>Sí</span>
-              </label>
-              <label className={styles.radioOption}>
-                <input type="radio" name="notif" />
-                <span>No</span>
-              </label>
+              <div className={styles.radioOptions}>
+                <label className={styles.radioOption}>
+                  <input type="radio" name="notif" defaultChecked />
+                  <span>Sí</span>
+                </label>
+                <label className={styles.radioOption}>
+                  <input type="radio" name="notif" />
+                  <span>No</span>
+                </label>
+              </div>
             </div>
 
             <div className={styles.checkboxRow}>

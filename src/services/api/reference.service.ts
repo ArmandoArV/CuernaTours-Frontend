@@ -98,6 +98,14 @@ export interface VehicleReference {
   max_capacity?: number;
 }
 
+export interface UserReference {
+  user_id: number;
+  name: string;
+  first_lastname?: string;
+  second_lastname?: string;
+  email?: string;
+}
+
 class ReferenceService {
   /**
    * Get prefillable data for forms (drivers, vehicles, payment types, client types, etc.)
@@ -304,8 +312,8 @@ class ReferenceService {
    */
   transformPlacesForSelect(places: PlaceReference[]): Array<{ value: string; label: string }> {
     return places.map(place => ({
-      value: (place.place_id || place.id).toString(),
-      label: place.name || place.nombre,
+      value: (place.place_id || place.id)?.toString() || '',
+      label: place.name || place.nombre || '',
     }));
   }
 
@@ -324,12 +332,13 @@ class ReferenceService {
   /**
    * Transform vehicles for select dropdown
    */
-  transformVehiclesForSelect(vehicles: VehicleReference[]): Array<{ value: string; label: string }> {
+  transformVehiclesForSelect(vehicles: VehicleReference[]): Array<{ value: string; label: string; licensePlate?: string }> {
     return vehicles.map(vehicle => ({
       value: (vehicle.vehicle_id || vehicle.id).toString(),
       label: vehicle.alias 
         ? `${vehicle.alias} (${vehicle.license_plate || vehicle.placa})`
         : `${vehicle.type || vehicle.tipo} - ${vehicle.license_plate || vehicle.placa}`,
+      licensePlate: vehicle.license_plate || vehicle.placa,
     }));
   }
 

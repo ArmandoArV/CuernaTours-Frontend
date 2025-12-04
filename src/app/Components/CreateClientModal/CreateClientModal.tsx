@@ -1,18 +1,25 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import styles from './CreateClientModal.module.css';
-import ButtonComponent from '../ButtonComponent/ButtonComponent';
-import InputComponent from '../InputComponent/InputComponent';
-import SelectComponent from '../SelectComponent/SelectComponent';
-import { referenceService, type ClientTypeReference } from '@/services/api/reference.service';
-import { ApiError } from '@/services/api/ApiError';
-import { showSuccessAlert, showErrorAlert } from '@/app/Utils/AlertUtil';
+import React, { useState } from "react";
+import styles from "./CreateClientModal.module.css";
+import ButtonComponent from "../ButtonComponent/ButtonComponent";
+import InputComponent from "../InputComponent/InputComponent";
+import SelectComponent from "../SelectComponent/SelectComponent";
+import {
+  referenceService,
+  type ClientTypeReference,
+} from "@/services/api/reference.service";
+import { ApiError } from "@/services/api/ApiError";
+import { showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
 
 interface CreateClientModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onClientCreated: (clientId: number, clientName: string, contactData?: any) => void;
+  onClientCreated: (
+    clientId: number,
+    clientName: string,
+    contactData?: any
+  ) => void;
   clientTypes: ClientTypeReference[];
 }
 
@@ -38,17 +45,17 @@ export default function CreateClientModal({
   clientTypes,
 }: CreateClientModalProps) {
   const [formData, setFormData] = useState<ClientFormData>({
-    name: '',
-    client_type_id: '',
-    comments: '',
-    contactName: '',
-    first_lastname: '',
-    second_lastname: '',
-    country_code: '+52',
-    phone: '',
-    email: '',
+    name: "",
+    client_type_id: "",
+    comments: "",
+    contactName: "",
+    first_lastname: "",
+    second_lastname: "",
+    country_code: "+52",
+    phone: "",
+    email: "",
     is_whatsapp_available: false,
-    role: '',
+    role: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -59,29 +66,29 @@ export default function CreateClientModal({
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'El nombre del cliente es requerido';
+      newErrors.name = "El nombre del cliente es requerido";
     }
 
     if (!formData.client_type_id) {
-      newErrors.client_type_id = 'El tipo de cliente es requerido';
+      newErrors.client_type_id = "El tipo de cliente es requerido";
     }
 
     if (!formData.contactName.trim()) {
-      newErrors.contactName = 'El nombre del contacto es requerido';
+      newErrors.contactName = "El nombre del contacto es requerido";
     }
 
     if (!formData.first_lastname.trim()) {
-      newErrors.first_lastname = 'El apellido paterno es requerido';
+      newErrors.first_lastname = "El apellido paterno es requerido";
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = 'El teléfono es requerido';
+      newErrors.phone = "El teléfono es requerido";
     } else if (!/^\d{10}$/.test(formData.phone)) {
-      newErrors.phone = 'El teléfono debe tener 10 dígitos';
+      newErrors.phone = "El teléfono debe tener 10 dígitos";
     }
 
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'El correo electrónico no es válido';
+      newErrors.email = "El correo electrónico no es válido";
     }
 
     setErrors(newErrors);
@@ -92,7 +99,10 @@ export default function CreateClientModal({
     e.preventDefault();
 
     if (!validateForm()) {
-      showErrorAlert('Por favor, corrija los errores en el formulario');
+      showErrorAlert(
+        "Campos inválidos",
+        "Por favor, corrija los errores en el formulario"
+      );
       return;
     }
 
@@ -120,35 +130,41 @@ export default function CreateClientModal({
         comments: undefined,
       };
 
-      await referenceService.createClientContact(newClient.client_id, contactData);
+      await referenceService.createClientContact(
+        newClient.client_id,
+        contactData
+      );
 
-      showSuccessAlert('Cliente creado exitosamente');
-      
+      showSuccessAlert("Éxito", "Cliente creado exitosamente");
+
       // Pass back the client info and contact data for auto-fill
       onClientCreated(newClient.client_id, newClient.name, contactData);
-      
+
       // Reset form
       setFormData({
-        name: '',
-        client_type_id: '',
-        comments: '',
-        contactName: '',
-        first_lastname: '',
-        second_lastname: '',
-        country_code: '+52',
-        phone: '',
-        email: '',
+        name: "",
+        client_type_id: "",
+        comments: "",
+        contactName: "",
+        first_lastname: "",
+        second_lastname: "",
+        country_code: "+52",
+        phone: "",
+        email: "",
         is_whatsapp_available: false,
-        role: '',
+        role: "",
       });
       setErrors({});
       onClose();
     } catch (error) {
-      console.error('Error creating client:', error);
+      console.error("Error creating client:", error);
       if (error instanceof ApiError) {
-        showErrorAlert(error.message);
+        showErrorAlert("Error", error.message);
       } else {
-        showErrorAlert('Error al crear el cliente. Por favor, intente nuevamente.');
+        showErrorAlert(
+          "Error",
+          "Error al crear el cliente. Por favor, intente nuevamente."
+        );
       }
     } finally {
       setIsSubmitting(false);
@@ -157,17 +173,17 @@ export default function CreateClientModal({
 
   const handleClose = () => {
     setFormData({
-      name: '',
-      client_type_id: '',
-      comments: '',
-      contactName: '',
-      first_lastname: '',
-      second_lastname: '',
-      country_code: '+52',
-      phone: '',
-      email: '',
+      name: "",
+      client_type_id: "",
+      comments: "",
+      contactName: "",
+      first_lastname: "",
+      second_lastname: "",
+      country_code: "+52",
+      phone: "",
+      email: "",
       is_whatsapp_available: false,
-      role: '',
+      role: "",
     });
     setErrors({});
     onClose();
@@ -176,7 +192,11 @@ export default function CreateClientModal({
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
-        <button className={styles.closeButton} onClick={handleClose} disabled={isSubmitting}>
+        <button
+          className={styles.closeButton}
+          onClick={handleClose}
+          disabled={isSubmitting}
+        >
           ×
         </button>
 
@@ -185,58 +205,78 @@ export default function CreateClientModal({
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.section}>
             <h3 className={styles.sectionTitle}>Información del Cliente</h3>
-            
+
             <InputComponent
               type="text"
               label="Nombre del Cliente / Empresa"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               placeholder="Ej: Empresa XYZ"
               disabled={isSubmitting}
-              containerClassName={errors.name ? styles.fieldError : ''}
+              containerClassName={errors.name ? styles.fieldError : ""}
             />
-            {errors.name && <span className={styles.errorText}>{errors.name}</span>}
+            {errors.name && (
+              <span className={styles.errorText}>{errors.name}</span>
+            )}
 
             <SelectComponent
               label="Tipo de Cliente"
               value={formData.client_type_id}
-              onChange={(e) => setFormData({ ...formData, client_type_id: e.target.value })}
-              options={clientTypes.map(type => ({
+              onChange={(e) =>
+                setFormData({ ...formData, client_type_id: e.target.value })
+              }
+              options={clientTypes.map((type) => ({
                 value: type.client_type_id.toString(),
                 label: type.name,
               }))}
               placeholder="Seleccione tipo de cliente"
               disabled={isSubmitting}
               required
-              containerClassName={errors.client_type_id ? styles.fieldError : ''}
+              containerClassName={
+                errors.client_type_id ? styles.fieldError : ""
+              }
             />
-            {errors.client_type_id && <span className={styles.errorText}>{errors.client_type_id}</span>}
+            {errors.client_type_id && (
+              <span className={styles.errorText}>{errors.client_type_id}</span>
+            )}
 
             <InputComponent
               type="text"
               label="Comentarios"
               value={formData.comments}
-              onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, comments: e.target.value })
+              }
               placeholder="Notas adicionales (opcional)"
               disabled={isSubmitting}
             />
           </div>
 
           <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Información del Contacto Principal</h3>
-            
+            <h3 className={styles.sectionTitle}>
+              Información del Contacto Principal
+            </h3>
+
             <div className={styles.row}>
               <div className={styles.field}>
                 <InputComponent
                   type="text"
                   label="Nombre"
                   value={formData.contactName}
-                  onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, contactName: e.target.value })
+                  }
                   placeholder="Nombre"
                   disabled={isSubmitting}
-                  containerClassName={errors.contactName ? styles.fieldError : ''}
+                  containerClassName={
+                    errors.contactName ? styles.fieldError : ""
+                  }
                 />
-                {errors.contactName && <span className={styles.errorText}>{errors.contactName}</span>}
+                {errors.contactName && (
+                  <span className={styles.errorText}>{errors.contactName}</span>
+                )}
               </div>
 
               <div className={styles.field}>
@@ -244,12 +284,20 @@ export default function CreateClientModal({
                   type="text"
                   label="Apellido Paterno"
                   value={formData.first_lastname}
-                  onChange={(e) => setFormData({ ...formData, first_lastname: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, first_lastname: e.target.value })
+                  }
                   placeholder="Apellido Paterno"
                   disabled={isSubmitting}
-                  containerClassName={errors.first_lastname ? styles.fieldError : ''}
+                  containerClassName={
+                    errors.first_lastname ? styles.fieldError : ""
+                  }
                 />
-                {errors.first_lastname && <span className={styles.errorText}>{errors.first_lastname}</span>}
+                {errors.first_lastname && (
+                  <span className={styles.errorText}>
+                    {errors.first_lastname}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -257,7 +305,9 @@ export default function CreateClientModal({
               type="text"
               label="Apellido Materno"
               value={formData.second_lastname}
-              onChange={(e) => setFormData({ ...formData, second_lastname: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, second_lastname: e.target.value })
+              }
               placeholder="Apellido Materno (opcional)"
               disabled={isSubmitting}
             />
@@ -268,7 +318,9 @@ export default function CreateClientModal({
                   type="text"
                   label="Código"
                   value={formData.country_code}
-                  onChange={(e) => setFormData({ ...formData, country_code: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, country_code: e.target.value })
+                  }
                   placeholder="+52"
                   disabled={isSubmitting}
                 />
@@ -279,12 +331,19 @@ export default function CreateClientModal({
                   type="text"
                   label="Teléfono"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      phone: e.target.value.replace(/\D/g, ""),
+                    })
+                  }
                   placeholder="0000000000"
                   disabled={isSubmitting}
-                  containerClassName={errors.phone ? styles.fieldError : ''}
+                  containerClassName={errors.phone ? styles.fieldError : ""}
                 />
-                {errors.phone && <span className={styles.errorText}>{errors.phone}</span>}
+                {errors.phone && (
+                  <span className={styles.errorText}>{errors.phone}</span>
+                )}
               </div>
             </div>
 
@@ -292,18 +351,24 @@ export default function CreateClientModal({
               type="email"
               label="Correo Electrónico"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               placeholder="correo@ejemplo.com (opcional)"
               disabled={isSubmitting}
-              containerClassName={errors.email ? styles.fieldError : ''}
+              containerClassName={errors.email ? styles.fieldError : ""}
             />
-            {errors.email && <span className={styles.errorText}>{errors.email}</span>}
+            {errors.email && (
+              <span className={styles.errorText}>{errors.email}</span>
+            )}
 
             <InputComponent
               type="text"
               label="Rol/Puesto"
               value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, role: e.target.value })
+              }
               placeholder="Ej: Gerente (opcional)"
               disabled={isSubmitting}
             />
@@ -313,7 +378,12 @@ export default function CreateClientModal({
                 <input
                   type="checkbox"
                   checked={formData.is_whatsapp_available}
-                  onChange={(e) => setFormData({ ...formData, is_whatsapp_available: e.target.checked })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      is_whatsapp_available: e.target.checked,
+                    })
+                  }
                   disabled={isSubmitting}
                 />
                 <span>¿Tiene WhatsApp?</span>
@@ -331,7 +401,7 @@ export default function CreateClientModal({
             />
             <ButtonComponent
               type="submit"
-              text={isSubmitting ? 'Creando...' : 'Crear Cliente'}
+              text={isSubmitting ? "Creando..." : "Crear Cliente"}
               disabled={isSubmitting}
               className={styles.submitButton}
             />

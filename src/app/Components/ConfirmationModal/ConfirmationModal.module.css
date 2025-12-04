@@ -132,6 +132,16 @@
   padding: 0.35rem 0;
 }
 
+.outsideBubble {
+  border-radius: 50%;
+  background-color: #1a2e47;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+}
+
 .routeBubble {
   width: 36px;
   height: 36px;
@@ -144,7 +154,7 @@
   justify-content: center;
   font-size: 1rem;
   font-weight: 500;
-  box-shadow: 0 0 0 4px white;
+  border: 5px solid #ffffff;
 }
 
 .routeText {
@@ -209,6 +219,12 @@
   padding: 0 1.5rem 1rem 1.5rem; /* Adjusted padding to be only at the sides and bottom */
   border-top: 1px solid #eee; /* Separator line for buttons */
   padding-top: 1rem;
+}
+
+.radioOptions {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
 }
 
 .button {

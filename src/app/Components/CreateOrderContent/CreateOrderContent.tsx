@@ -771,7 +771,7 @@ export default function CreateOrderContent() {
         isOpen={isClientModalOpen}
         onClose={() => setIsClientModalOpen(false)}
         onClientCreated={handleClientCreated}
-        clientTypes={prefillableData?.clientTypes || []}
+        clientTypes={prefillableData?.client_types || []}
       />
     </main>
   );

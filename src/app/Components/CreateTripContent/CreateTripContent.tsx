@@ -5,6 +5,7 @@ import InputComponent from "../InputComponent/InputComponent";
 import SelectComponent from "../SelectComponent/SelectComponent";
 import SearchableSelectComponent, { SearchableSelectOption } from "../SearchableSelectComponent/SearchableSelectComponent";
 import CreatePlaceModal from "../CreatePlaceModal/CreatePlaceModal";
+import ConfirmationModal from "../ConfirmationModal/ConfirmationModal";
 import {
   ArrowHookUpLeftRegular,
   ChevronUpRegular,
@@ -42,12 +43,15 @@ export default function CreateTripContent() {
     Array<{ value: string; label: string }>
   >([]);
   const [unidades, setUnidades] = useState<
-    Array<{ value: string; label: string }>
+    Array<{ value: string; label: string; licensePlate?: string }>
   >([]);
 
   // Place modal state
   const [isPlaceModalOpen, setIsPlaceModalOpen] = useState(false);
   const [placeModalContext, setPlaceModalContext] = useState<'origen' | 'destino' | null>(null);
+
+  // Confirmation modal state
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
   // Place search and selection handlers
   const handlePlaceSearch = async (query: string): Promise<SearchableSelectOption[]> => {
@@ -218,9 +222,24 @@ export default function CreateTripContent() {
 
   const handleTripSelectChange =
     (field: string) => (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = e.target.value;
+      
+      // If selecting a vehicle, auto-fill the license plate
+      if (field === "unidadAsignada" && value) {
+        const selectedVehicle = unidades.find(u => u.value === value);
+        if (selectedVehicle?.licensePlate) {
+          setTripFormData((prev) => ({
+            ...prev,
+            [field]: value,
+            placa: selectedVehicle.licensePlate || "",
+          }));
+          return;
+        }
+      }
+      
       setTripFormData((prev) => ({
         ...prev,
-        [field]: e.target.value,
+        [field]: value,
       }));
     };
 
@@ -291,24 +310,33 @@ export default function CreateTripContent() {
     showSuccessAlert("Guardado", "Borrador guardado correctamente");
   };
 
-  const handleCreateTrip = async () => {
-    try {
-      if (!orderData) {
-        showErrorAlert("Error", "No se encontraron datos del pedido");
-        return;
-      }
+  const handleCreateTrip = () => {
+    // Validate required fields before showing confirmation
+    if (!orderData) {
+      showErrorAlert("Error", "No se encontraron datos del pedido");
+      return;
+    }
 
-      if (
-        !tripFormData.idaFecha ||
-        !tripFormData.origenNombreLugar ||
-        !tripFormData.destinoNombreLugar
-      ) {
-        showErrorAlert(
-          "Error",
-          "Por favor complete todos los campos obligatorios"
-        );
-        return;
-      }
+    if (
+      !tripFormData.idaFecha ||
+      !tripFormData.origenNombreLugar ||
+      !tripFormData.destinoNombreLugar
+    ) {
+      showErrorAlert(
+        "Error",
+        "Por favor complete todos los campos obligatorios"
+      );
+      return;
+    }
+
+    // Show confirmation modal
+    setIsConfirmationModalOpen(true);
+  };
+
+  const handleConfirmCreateTrip = async () => {
+    try {
+      // Close the confirmation modal
+      setIsConfirmationModalOpen(false);
 
       // Create contract with embedded trip using new comprehensive endpoint
       const contractPayload = mapCompleteOrderToPayload(orderData as OrderFormData, tripFormData);
@@ -840,6 +868,16 @@ export default function CreateTripContent() {
           setPlaceModalContext(null);
         }}
         onPlaceCreated={handlePlaceCreated}
+      />
+
+      <ConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={() => setIsConfirmationModalOpen(false)}
+        onConfirm={handleConfirmCreateTrip}
+        orderData={orderData}
+        tripFormData={tripFormData}
+        paradas={[]}
+        lugares={lugares}
       />
     </main>
   );

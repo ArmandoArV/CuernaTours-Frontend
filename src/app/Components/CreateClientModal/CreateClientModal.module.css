@@ -15,8 +15,9 @@
 .modal {
   background-color: white;
   border-radius: 0.75rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  max-width: 50rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 60rem;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -140,57 +141,20 @@
 }
 
 .cancelButton {
-  background-color: #f3f4f6;
-  color: #374151;
-}
-
-.cancelButton:hover {
-  background-color: #e5e7eb;
+  color: var(--Main-96781A);
+  border: 2px solid var(--Main-96781A);
+  background-color: transparent;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
 }
 
 .submitButton {
-  background-color: #3b82f6;
-  color: white;
-}
-
-.submitButton:hover {
-  background-color: #2563eb;
-}
-
-.submitButton:disabled {
-  background-color: #9ca3af;
-  cursor: not-allowed;
-}
-
-/* Scrollbar styling */
-.modal::-webkit-scrollbar {
-  width: 0.5rem;
-}
-
-.modal::-webkit-scrollbar-track {
-  background: #f3f4f6;
-}
-
-.modal::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 0.5rem;
-}
-
-.modal::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
-}
-
-@media (max-width: 768px) {
-  .modal {
-    padding: 1.5rem;
-    max-height: 95vh;
-  }
-
-  .row {
-    grid-template-columns: 1fr;
-  }
-
-  .fieldSmall {
-    width: 100%;
-  }
+  color: #f3f4f6;
+  border: 2px solid var(--Main-96781A);
+  background-color: var(--Main-96781A);
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
 }

@@ -68,14 +68,15 @@ export default function AuthComponent({ children }: AuthRouteProps) {
             router.push("/dashboard");
           }
         } else {
+          // Token is invalid
           authService.clearSession();
           setIsAuthenticated(false);
           router.push("/");
         }
       } catch (error) {
-        console.error("Token validation error:", error);
+        console.error("Token validation error (token expired or invalid):", error);
         
-        // Clear session and redirect to login on any error
+        // If response fails, token is expired or invalid - clear session and redirect to login
         authService.clearSession();
         setIsAuthenticated(false);
         router.push("/");
