@@ -331,7 +331,9 @@ export class TripCollection {
   get drivers(): Driver[] {
     const uniqueDrivers = new Map<number, Driver>();
     this._trips.forEach(trip => {
-      uniqueDrivers.set(trip.driver.id, trip.driver);
+      if (trip.driver?.id) {
+        uniqueDrivers.set(trip.driver.id, trip.driver);
+      }
     });
     return Array.from(uniqueDrivers.values());
   }
@@ -340,7 +342,9 @@ export class TripCollection {
   get vehicles(): Vehicle[] {
     const uniqueVehicles = new Map<number, Vehicle>();
     this._trips.forEach(trip => {
-      uniqueVehicles.set(trip.vehicle.id, trip.vehicle);
+      if (trip.vehicle?.id) {
+        uniqueVehicles.set(trip.vehicle.id, trip.vehicle);
+      }
     });
     return Array.from(uniqueVehicles.values());
   }
