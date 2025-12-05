@@ -107,6 +107,15 @@ class ContractsService {
   }
 
   /**
+   * Get contract details by ID using /contracts/details/:id endpoint
+   */
+  async getContractDetails(contractId: number): Promise<ContractWithDetails> {
+    const endpoint = API_ENDPOINTS.CONTRACTS.DETAILS(contractId);
+    const response = await apiClient.get<ContractWithDetails>(endpoint);
+    return validateResponse<ContractWithDetails>(response);
+  }
+
+  /**
    * Create new contract
    */
   async create(data: CreateContractRequest): Promise<CreateContractResponse> {

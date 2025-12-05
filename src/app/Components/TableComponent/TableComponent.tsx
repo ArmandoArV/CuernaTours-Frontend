@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { getCookie } from "@/app/Utils/CookieUtil";
 import styles from "./TableComponent.module.css";
 import {
@@ -75,6 +76,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
   detailsFields,
   fetchDetails,
 }) => {
+  const router = useRouter();
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [internalCurrentPage, setInternalCurrentPage] = useState(
@@ -502,6 +504,11 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setOpenDropdown(null);
+                                    // Navigate to edit order page
+                                    const orderId = getRowId(row);
+                                    if (orderId) {
+                                      router.push(`/dashboard/order/${orderId}`);
+                                    }
                                     onEditOrder && onEditOrder(row);
                                   }}
                                 >
