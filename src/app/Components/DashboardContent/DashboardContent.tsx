@@ -58,13 +58,13 @@ export default function DashboardContent() {
         setError(null);
       } catch (err) {
         console.error("Error fetching contracts:", err);
-        
+
         if (err instanceof ApiError) {
           setError(err.message);
         } else {
           setError(err instanceof Error ? err.message : "An error occurred");
         }
-        
+
         // Fallback to empty array in case of error
         setContractsData([]);
       } finally {
@@ -153,7 +153,7 @@ export default function DashboardContent() {
         filterConfigs={filterConfigs}
         enableFiltering={true}
         enableSearch={true}
-  showActions={true}
+        showActions={true}
         onSearch={handleSearch}
         emptyMessage="No hay viajes disponibles"
         enablePagination={true}
@@ -176,7 +176,6 @@ export default function DashboardContent() {
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
-                
               }}
             >
               <AddFilled color="white" width={16} height={16} /> Crear Orden

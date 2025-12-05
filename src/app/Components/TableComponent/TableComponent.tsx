@@ -11,6 +11,9 @@ import {
 } from "@fluentui/react-icons";
 import { Pagination } from "@/app/PaginationComponent/PaginationComponent";
 import DetailsPanel from "@/app/Components/DetailsPanel/DetailsPanel";
+import AssignDriverModal from "@/app/Components/AssignDriverModal/AssignDriverModal";
+import { ContractTrip } from "@/app/backend_models/trip.model";
+import { TripCollection, TripData } from "@/app/Types/TripTypes";
 export type TableComponentProps = {
   data: Array<{ [key: string]: any }>;
   columns: string[];
@@ -94,8 +97,10 @@ const TableComponent: React.FC<TableComponentProps> = ({
   const [detailsErrorMap, setDetailsErrorMap] = useState<
     Record<string, string>
   >({});
-
-
+  
+  // AssignDriverModal state
+  const [isAssignDriverModalOpen, setIsAssignDriverModalOpen] = useState<boolean>(false);
+  const [selectedRowForDriver, setSelectedRowForDriver] = useState<ContractTrip | TripCollection | TripData | null>(null);
 
   // Helper to determine id of a row
   const getRowId = (row: { [key: string]: any }): any => {
@@ -324,7 +329,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               // Determine if row contains an identifier we can use to fetch full details
                               const idKeys = [
                                 "contract_id",
-                                "contractId", 
+                                "contractId",
                                 "id",
                                 "ID",
                                 "ID_CONTRACT",
@@ -362,7 +367,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               const baseUrl = (
                                 process.env.NEXT_PUBLIC_API_URL || ""
                               ).replace(/\/$/, "");
-                              
+
                               if (!baseUrl) {
                                 // Can't fetch without base URL; fallback to selecting row
                                 setSelectedRow(row);
@@ -385,12 +390,14 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   method: "GET",
                                   headers,
                                 });
-                                
+
                                 if (!resp.ok) {
-                                  throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+                                  throw new Error(
+                                    `HTTP ${resp.status}: ${resp.statusText}`
+                                  );
                                 }
                                 const json = await resp.json();
-                                
+
                                 if (json && json.success && json.data) {
                                   // The API returns the specific contract data
                                   setSelectedRow(json.data);
@@ -508,6 +515,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setOpenDropdown(null);
+                                    setSelectedRowForDriver(row as ContractTrip | TripCollection | TripData);
+                                    setIsAssignDriverModalOpen(true);
                                     onAssignDriver && onAssignDriver(row);
                                   }}
                                 >
@@ -588,6 +597,23 @@ const TableComponent: React.FC<TableComponentProps> = ({
           )}
         </>
       )}
+      
+      {/* AssignDriverModal */}
+      <AssignDriverModal
+        isOpen={isAssignDriverModalOpen}
+        onClose={() => {
+          setIsAssignDriverModalOpen(false);
+          setSelectedRowForDriver(null);
+        }}
+        tripData={selectedRowForDriver}
+        onAssign={(assignmentData) => {
+          console.log('Driver assignment:', assignmentData);
+          // TODO: Implement the actual assignment logic here
+          // This could involve calling an API to save the assignment
+          setIsAssignDriverModalOpen(false);
+          setSelectedRowForDriver(null);
+        }}
+      />
     </div>
   );
 };
