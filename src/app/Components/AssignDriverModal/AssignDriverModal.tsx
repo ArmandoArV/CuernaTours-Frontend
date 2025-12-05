@@ -7,6 +7,7 @@ import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import { ContractTrip } from "@/app/backend_models/trip.model";
 import { TripCollection, TripData } from "@/app/Types/TripTypes";
 import { referenceService, DriverReference, VehicleReference } from "@/services/api/reference.service";
+import { tripsService } from "@/services/api/trips.service";
 
 interface AssignDriverModalProps {
   isOpen: boolean;
@@ -48,13 +49,47 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
   const [externalContact, setExternalContact] = useState<string>("");
   const [externalVehicleType, setExternalVehicleType] = useState<string>("");
 
-  // Helper function to get current assigned driver ID
-  const getCurrentDriverId = (): string => {
-    if (!tripData) return '';
+  // Full trip data fetched from API
+  const [fullTripData, setFullTripData] = useState<ContractTrip | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Helper function to get trip ID from tripData
+  const getTripId = (): number | null => {
+    if (!tripData) return null;
     const data = tripData as Record<string, any>;
     
+    // Check for various ID property names
+    const idKeys = ['contract_trip_id', 'trip_id', 'tripId', 'id', 'ID', 'Id'];
+    for (const key of idKeys) {
+      if (key in data && data[key]) {
+        const id = parseInt(data[key].toString(), 10);
+        if (!isNaN(id)) return id;
+      }
+    }
+    
+    // Check for TripCollection
+    if ('firstTrip' in tripData && (tripData as TripCollection).firstTrip) {
+      const firstTrip = (tripData as TripCollection).firstTrip as Record<string, any>;
+      if (firstTrip && 'contract_trip_id' in firstTrip) {
+        return firstTrip.contract_trip_id as number;
+      }
+    }
+    
+    return null;
+  };
+
+  // Use fullTripData if available, otherwise fall back to tripData
+  const getActiveData = (): Record<string, any> | null => {
+    return fullTripData || (tripData as Record<string, any>) || null;
+  };
+
+  // Helper function to get current assigned driver ID
+  const getCurrentDriverId = (): string => {
+    const data = getActiveData();
+    if (!data) return '';
+    
     // Check for driver_id property
-    const driverIdKeys = ['driver_id', 'driverId', 'Chofer', 'chofer_id'];
+    const driverIdKeys = ['driver_id', 'driverId', 'chofer_id'];
     for (const key of driverIdKeys) {
       if (key in data && data[key]) {
         return data[key].toString();
@@ -73,11 +108,11 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
 
   // Helper function to get current assigned vehicle ID
   const getCurrentVehicleId = (): string => {
-    if (!tripData) return '';
-    const data = tripData as Record<string, any>;
+    const data = getActiveData();
+    if (!data) return '';
     
     // Check for vehicle_id property
-    const vehicleIdKeys = ['vehicle_id', 'vehicleId', 'Unidad', 'unidad_id'];
+    const vehicleIdKeys = ['vehicle_id', 'vehicleId', 'unidad_id'];
     for (const key of vehicleIdKeys) {
       if (key in data && data[key]) {
         return data[key].toString();
@@ -96,8 +131,8 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
 
   // Helper function to get current license plate
   const getCurrentPlate = (): string => {
-    if (!tripData) return '';
-    const data = tripData as Record<string, any>;
+    const data = getActiveData();
+    if (!data) return '';
     
     // Check for nested vehicle object with license_plate
     if ('vehicle' in data && data.vehicle && typeof data.vehicle === 'object') {
@@ -119,8 +154,8 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
 
   // Helper function to check if external driver is assigned
   const hasExternalDriver = (): boolean => {
-    if (!tripData) return false;
-    const data = tripData as Record<string, any>;
+    const data = getActiveData();
+    if (!data) return false;
     
     const externalDriverKeys = ['external_driver_id', 'externalDriverId', 'external_driver'];
     for (const key of externalDriverKeys) {
@@ -133,8 +168,8 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
 
   // Helper function to get external provider info
   const getExternalProviderInfo = (): { providerName: string; driverName: string; contact: string; vehicleType: string } => {
-    if (!tripData) return { providerName: '', driverName: '', contact: '', vehicleType: '' };
-    const data = tripData as Record<string, any>;
+    const data = getActiveData();
+    if (!data) return { providerName: '', driverName: '', contact: '', vehicleType: '' };
     
     let providerName = '';
     let driverName = '';
@@ -179,27 +214,40 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
 
   // Helper function to get driver name from tripData (for matching)
   const getDriverNameFromData = (): string | null => {
-    if (!tripData) return null;
-    const d = tripData as Record<string, any>;
-    const driverNameKeys = ['Chofer', 'chofer', 'driver_name', 'driverName', 'Driver'];
-    for (const key of driverNameKeys) {
-      if (key in d && d[key] && typeof d[key] === 'string') {
-        return d[key];
-      }
-    }
+    const d = getActiveData();
+    if (!d) return null;
+    
+    // Check for nested driver object first (from API response)
     if ('driver' in d && d.driver && typeof d.driver === 'object') {
       const driver = d.driver;
       if ('name' in driver && 'lastname' in driver) return `${driver.name} ${driver.lastname}`;
       if ('name' in driver && 'first_lastname' in driver) return `${driver.name} ${driver.first_lastname}`;
       if ('name' in driver) return driver.name;
     }
+    
+    // Check for direct driver name properties (for table row data)
+    const driverNameKeys = ['Chofer', 'chofer', 'driver_name', 'driverName', 'Driver'];
+    for (const key of driverNameKeys) {
+      if (key in d && d[key] && typeof d[key] === 'string') {
+        return d[key];
+      }
+    }
     return null;
   };
 
   // Helper function to get vehicle name from tripData (for matching)
   const getVehicleNameFromData = (): string | null => {
-    if (!tripData) return null;
-    const d = tripData as Record<string, any>;
+    const d = getActiveData();
+    if (!d) return null;
+    
+    // Check for nested vehicle object first (from API response)
+    if ('vehicle' in d && d.vehicle && typeof d.vehicle === 'object') {
+      const vehicle = d.vehicle;
+      if ('alias' in vehicle && vehicle.alias) return vehicle.alias;
+      if ('type' in vehicle && vehicle.type) return vehicle.type;
+    }
+    
+    // Check for direct vehicle name properties (for table row data)
     const vehicleKeys = ['Unidad', 'unidad', 'vehicle_name', 'vehicleName', 'Vehicle'];
     for (const key of vehicleKeys) {
       if (key in d && d[key] && typeof d[key] === 'string') {
@@ -278,24 +326,74 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
   };
 
   useEffect(() => {
-    if (isOpen) {
-      // Fetch drivers and vehicles, then set initial values
+    if (isOpen && tripData) {
+      // Fetch full trip data from API, then fetch drivers and vehicles
       const initializeForm = async () => {
-        const [drivers, vehicles] = await Promise.all([fetchChoferes(), fetchUnidades()]);
+        setIsLoading(true);
         
-        // Get existing IDs from tripData
-        const existingDriverId = getCurrentDriverId();
-        const existingVehicleId = getCurrentVehicleId();
-        const existingPlate = getCurrentPlate();
+        try {
+          // First, try to get the trip ID and fetch full data from API
+          const tripId = getTripId();
+          let fetchedTripData: ContractTrip | null = null;
+          
+          if (tripId) {
+            try {
+              fetchedTripData = await tripsService.getById(tripId);
+              setFullTripData(fetchedTripData);
+              console.log('Fetched full trip data from API:', fetchedTripData);
+            } catch (error) {
+              console.error('Error fetching trip by ID:', error);
+              // Continue with tripData if API call fails
+            }
+          }
+          
+          // Fetch drivers and vehicles
+          const [drivers, vehicles] = await Promise.all([fetchChoferes(), fetchUnidades()]);
+          
+          // Transform vehicles to get options with licensePlate
+          const vehicleOpts = referenceService.transformVehiclesForSelect(vehicles);
+          
+          // Use fetched data if available, otherwise use tripData
+          const activeData = fetchedTripData || (tripData as Record<string, any>);
+          
+          // Get existing IDs from active data
+          let existingDriverId = '';
+          let existingVehicleId = '';
+          let existingPlate = '';
+          
+          if (activeData) {
+            // Check for driver_id
+            if ('driver_id' in activeData && activeData.driver_id) {
+              existingDriverId = activeData.driver_id.toString();
+            } else if ('driver' in activeData && activeData.driver && typeof activeData.driver === 'object') {
+              existingDriverId = (activeData.driver.user_id || activeData.driver.id)?.toString() || '';
+            }
+            
+            // Check for vehicle_id
+            if ('vehicle_id' in activeData && activeData.vehicle_id) {
+              existingVehicleId = activeData.vehicle_id.toString();
+            } else if ('vehicle' in activeData && activeData.vehicle && typeof activeData.vehicle === 'object') {
+              existingVehicleId = (activeData.vehicle.vehicle_id || activeData.vehicle.id)?.toString() || '';
+            }
+            
+            // Check for license_plate
+            if ('vehicle' in activeData && activeData.vehicle && typeof activeData.vehicle === 'object') {
+              existingPlate = activeData.vehicle.license_plate || '';
+            } else if ('Placa' in activeData) {
+              existingPlate = activeData.Placa || '';
+            }
+          }
+          
+          console.log('Active data for form:', { existingDriverId, existingVehicleId, existingPlate });
+          
+          // Get names for matching (when we only have names, not IDs)
+          const driverName = getDriverNameFromData();
+          const vehicleName = getVehicleNameFromData();
         
-        // Get names for matching (when we only have names, not IDs)
-        const driverName = getDriverNameFromData();
-        const vehicleName = getVehicleNameFromData();
-        
-        // Set driver ID - either from existing ID or by matching name
-        if (existingDriverId) {
-          setDriverId(existingDriverId);
-        } else if (driverName && drivers.length > 0) {
+          // Set driver ID - either from existing ID or by matching name
+          if (existingDriverId) {
+            setDriverId(existingDriverId);
+          } else if (driverName && drivers.length > 0) {
           const matchedDriverId = matchDriverByName(driverName, drivers);
           if (matchedDriverId) {
             setDriverId(matchedDriverId);
@@ -309,16 +407,16 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
         // Set vehicle ID and plate - either from existing ID or by matching name
         if (existingVehicleId) {
           setVehicleId(existingVehicleId);
-          // Find plate from vehicle data if we have an ID
-          const vehicle = vehicles.find((v: VehicleReference) => 
-            (v.vehicle_id || v.id)?.toString() === existingVehicleId
-          );
-          setPlate(vehicle?.license_plate || vehicle?.placa || existingPlate || '');
+          // Find plate from vehicle options
+          const vehicleOpt = vehicleOpts.find((v) => v.value === existingVehicleId);
+          setPlate(vehicleOpt?.licensePlate || existingPlate || '');
         } else if (vehicleName && vehicles.length > 0) {
           const matchedVehicle = matchVehicleByName(vehicleName, vehicles);
           if (matchedVehicle.id) {
             setVehicleId(matchedVehicle.id);
-            setPlate(matchedVehicle.plate);
+            // Find plate from vehicle options using the matched ID
+            const vehicleOpt = vehicleOpts.find((v) => v.value === matchedVehicle.id);
+            setPlate(vehicleOpt?.licensePlate || matchedVehicle.plate || '');
           } else {
             setVehicleId('');
             setPlate(existingPlate || '');
@@ -354,37 +452,59 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
         // Reset user selection tracking
         setIsUserVehicleSelection(false);
         setIsUserReturnVehicleSelection(false);
+        setInitialPlateSet(false);
+        
+        } catch (error) {
+          console.error('Error initializing form:', error);
+        } finally {
+          setIsLoading(false);
+        }
       };
       
+      // Reset fullTripData when modal opens with new tripData
+      setFullTripData(null);
       initializeForm();
+    } else if (!isOpen) {
+      // Reset when modal closes
+      setFullTripData(null);
     }
   }, [isOpen, tripData, fetchChoferes, fetchUnidades]);
 
   // Track if vehicle selection was user-initiated
   const [isUserVehicleSelection, setIsUserVehicleSelection] = useState(false);
+  
+  // Track if the initial plate has been set
+  const [initialPlateSet, setInitialPlateSet] = useState(false);
+
+  // Set initial plate when vehicleOptions are loaded and vehicleId is set
+  useEffect(() => {
+    if (!initialPlateSet && vehicleId && vehicleOptions.length > 0 && !plate) {
+      const selectedVehicle = vehicleOptions.find((v) => v.value === vehicleId);
+      if (selectedVehicle?.licensePlate) {
+        setPlate(selectedVehicle.licensePlate);
+        setInitialPlateSet(true);
+      }
+    }
+  }, [vehicleId, vehicleOptions, plate, initialPlateSet]);
 
   useEffect(() => {
     // Only update plate from vehicle selection if user explicitly selected a new vehicle
-    if (isUserVehicleSelection && vehicleId && vehiclesData.length > 0) {
-      const selectedVehicle = vehiclesData.find((v) => 
-        (v.vehicle_id || v.id)?.toString() === vehicleId
-      );
-      setPlate(selectedVehicle?.license_plate || selectedVehicle?.placa || "");
+    if (isUserVehicleSelection && vehicleId && vehicleOptions.length > 0) {
+      const selectedVehicle = vehicleOptions.find((v) => v.value === vehicleId);
+      setPlate(selectedVehicle?.licensePlate || "");
     }
-  }, [vehicleId, vehiclesData, isUserVehicleSelection]);
+  }, [vehicleId, vehicleOptions, isUserVehicleSelection]);
 
   // Track if return vehicle selection was user-initiated
   const [isUserReturnVehicleSelection, setIsUserReturnVehicleSelection] = useState(false);
 
   useEffect(() => {
     // Only update plate from vehicle selection if user explicitly selected a new vehicle
-    if (isUserReturnVehicleSelection && returnVehicleId && vehiclesData.length > 0) {
-      const selectedReturnVehicle = vehiclesData.find(
-        (v) => (v.vehicle_id || v.id)?.toString() === returnVehicleId
-      );
-      setReturnPlate(selectedReturnVehicle?.license_plate || selectedReturnVehicle?.placa || "");
+    if (isUserReturnVehicleSelection && returnVehicleId && vehicleOptions.length > 0) {
+      const selectedReturnVehicle = vehicleOptions.find((v) => v.value === returnVehicleId);
+      setReturnPlate(selectedReturnVehicle?.licensePlate || "");
     }
-  }, [returnVehicleId, vehiclesData, isUserReturnVehicleSelection]);
+  }, [returnVehicleId, vehicleOptions, isUserReturnVehicleSelection]);
 
   if (!isOpen || !tripData) return null;
 
@@ -601,13 +721,19 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
         </button>
         <h2>Asignar chofer y unidad</h2>
 
-        <div className={styles.tripInfo}>
-          <p>
-            <strong>Origen:</strong> {getOriginName()}
-          </p>
-          <p>
-            <strong>Destino:</strong> {getDestinationName()}
-          </p>
+        {isLoading ? (
+          <div className={styles.loading}>
+            <p>Cargando información del viaje...</p>
+          </div>
+        ) : (
+          <>
+            <div className={styles.tripInfo}>
+              <p>
+                <strong>Origen:</strong> {getOriginName()}
+              </p>
+              <p>
+                <strong>Destino:</strong> {getDestinationName()}
+              </p>
           <p>
             <strong>Tipo de viaje:</strong> {getTripType()}
           </p>
@@ -817,18 +943,20 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
           </div>
         )}
 
-        <div className={styles.modalActions}>
-          <ButtonComponent
-            type="cancel"
-            onClick={onClose}
-            text="Cancelar"
-          />
-          <ButtonComponent
-            type="button"
-            onClick={handleAssign}
-            text="Asignar"
-          />
-        </div>
+            <div className={styles.modalActions}>
+              <ButtonComponent
+                type="cancel"
+                onClick={onClose}
+                text="Cancelar"
+              />
+              <ButtonComponent
+                type="button"
+                onClick={handleAssign}
+                text="Asignar"
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
