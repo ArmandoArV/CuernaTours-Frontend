@@ -15,6 +15,7 @@ import DetailsPanel from "@/app/Components/DetailsPanel/DetailsPanel";
 import AssignDriverModal from "@/app/Components/AssignDriverModal/AssignDriverModal";
 import { ContractTrip } from "@/app/backend_models/trip.model";
 import { TripCollection, TripData } from "@/app/Types/TripTypes";
+import DriverPaymentModal from "@/app/Components/DriverPaymentModal/DriverPaymentModal";
 export type TableComponentProps = {
   data: Array<{ [key: string]: any }>;
   columns: string[];
@@ -103,6 +104,10 @@ const TableComponent: React.FC<TableComponentProps> = ({
   // AssignDriverModal state
   const [isAssignDriverModalOpen, setIsAssignDriverModalOpen] = useState<boolean>(false);
   const [selectedRowForDriver, setSelectedRowForDriver] = useState<ContractTrip | TripCollection | TripData | null>(null);
+
+  // DriverPaymentModal state
+  const [isDriverPaymentModalOpen, setIsDriverPaymentModalOpen] = useState<boolean>(false);
+  const [selectedTripIdForPayment, setSelectedTripIdForPayment] = useState<string | null>(null);
 
   // Helper to determine id of a row
   const getRowId = (row: { [key: string]: any }): any => {
@@ -536,12 +541,17 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                     e.stopPropagation();
                                     setOpenDropdown(null);
                                     onPayDriver && onPayDriver(row);
+                                    const tripId = getRowId(row);
+                                    if (tripId) {
+                                      setSelectedTripIdForPayment(tripId);
+                                      setIsDriverPaymentModalOpen(true);
+                                    }
                                   }}
                                 >
                                   <Payment24Regular
                                     className={styles.dropdownIcon}
                                   />
-                                  Pagar al chofer
+                                  Pagar a chofer
                                 </button>
                               </div>
                             )}
@@ -620,6 +630,16 @@ const TableComponent: React.FC<TableComponentProps> = ({
           setIsAssignDriverModalOpen(false);
           setSelectedRowForDriver(null);
         }}
+      />
+      
+      {/* DriverPaymentModal */}
+      <DriverPaymentModal
+        isOpen={isDriverPaymentModalOpen}
+        onClose={() => {
+          setIsDriverPaymentModalOpen(false);
+          setSelectedTripIdForPayment(null);
+        }}
+        tripId={selectedTripIdForPayment}
       />
     </div>
   );

@@ -12,3 +12,4 @@ export * from './contracts.service';
 export * from './trips.service';
 export * from './reference.service';
 export * from './places.service';
+export * from './payments.service';
