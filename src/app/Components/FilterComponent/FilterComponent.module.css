@@ -46,7 +46,7 @@
 }
 
 .filter-wrapper:has(select:focus) {
-  border-color: #6366f1;
+  border-color: #DBDBDB;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 2px 6px rgba(0, 0, 0, 0.15);
   z-index: 10;
 }
@@ -154,8 +154,8 @@
   justify-content: space-between;
   width: 100%;
   padding: 8px 16px;
-  background-color: #6366f1;
-  color: white;
+  background-color: #DBDBDB;
+  color: #61636E;
   border-radius: 4px;
   font-size: 13px;
   font-weight: 500;
@@ -167,7 +167,7 @@
 .filter-tag-remove {
   background: none;
   border: none;
-  color: white;
+  color: #61636E;
   cursor: pointer;
   padding: 0;
   margin-left: 4px;

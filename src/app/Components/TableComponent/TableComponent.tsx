@@ -100,14 +100,20 @@ const TableComponent: React.FC<TableComponentProps> = ({
   const [detailsErrorMap, setDetailsErrorMap] = useState<
     Record<string, string>
   >({});
-  
+
   // AssignDriverModal state
-  const [isAssignDriverModalOpen, setIsAssignDriverModalOpen] = useState<boolean>(false);
-  const [selectedRowForDriver, setSelectedRowForDriver] = useState<ContractTrip | TripCollection | TripData | null>(null);
+  const [isAssignDriverModalOpen, setIsAssignDriverModalOpen] =
+    useState<boolean>(false);
+  const [selectedRowForDriver, setSelectedRowForDriver] = useState<
+    ContractTrip | TripCollection | TripData | null
+  >(null);
 
   // DriverPaymentModal state
-  const [isDriverPaymentModalOpen, setIsDriverPaymentModalOpen] = useState<boolean>(false);
-  const [selectedTripIdForPayment, setSelectedTripIdForPayment] = useState<string | null>(null);
+  const [isDriverPaymentModalOpen, setIsDriverPaymentModalOpen] =
+    useState<boolean>(false);
+  const [selectedTripIdForPayment, setSelectedTripIdForPayment] = useState<
+    string | null
+  >(null);
 
   // Helper to determine id of a row
   const getRowId = (row: { [key: string]: any }): any => {
@@ -433,7 +439,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                             }}
                             onMouseLeave={() => setHoveredButton(null)}
                           >
-                            <EyeFilled />
+                            <EyeFilled color="#61636E" />
                           </button>
                           <div className={styles.dropdownContainer}>
                             <button
@@ -493,7 +499,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                 }
                               }}
                             >
-                              <MoreVerticalFilled />
+                              <MoreVerticalFilled color="#61636E" />
                             </button>
 
                             {openDropdown === rowIndex && (
@@ -512,14 +518,14 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                     // Navigate to edit order page
                                     const orderId = getRowId(row);
                                     if (orderId) {
-                                      router.push(`/dashboard/order/${orderId}`);
+                                      router.push(
+                                        `/dashboard/order/${orderId}`
+                                      );
                                     }
                                     onEditOrder && onEditOrder(row);
                                   }}
                                 >
-                                  <Edit24Regular
-                                    className={styles.dropdownIcon}
-                                  />
+                                  <Edit24Regular color="#61636E" />
                                   Editar Orden
                                 </button>
                                 <button
@@ -527,7 +533,12 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setOpenDropdown(null);
-                                    setSelectedRowForDriver(row as ContractTrip | TripCollection | TripData);
+                                    setSelectedRowForDriver(
+                                      row as
+                                        | ContractTrip
+                                        | TripCollection
+                                        | TripData
+                                    );
                                     setIsAssignDriverModalOpen(true);
                                     onAssignDriver && onAssignDriver(row);
                                   }}
@@ -614,7 +625,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
           )}
         </>
       )}
-      
+
       {/* AssignDriverModal */}
       <AssignDriverModal
         isOpen={isAssignDriverModalOpen}
@@ -624,14 +635,14 @@ const TableComponent: React.FC<TableComponentProps> = ({
         }}
         tripData={selectedRowForDriver}
         onAssign={(assignmentData) => {
-          console.log('Driver assignment:', assignmentData);
+          console.log("Driver assignment:", assignmentData);
           // TODO: Implement the actual assignment logic here
           // This could involve calling an API to save the assignment
           setIsAssignDriverModalOpen(false);
           setSelectedRowForDriver(null);
         }}
       />
-      
+
       {/* DriverPaymentModal */}
       <DriverPaymentModal
         isOpen={isDriverPaymentModalOpen}

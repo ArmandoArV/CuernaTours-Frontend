@@ -3,7 +3,9 @@ import { useState, useCallback, useEffect } from "react";
 import styles from "../CreateOrderContent/CreateOrderContent.module.css";
 import InputComponent from "../InputComponent/InputComponent";
 import SelectComponent from "../SelectComponent/SelectComponent";
-import SearchableSelectComponent, { SearchableSelectOption } from "../SearchableSelectComponent/SearchableSelectComponent";
+import SearchableSelectComponent, {
+  SearchableSelectOption,
+} from "../SearchableSelectComponent/SearchableSelectComponent";
 import CreateClientModal from "../CreateClientModal/CreateClientModal";
 import { ArrowHookUpLeftRegular } from "@fluentui/react-icons";
 import Link from "next/link";
@@ -12,14 +14,19 @@ import { OrderFormData } from "@/app/Types/OrderTripTypes";
 import { useOrderContext } from "@/app/Contexts/OrderContext";
 import { useRouter } from "next/navigation";
 import { referenceService, ApiError } from "@/services/api";
-import { contractsService, ContractWithDetails } from "@/services/api/contracts.service";
+import {
+  contractsService,
+  ContractWithDetails,
+} from "@/services/api/contracts.service";
 import type { PrefillableData } from "@/services/api/reference.service";
 
 interface EditOrderContentProps {
   contractId: string;
 }
 
-export default function EditOrderContent({ contractId }: EditOrderContentProps) {
+export default function EditOrderContent({
+  contractId,
+}: EditOrderContentProps) {
   const { orderData, setOrderData } = useOrderContext();
   const router = useRouter();
 
@@ -33,7 +40,8 @@ export default function EditOrderContent({ contractId }: EditOrderContentProps) 
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showErrors, setShowErrors] = useState(false);
-  const [prefillableData, setPrefillableData] = useState<PrefillableData | null>(null);
+  const [prefillableData, setPrefillableData] =
+    useState<PrefillableData | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
 
@@ -48,9 +56,11 @@ export default function EditOrderContent({ contractId }: EditOrderContentProps) 
 
       try {
         setIsLoadingContract(true);
-        const contractData = await contractsService.getContractDetails(parseInt(contractId));
+        const contractData = await contractsService.getContractDetails(
+          parseInt(contractId)
+        );
         setContract(contractData);
-        
+
         // Pre-fill form with contract data
         const updatedFormData: Partial<OrderFormData> = {
           empresa: contractData.client_id?.toString() || "",
@@ -65,23 +75,29 @@ export default function EditOrderContent({ contractId }: EditOrderContentProps) 
         // Fetch client details to get contact information
         if (contractData.client_id) {
           try {
-            const clientDetails = await referenceService.getClientById(contractData.client_id);
-            const primaryContact = clientDetails.primary_contact || clientDetails.contacts?.[0];
-            
+            const clientDetails = await referenceService.getClientById(
+              contractData.client_id
+            );
+            const primaryContact =
+              clientDetails.primary_contact || clientDetails.contacts?.[0];
+
             if (primaryContact) {
               updatedFormData.nombreContacto = primaryContact.name || "";
-              updatedFormData.primerApellido = primaryContact.first_lastname || "";
-              updatedFormData.segundoApellido = primaryContact.second_lastname || "";
+              updatedFormData.primerApellido =
+                primaryContact.first_lastname || "";
+              updatedFormData.segundoApellido =
+                primaryContact.second_lastname || "";
               updatedFormData.telefono = primaryContact.phone || "";
               updatedFormData.correoElectronico = primaryContact.email || "";
-              updatedFormData.tieneWhatsapp = primaryContact.is_whatsapp_available ? "Si" : "No";
+              updatedFormData.tieneWhatsapp =
+                primaryContact.is_whatsapp_available ? "Si" : "No";
             }
           } catch (clientErr) {
             console.error("Error fetching client details:", clientErr);
           }
         }
 
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           ...updatedFormData,
         }));
@@ -93,8 +109,13 @@ export default function EditOrderContent({ contractId }: EditOrderContentProps) 
         } as OrderFormData);
       } catch (err: any) {
         console.error("Error fetching contract:", err);
-        setContractError(err?.message || "Error al cargar los datos del contrato");
-        showErrorAlert("Error", "No se pudo cargar la información del contrato");
+        setContractError(
+          err?.message || "Error al cargar los datos del contrato"
+        );
+        showErrorAlert(
+          "Error",
+          "No se pudo cargar la información del contrato"
+        );
       } finally {
         setIsLoadingContract(false);
       }
@@ -294,7 +315,7 @@ export default function EditOrderContent({ contractId }: EditOrderContentProps) 
       console.log("Saving form data to context:", formData);
       // Update context with current form data
       setOrderData(formData);
-      
+
       // Give a small delay to ensure context is updated
       setTimeout(() => {
         // Proceed to next step - edit trip
@@ -315,7 +336,10 @@ export default function EditOrderContent({ contractId }: EditOrderContentProps) 
     } catch (error) {
       console.error("Error fetching prefillable data:", error);
       if (error instanceof ApiError) {
-        showErrorAlert("Error", `No se pudieron cargar los datos: ${error.message}`);
+        showErrorAlert(
+          "Error",
+          `No se pudieron cargar los datos: ${error.message}`
+        );
       }
       setPrefillableData(null);
     } finally {
@@ -323,10 +347,12 @@ export default function EditOrderContent({ contractId }: EditOrderContentProps) 
     }
   }, []);
 
-  const handleClientSearch = async (query: string): Promise<SearchableSelectOption[]> => {
+  const handleClientSearch = async (
+    query: string
+  ): Promise<SearchableSelectOption[]> => {
     try {
       const results = await referenceService.searchClients(query);
-      return results.map(client => ({
+      return results.map((client) => ({
         value: client.client_id.toString(),
         label: client.name,
         data: client,
@@ -337,39 +363,45 @@ export default function EditOrderContent({ contractId }: EditOrderContentProps) 
     }
   };
 
-  const handleClientSelect = async (clientId: string, option?: SearchableSelectOption) => {
+  const handleClientSelect = async (
+    clientId: string,
+    option?: SearchableSelectOption
+  ) => {
     console.log("handleClientSelect called with:", { clientId, option });
-    
+
     // Auto-fill contact information if available
     if (option?.data) {
       try {
         console.log("Fetching client details for ID:", clientId);
-        const clientDetails = await referenceService.getClientById(parseInt(clientId));
+        const clientDetails = await referenceService.getClientById(
+          parseInt(clientId)
+        );
         console.log("Client details received:", clientDetails);
-        
-        const primaryContact = clientDetails.primary_contact || clientDetails.contacts?.[0];
+
+        const primaryContact =
+          clientDetails.primary_contact || clientDetails.contacts?.[0];
         console.log("Primary contact:", primaryContact);
-        
+
         if (primaryContact) {
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             empresa: clientId,
-            nombreContacto: primaryContact.name || '',
-            primerApellido: primaryContact.first_lastname || '',
-            segundoApellido: primaryContact.second_lastname || '',
-            telefono: primaryContact.phone || '',
-            correoElectronico: primaryContact.email || '',
-            tieneWhatsapp: primaryContact.is_whatsapp_available ? 'Si' : 'No',
+            nombreContacto: primaryContact.name || "",
+            primerApellido: primaryContact.first_lastname || "",
+            segundoApellido: primaryContact.second_lastname || "",
+            telefono: primaryContact.phone || "",
+            correoElectronico: primaryContact.email || "",
+            tieneWhatsapp: primaryContact.is_whatsapp_available ? "Si" : "No",
           }));
         } else {
-          setFormData(prev => ({ ...prev, empresa: clientId }));
+          setFormData((prev) => ({ ...prev, empresa: clientId }));
         }
       } catch (error) {
         console.error("Error fetching client details:", error);
-        setFormData(prev => ({ ...prev, empresa: clientId }));
+        setFormData((prev) => ({ ...prev, empresa: clientId }));
       }
     } else {
-      setFormData(prev => ({ ...prev, empresa: clientId }));
+      setFormData((prev) => ({ ...prev, empresa: clientId }));
     }
   };
 
@@ -377,17 +409,21 @@ export default function EditOrderContent({ contractId }: EditOrderContentProps) 
     setIsClientModalOpen(true);
   };
 
-  const handleClientCreated = (clientId: number, clientName: string, contactData?: any) => {
+  const handleClientCreated = (
+    clientId: number,
+    clientName: string,
+    contactData?: any
+  ) => {
     // Auto-fill form with newly created client
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       empresa: clientId.toString(),
-      nombreContacto: contactData?.name || '',
-      primerApellido: contactData?.first_lastname || '',
-      segundoApellido: contactData?.second_lastname || '',
-      telefono: contactData?.phone || '',
-      correoElectronico: contactData?.email || '',
-      tieneWhatsapp: contactData?.is_whatsapp_available ? 'Si' : 'No',
+      nombreContacto: contactData?.name || "",
+      primerApellido: contactData?.first_lastname || "",
+      segundoApellido: contactData?.second_lastname || "",
+      telefono: contactData?.phone || "",
+      correoElectronico: contactData?.email || "",
+      tieneWhatsapp: contactData?.is_whatsapp_available ? "Si" : "No",
     }));
     setIsClientModalOpen(false);
   };
@@ -401,7 +437,14 @@ export default function EditOrderContent({ contractId }: EditOrderContentProps) 
     return (
       <main className={styles.main}>
         <div className={styles.container}>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "400px",
+            }}
+          >
             <p>Cargando información del contrato...</p>
           </div>
         </div>
@@ -414,9 +457,18 @@ export default function EditOrderContent({ contractId }: EditOrderContentProps) 
     return (
       <main className={styles.main}>
         <div className={styles.container}>
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '400px', gap: '1rem' }}>
-            <p style={{ color: '#dc2626' }}>{contractError}</p>
-            <button 
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "400px",
+              gap: "1rem",
+            }}
+          >
+            <p style={{ color: "#dc2626" }}>{contractError}</p>
+            <button
               onClick={() => router.push("/dashboard")}
               className={`${styles.button} ${styles.cancelButton}`}
             >
@@ -438,8 +490,10 @@ export default function EditOrderContent({ contractId }: EditOrderContentProps) 
             </button>
           </Link>
           <div>
-            <h1 className={styles.title}>Editar contrato de orden #{contractId}</h1>
-            <p className={styles.subtitle}>
+            <h1 className={styles.title}>
+              Editar contrato de orden #{contractId}
+            </h1>
+            <p className={styles.subtitle} style={{ color: "red" }}>
               Los campos marcados con un asterisco rojo son obligatorios{" "}
               <strong style={{ color: "red" }}>* </strong>
             </p>
@@ -611,7 +665,9 @@ export default function EditOrderContent({ contractId }: EditOrderContentProps) 
               onChange={handleSelectChange("tipoPago")}
               options={
                 prefillableData?.payment_types
-                  ? referenceService.transformPaymentTypesForSelect(prefillableData.payment_types)
+                  ? referenceService.transformPaymentTypesForSelect(
+                      prefillableData.payment_types
+                    )
                   : []
               }
               label="Tipo de pago"
@@ -816,7 +872,7 @@ export default function EditOrderContent({ contractId }: EditOrderContentProps) 
               onChange={handleSelectChange("coordinadorViaje")}
               options={
                 prefillableData?.coordinators
-                  ? prefillableData.coordinators.map(coord => ({
+                  ? prefillableData.coordinators.map((coord) => ({
                       value: coord.user_id.toString(),
                       label: `${coord.name} ${coord.first_lastname}`,
                     }))

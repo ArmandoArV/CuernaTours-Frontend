@@ -41,7 +41,6 @@
   margin: 0.5rem 0 0 0;
 }
 
-
 .container {
   display: flex;
   width: 100%;
@@ -52,7 +51,7 @@
   justify-content: flex-start;
   align-items: flex-start;
   flex-shrink: 0;
-  border-radius: 0.5rem;
+  border-radius: 6px;
   background: #ffffff;
   margin: 0 auto;
   box-sizing: border-box;
@@ -92,17 +91,19 @@
 .numberInputContainer {
   flex: 0 0 8rem;
 }
+
 .button {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 0.25rem;
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
   width: auto;
   min-width: fit-content;
   box-sizing: border-box;
+  height: 36px;
 }
 
 .radioGroup {
@@ -118,11 +119,9 @@
   font-size: 1.2rem;
 }
 
-
-
 .cancelButton {
-  color: var(--Main-1A2E47);
-  border: 2px solid var(--Main-1A2E47);
+  color: var(--Main-96781A);
+  border: 2px solid var(--Main-96781A);
   background-color: transparent;
   font-size: 1.2rem;
 }
@@ -232,7 +231,7 @@
   z-index: 1000;
   background: white;
   border: 1px solid #e1e1e1;
-  border-radius: 0.5rem;
+  border-radius: 6px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   margin-top: 0.25rem;
 }
@@ -257,7 +256,7 @@
   resize: vertical;
 }
 
-.sectionButtons{
+.sectionButtons {
   width: 100%;
   display: flex;
   justify-content: flex-end;
@@ -285,7 +284,7 @@
 }
 
 .paradaForm {
-  border-radius: 0.5rem;
+  border-radius: 6px;
   padding: 2rem;
   margin-top: 1rem;
 }
@@ -296,7 +295,7 @@
   align-items: flex-start;
   padding: 1rem;
   margin-bottom: 0.5rem;
-  border-radius: 0.5rem;
+  border-radius: 6px;
   background-color: #ffffff;
   width: 100%;
   box-sizing: border-box;

@@ -178,7 +178,7 @@ export default function DashboardContent() {
                 gap: "8px",
               }}
             >
-              <AddFilled color="white" width={16} height={16} /> Crear Orden
+              <AddFilled fontWeight={600} color="white" width={16} height={16} /> Crear Orden
             </button>
           </Link>
         }

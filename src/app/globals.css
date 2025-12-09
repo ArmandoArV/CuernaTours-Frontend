@@ -3,10 +3,10 @@
   --Main-090B17: #090b17;
   --Text-ADADAD: #adadad;
   --Main-FFFFFF: #ffffff;
-  --Shadows-1A2E47-80: #1A2E47;
+  --Shadows-1A2E47-80: #1a2e47;
   --gold: #96781a;
   --Main-96781A: #96781a;
-  --Background-F5F7FA : #f5f7fa;
+  --Background-F5F7FA: #f5f7fa;
 
   /* FluentUI Design Tokens with Raleway font */
   --colorNeutralForeground1: #242424;
@@ -24,7 +24,8 @@
   --colorBrandBackgroundSelected: #106ebe;
   --colorBrandForeground1: #0078d4;
   --colorStrokeFocus2: #0078d4;
-  --fontFamilyBase: var(--font-raleway), 'Raleway', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --fontFamilyBase: var(--font-raleway), "Raleway", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --fontSizeBase200: 12px;
   --fontSizeBase300: 14px;
   --fontWeightRegular: 400;
@@ -55,8 +56,7 @@ body {
 body {
   color: black;
   background: #fff;
-  font-family: Raleway, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-    Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-family: var(--font-raleway), "Raleway";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

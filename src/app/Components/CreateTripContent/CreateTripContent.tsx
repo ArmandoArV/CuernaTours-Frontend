@@ -3,7 +3,9 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import styles from "./CreateTripContent.module.css";
 import InputComponent from "../InputComponent/InputComponent";
 import SelectComponent from "../SelectComponent/SelectComponent";
-import SearchableSelectComponent, { SearchableSelectOption } from "../SearchableSelectComponent/SearchableSelectComponent";
+import SearchableSelectComponent, {
+  SearchableSelectOption,
+} from "../SearchableSelectComponent/SearchableSelectComponent";
 import CreatePlaceModal from "../CreatePlaceModal/CreatePlaceModal";
 import ConfirmationModal from "../ConfirmationModal/ConfirmationModal";
 import {
@@ -21,7 +23,12 @@ import {
 import { useOrderContext } from "@/app/Contexts/OrderContext";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import { useRouter } from "next/navigation";
-import { referenceService, contractsService, tripsService, ApiError } from "@/services/api";
+import {
+  referenceService,
+  contractsService,
+  tripsService,
+  ApiError,
+} from "@/services/api";
 
 export default function CreateTripContent() {
   const { orderData, tripData, setTripData, clearData } = useOrderContext();
@@ -48,18 +55,22 @@ export default function CreateTripContent() {
 
   // Place modal state
   const [isPlaceModalOpen, setIsPlaceModalOpen] = useState(false);
-  const [placeModalContext, setPlaceModalContext] = useState<'origen' | 'destino' | null>(null);
+  const [placeModalContext, setPlaceModalContext] = useState<
+    "origen" | "destino" | null
+  >(null);
 
   // Confirmation modal state
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
   // Place search and selection handlers
-  const handlePlaceSearch = async (query: string): Promise<SearchableSelectOption[]> => {
+  const handlePlaceSearch = async (
+    query: string
+  ): Promise<SearchableSelectOption[]> => {
     try {
       const results = await referenceService.searchPlaces(query);
-      return results.map(place => ({
-        value: (place.place_id || place.id)?.toString() || '',
-        label: place.name || place.nombre || '',
+      return results.map((place) => ({
+        value: (place.place_id || place.id)?.toString() || "",
+        label: place.name || place.nombre || "",
         data: place,
       }));
     } catch (error) {
@@ -68,23 +79,29 @@ export default function CreateTripContent() {
     }
   };
 
-  const handlePlaceSelect = async (field: string, placeId: string, option?: SearchableSelectOption) => {
-    setTripFormData(prev => ({ ...prev, [field]: placeId }));
-    
+  const handlePlaceSelect = async (
+    field: string,
+    placeId: string,
+    option?: SearchableSelectOption
+  ) => {
+    setTripFormData((prev) => ({ ...prev, [field]: placeId }));
+
     // Auto-fill address fields if available
     if (option?.data) {
       try {
-        const placeDetails = await referenceService.getPlaceById(parseInt(placeId));
-        const prefix = field.replace('NombreLugar', '');
-        
-        setTripFormData(prev => ({
+        const placeDetails = await referenceService.getPlaceById(
+          parseInt(placeId)
+        );
+        const prefix = field.replace("NombreLugar", "");
+
+        setTripFormData((prev) => ({
           ...prev,
-          [`${prefix}Calle`]: placeDetails.address || '',
-          [`${prefix}Numero`]: placeDetails.number || '',
-          [`${prefix}Colonia`]: placeDetails.colonia || '',
-          [`${prefix}CodigoPostal`]: placeDetails.zip_code || '',
-          [`${prefix}Ciudad`]: placeDetails.city || '',
-          [`${prefix}Estado`]: placeDetails.state || '',
+          [`${prefix}Calle`]: placeDetails.address || "",
+          [`${prefix}Numero`]: placeDetails.number || "",
+          [`${prefix}Colonia`]: placeDetails.colonia || "",
+          [`${prefix}CodigoPostal`]: placeDetails.zip_code || "",
+          [`${prefix}Ciudad`]: placeDetails.city || "",
+          [`${prefix}Estado`]: placeDetails.state || "",
         }));
       } catch (error) {
         console.error("Error fetching place details:", error);
@@ -92,36 +109,40 @@ export default function CreateTripContent() {
     }
   };
 
-  const handleCreatePlace = (context: 'origen' | 'destino') => {
+  const handleCreatePlace = (context: "origen" | "destino") => {
     setPlaceModalContext(context);
     setIsPlaceModalOpen(true);
   };
 
-  const handlePlaceCreated = (placeId: number, placeName: string, placeData?: any) => {
-    if (placeModalContext === 'origen') {
-      setTripFormData(prev => ({
+  const handlePlaceCreated = (
+    placeId: number,
+    placeName: string,
+    placeData?: any
+  ) => {
+    if (placeModalContext === "origen") {
+      setTripFormData((prev) => ({
         ...prev,
         origenNombreLugar: placeId.toString(),
-        origenCalle: placeData?.address || '',
-        origenNumero: placeData?.number || '',
-        origenColonia: placeData?.colonia || '',
-        origenCodigoPostal: placeData?.zip_code || '',
-        origenCiudad: placeData?.city || '',
-        origenEstado: placeData?.state || '',
+        origenCalle: placeData?.address || "",
+        origenNumero: placeData?.number || "",
+        origenColonia: placeData?.colonia || "",
+        origenCodigoPostal: placeData?.zip_code || "",
+        origenCiudad: placeData?.city || "",
+        origenEstado: placeData?.state || "",
       }));
-    } else if (placeModalContext === 'destino') {
-      setTripFormData(prev => ({
+    } else if (placeModalContext === "destino") {
+      setTripFormData((prev) => ({
         ...prev,
         destinoNombreLugar: placeId.toString(),
-        destinoCalle: placeData?.address || '',
-        destinoNumero: placeData?.number || '',
-        destinoColonia: placeData?.colonia || '',
-        destinoCodigoPostal: placeData?.zip_code || '',
-        destinoCiudad: placeData?.city || '',
-        destinoEstado: placeData?.state || '',
+        destinoCalle: placeData?.address || "",
+        destinoNumero: placeData?.number || "",
+        destinoColonia: placeData?.colonia || "",
+        destinoCodigoPostal: placeData?.zip_code || "",
+        destinoCiudad: placeData?.city || "",
+        destinoEstado: placeData?.state || "",
       }));
     }
-    
+
     setIsPlaceModalOpen(false);
     setPlaceModalContext(null);
   };
@@ -223,10 +244,10 @@ export default function CreateTripContent() {
   const handleTripSelectChange =
     (field: string) => (e: React.ChangeEvent<HTMLSelectElement>) => {
       const value = e.target.value;
-      
+
       // If selecting a vehicle, auto-fill the license plate
       if (field === "unidadAsignada" && value) {
-        const selectedVehicle = unidades.find(u => u.value === value);
+        const selectedVehicle = unidades.find((u) => u.value === value);
         if (selectedVehicle?.licensePlate) {
           setTripFormData((prev) => ({
             ...prev,
@@ -236,7 +257,7 @@ export default function CreateTripContent() {
           return;
         }
       }
-      
+
       setTripFormData((prev) => ({
         ...prev,
         [field]: value,
@@ -339,7 +360,10 @@ export default function CreateTripContent() {
       setIsConfirmationModalOpen(false);
 
       // Create contract with embedded trip using new comprehensive endpoint
-      const contractPayload = mapCompleteOrderToPayload(orderData as OrderFormData, tripFormData);
+      const contractPayload = mapCompleteOrderToPayload(
+        orderData as OrderFormData,
+        tripFormData
+      );
       console.log("Contract payload:", contractPayload);
 
       const result = await contractsService.create(contractPayload);
@@ -350,7 +374,7 @@ export default function CreateTripContent() {
       router.push("/dashboard");
     } catch (error) {
       console.error("Error creating contract and trip:", error);
-      
+
       if (error instanceof ApiError) {
         showErrorAlert("Error", error.message);
       } else {
@@ -375,7 +399,7 @@ export default function CreateTripContent() {
           </Link>
           <div>
             <h1 className={styles.title}>Crear viaje</h1>
-            <p className={styles.subtitle}>
+            <p className={styles.subtitle} style={{ color: "red" }}>
               Los campos marcados con un asterisco rojo son obligatorios{" "}
               <strong style={{ color: "red" }}>* </strong>
             </p>
@@ -387,9 +411,11 @@ export default function CreateTripContent() {
             <SearchableSelectComponent
               label="Nombre lugar"
               value={tripFormData.origenNombreLugar || ""}
-              onChange={(value, option) => handlePlaceSelect("origenNombreLugar", value, option)}
+              onChange={(value, option) =>
+                handlePlaceSelect("origenNombreLugar", value, option)
+              }
               onSearch={handlePlaceSearch}
-              onCreate={() => handleCreatePlace('origen')}
+              onCreate={() => handleCreatePlace("origen")}
               required
               placeholder="Buscar lugar de origen..."
               className={styles.input}
@@ -549,9 +575,11 @@ export default function CreateTripContent() {
             <SearchableSelectComponent
               label="Nombre lugar"
               value={tripFormData.destinoNombreLugar || ""}
-              onChange={(value, option) => handlePlaceSelect("destinoNombreLugar", value, option)}
+              onChange={(value, option) =>
+                handlePlaceSelect("destinoNombreLugar", value, option)
+              }
               onSearch={handlePlaceSearch}
-              onCreate={() => handleCreatePlace('destino')}
+              onCreate={() => handleCreatePlace("destino")}
               required
               placeholder="Buscar lugar de destino..."
               className={styles.input}
@@ -860,7 +888,7 @@ export default function CreateTripContent() {
           </div>
         </form>
       </div>
-      
+
       <CreatePlaceModal
         isOpen={isPlaceModalOpen}
         onClose={() => {

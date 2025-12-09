@@ -40,7 +40,7 @@ export default function SearchableSelectComponent({
   id,
   className = '',
   containerClassName = '',
-  createButtonText = 'Create New',
+  createButtonText = 'Crear nuevo',
   noResultsText = 'No results found',
   loadingText = 'Loading...',
   debounceMs = 300,

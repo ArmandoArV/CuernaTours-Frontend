@@ -141,7 +141,7 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.625rem 1rem;
-  background-color: #3b82f6;
+  background-color: var(--Main-1A2E47);
   color: white;
   border: none;
   border-radius: 0.375rem;
@@ -152,11 +152,11 @@
 }
 
 .createButton:hover {
-  background-color: #2563eb;
+  background-color: #090b17;
 }
 
 .createButton:active {
-  background-color: #1d4ed8;
+  background-color: #090b17;
 }
 
 .createIcon {

@@ -243,11 +243,6 @@
   border-bottom-right-radius: 8px;
 }
 
-.dropdownIcon {
-  font-size: 16px;
-  color: #666;
-}
-
 /* Details row styling (inserted directly under a selected row) */
 .detailsRowCell {
   padding: 10px 16px;

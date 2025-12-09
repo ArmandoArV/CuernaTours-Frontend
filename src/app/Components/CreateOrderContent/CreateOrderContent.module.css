@@ -164,7 +164,7 @@
 .title {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #111;
+  color: #3d3d3d;
   margin: 0;
 }
 
@@ -234,7 +234,6 @@
   background: #fff;
 }
 
-
 /* Align radio groups horizontally with consistent label width */
 .radioGroupHorizontal {
   display: flex;
@@ -260,9 +259,6 @@
 .radioGroupHorizontal .radioLabelHorizontal {
   width: 9rem;
 }
-
-
-
 
 /* Tablet and desktop styles for error messages */
 @media (min-width: 768px) {

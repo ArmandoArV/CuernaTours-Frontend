@@ -5,7 +5,7 @@ import InputComponent from "../InputComponent/InputComponent";
 import SelectComponent from "../SelectComponent/SelectComponent";
 import SearchableSelectComponent, { SearchableSelectOption } from "../SearchableSelectComponent/SearchableSelectComponent";
 import CreateClientModal from "../CreateClientModal/CreateClientModal";
-import { ArrowHookUpLeftRegular } from "@fluentui/react-icons";
+import { ArrowLeftFilled } from "@fluentui/react-icons";
 import Link from "next/link";
 import { showErrorAlert, showSuccessAlert } from "../../Utils/AlertUtil";
 import { OrderFormData, mapOrderFormToPayload } from "@/app/Types/OrderTripTypes";
@@ -50,11 +50,23 @@ export default function CreateOrderContent() {
       newErrors.telefono = "El teléfono solo debe contener números";
     }
 
+    if (!formData.tieneWhatsapp) {
+      missingFields.push("¿Tiene WhatsApp?");
+    }
+
     if (!formData.costoViaje.trim()) {
       missingFields.push("Costo del viaje");
       newErrors.costoViaje = "El costo del viaje es obligatorio";
     } else if (!isValidNumber(formData.costoViaje)) {
       newErrors.costoViaje = "El costo del viaje debe ser un número válido";
+    }
+
+    if (!formData.aplicaIva) {
+      missingFields.push("¿Aplica IVA?");
+    }
+
+    if (!formData.llevaComision) {
+      missingFields.push("¿Lleva comisión?");
     }
 
     // Conditional validations when llevaComision is "Si"
@@ -63,6 +75,10 @@ export default function CreateOrderContent() {
         missingFields.push("Nombre de quien recibe la comisión");
         newErrors.nombreRecibeComision =
           "El nombre de quien recibe la comisión es obligatorio";
+      }
+
+      if (!formData.tipoComision) {
+        missingFields.push("Tipo de comisión");
       }
 
       // Validate percentage if tipo comision is percentage
@@ -335,12 +351,12 @@ export default function CreateOrderContent() {
         <div className={styles.header}>
           <Link href="/dashboard" passHref>
             <button className={styles.backButton}>
-              <ArrowHookUpLeftRegular color="black" />
+              <ArrowLeftFilled color="#61636E" />
             </button>
           </Link>
           <div>
             <h1 className={styles.title}>Crear contrato de orden</h1>
-            <p className={styles.subtitle}>
+            <p className={styles.subtitle} style={{color: "red"}}>
               Los campos marcados con un asterisco rojo son obligatorios{" "}
               <strong style={{ color: "red" }}>* </strong>
             </p>
