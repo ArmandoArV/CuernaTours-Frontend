@@ -99,6 +99,7 @@
 .nextButton {
   background-color: var(--Main-96781A);
   color: white;
+  border: none;
 }
 
 .nextButton:hover {

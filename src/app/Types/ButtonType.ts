@@ -1,5 +1,5 @@
 export type IButtonProps = {
-  text: string;
+  text?: string;
   onClick?: () => void | Promise<void>;
   className?: string;
   disabled?: boolean;

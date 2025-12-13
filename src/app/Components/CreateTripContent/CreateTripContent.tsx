@@ -11,7 +11,7 @@ import ConfirmationModal from "../ConfirmationModal/ConfirmationModal";
 import {
   ArrowHookUpLeftRegular,
   ChevronUpRegular,
-  ChevronDownRegular,
+  AddFilled,
 } from "@fluentui/react-icons";
 import DatePickerComponent from "../DatePickerComponent/DatePickerComponent";
 import Link from "next/link";
@@ -22,6 +22,7 @@ import {
 } from "@/app/Types/OrderTripTypes";
 import { useOrderContext } from "@/app/Contexts/OrderContext";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
+import ParadaItem from "../ParadaItem/ParadaItem";
 import { useRouter } from "next/navigation";
 import {
   referenceService,
@@ -29,6 +30,17 @@ import {
   tripsService,
   ApiError,
 } from "@/services/api";
+
+interface Parada {
+  id: string;
+  nombreLugar: string;
+  calle: string;
+  numero: string;
+  colonia: string;
+  codigoPostal: string;
+  ciudad: string;
+  estado: string;
+}
 
 export default function CreateTripContent() {
   const { orderData, tripData, setTripData, clearData } = useOrderContext();
@@ -61,6 +73,9 @@ export default function CreateTripContent() {
 
   // Confirmation modal state
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+
+  // Paradas state
+  const [paradas, setParadas] = useState<Parada[]>([]);
 
   // Place search and selection handlers
   const handlePlaceSearch = async (
@@ -145,6 +160,66 @@ export default function CreateTripContent() {
 
     setIsPlaceModalOpen(false);
     setPlaceModalContext(null);
+  };
+
+  // Parada handlers
+  const handleAddParada = () => {
+    const newParada: Parada = {
+      id: Date.now().toString(),
+      nombreLugar: "",
+      calle: "",
+      numero: "",
+      colonia: "",
+      codigoPostal: "",
+      ciudad: "",
+      estado: "",
+    };
+    setParadas([...paradas, newParada]);
+  };
+
+  const handleRemoveParada = (id: string) => {
+    setParadas(paradas.filter((p) => p.id !== id));
+  };
+
+  const handleParadaChange = (id: string, field: keyof Parada, value: string) => {
+    setParadas(
+      paradas.map((p) => (p.id === id ? { ...p, [field]: value } : p))
+    );
+  };
+
+  const handleParadaPlaceSelect = async (
+    id: string,
+    placeId: string,
+    option?: SearchableSelectOption
+  ) => {
+    handleParadaChange(id, "nombreLugar", placeId);
+
+    // Auto-fill address fields if available
+    if (option?.data) {
+      try {
+        const placeDetails = await referenceService.getPlaceById(
+          parseInt(placeId)
+        );
+        setParadas(
+          paradas.map((p) =>
+            p.id === id
+              ? {
+                  ...p,
+                  nombreLugar: placeId,
+                  calle: placeDetails.address || "",
+                  numero: placeDetails.number || "",
+                  colonia: placeDetails.colonia || "",
+                  codigoPostal: placeDetails.zip_code || "",
+                  ciudad: placeDetails.city || "",
+                  estado: placeDetails.state || "",
+                }
+              : p
+          )
+        );
+      } catch (error) {
+        console.error("Error fetching place details:", error);
+      }
+    }
   };
 
   // Fetch functions
@@ -354,16 +429,19 @@ export default function CreateTripContent() {
     setIsConfirmationModalOpen(true);
   };
 
-  const handleConfirmCreateTrip = async () => {
+  const handleConfirmCreateTrip = async (sendNotification: boolean) => {
     try {
       // Close the confirmation modal
       setIsConfirmationModalOpen(false);
 
       // Create contract with embedded trip using new comprehensive endpoint
-      const contractPayload = mapCompleteOrderToPayload(
-        orderData as OrderFormData,
-        tripFormData
-      );
+      const contractPayload = {
+        ...mapCompleteOrderToPayload(
+          orderData as OrderFormData,
+          tripFormData
+        ),
+        send_notification: sendNotification,
+      };
       console.log("Contract payload:", contractPayload);
 
       const result = await contractsService.create(contractPayload);
@@ -806,6 +884,33 @@ export default function CreateTripContent() {
           )}
 
           <div className={styles.divider}>
+            <h2 className={styles.sectionTitle}>Paradas</h2>
+          </div>
+
+          <div className={styles.section}>
+            <ButtonComponent
+              type="button"
+              onClick={handleAddParada}
+              icon={<AddFilled />}
+              className={`${styles.button} ${styles.addButton}`}
+            />
+          </div>
+
+          {paradas.map((parada, index) => (
+            <ParadaItem
+              key={parada.id}
+              parada={parada}
+              index={index}
+              onRemove={handleRemoveParada}
+              onChange={handleParadaChange}
+              onPlaceSelect={handleParadaPlaceSelect}
+              onPlaceSearch={handlePlaceSearch}
+              onCreatePlace={handleCreatePlace}
+              onAdd={handleAddParada}
+            />
+          ))}
+
+          <div className={styles.divider}>
             <h2 className={styles.sectionTitle}>Asignación</h2>
           </div>
 
@@ -904,7 +1009,7 @@ export default function CreateTripContent() {
         onConfirm={handleConfirmCreateTrip}
         orderData={orderData}
         tripFormData={tripFormData}
-        paradas={[]}
+        paradas={paradas}
         lugares={lugares}
       />
     </main>

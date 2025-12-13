@@ -5,6 +5,7 @@ import InputComponent from "../InputComponent/InputComponent";
 import SelectComponent from "../SelectComponent/SelectComponent";
 import SearchableSelectComponent, { SearchableSelectOption } from "../SearchableSelectComponent/SearchableSelectComponent";
 import CreateClientModal from "../CreateClientModal/CreateClientModal";
+import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import { ArrowLeftFilled } from "@fluentui/react-icons";
 import Link from "next/link";
 import { showErrorAlert, showSuccessAlert } from "../../Utils/AlertUtil";
@@ -765,20 +766,18 @@ export default function CreateOrderContent() {
           </div>
 
           <div className={styles.buttonContainer}>
-            <button
-              type="button"
+            <ButtonComponent
+              text="Cancelar"
               onClick={handleCancel}
-              className={`${styles.button} ${styles.cancelButton}`}
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
+              type="cancel"
+              className={styles.cancelButton}
+            />
+            <ButtonComponent
+              text="Siguiente"
               onClick={handleNext}
-              className={`${styles.button} ${styles.nextButton}`}
-            >
-              Siguiente
-            </button>
+              type="button"
+              className={styles.nextButton}
+            />
           </div>
         </form>
       </div>

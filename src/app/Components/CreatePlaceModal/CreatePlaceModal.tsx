@@ -72,7 +72,7 @@ export default function CreatePlaceModal({
     e.preventDefault();
 
     if (!validateForm()) {
-      showErrorAlert('Por favor, corrija los errores en el formulario');
+      showErrorAlert('Error de validación', 'Por favor, corrija los errores en el formulario');
       return;
     }
 
@@ -90,7 +90,7 @@ export default function CreatePlaceModal({
         annotations: formData.annotations || undefined,
       });
 
-      showSuccessAlert('Lugar creado exitosamente');
+      showSuccessAlert('Éxito', 'Lugar creado exitosamente');
       
       // Pass back the place info for auto-fill
       onPlaceCreated(newPlace.place_id, newPlace.name, formData);
@@ -111,9 +111,9 @@ export default function CreatePlaceModal({
     } catch (error) {
       console.error('Error creating place:', error);
       if (error instanceof ApiError) {
-        showErrorAlert(error.message);
+        showErrorAlert('Error', error.message);
       } else {
-        showErrorAlert('Error al crear el lugar. Por favor, intente nuevamente.');
+        showErrorAlert('Error', 'Error al crear el lugar. Por favor, intente nuevamente.');
       }
     } finally {
       setIsSubmitting(false);

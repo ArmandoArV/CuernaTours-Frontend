@@ -139,6 +139,7 @@ export interface CreateContractPayload {
   observations?: string;
   internal_observations?: string;
   send_notification?: boolean;
+  has_received_money?: boolean;
   
   commission?: CommissionPayload;
   trip: TripPayload;
@@ -243,6 +244,7 @@ export const mapCompleteOrderToPayload = (
     internal_observations: orderData.observacionesInternas || undefined,
     coordinator_id: orderData.coordinadorViaje ? parseInt(orderData.coordinadorViaje) : undefined,
     send_notification: false,
+    has_received_money: false,
     
     trip: {
       service_date: convertDateFormat(tripData.idaFecha),

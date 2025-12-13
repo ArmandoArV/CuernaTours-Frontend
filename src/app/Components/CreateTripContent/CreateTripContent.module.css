@@ -56,6 +56,10 @@
   margin: 0 auto;
   box-sizing: border-box;
 }
+/* make container a positioning context for floating buttons */
+.container {
+  position: relative;
+}
 .form {
   width: 100%;
   display: flex;
@@ -299,6 +303,53 @@
   background-color: #ffffff;
   width: 100%;
   box-sizing: border-box;
+}
+
+/* Paradas header */
+.paradasHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.paradasTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Small square add icon next to the title */
+.paradaAddIcon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--Main-1A2E47);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* Floating add button at bottom-right of the container */
+.floatingAdd {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--Main-1A2E47);
+  color: #fff;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.12);
+  z-index: 20;
 }
 
 .paradaInfo {

@@ -1,10 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import FilterableTableComponent from "../FilterableTable/FilterableTableComponent";
 import { FilterConfig, FilterPresets } from "../FilterComponent";
-import { AddFilled } from "@fluentui/react-icons";
-import Link from "next/link";
+import { AddFilled, DocumentAddRegular, ArrowRepeatAllRegular } from "@fluentui/react-icons";
+import { useRouter } from "next/navigation";
 import { contractsService, ApiError } from "@/services/api";
+import ButtonComponent from "../ButtonComponent/ButtonComponent";
+import styles from "./DashboardContent.module.css";
 
 // Status mapping based on provided ids
 const STATUS_MAP: Record<number, string> = {
@@ -43,10 +45,30 @@ function transformApiData(apiData: any[]): any[] {
 }
 
 export default function DashboardContent() {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [contractsData, setContractsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
 
   // Fetch data from API
   useEffect(() => {
@@ -127,6 +149,15 @@ export default function DashboardContent() {
     console.log("Búsqueda:", searchTerm);
   };
 
+  const handleButtonClick = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  const handleMenuItemClick = (path: string) => {
+    setShowDropdown(false);
+    router.push(path);
+  };
+
   if (loading) {
     return (
       <div style={{ padding: "20px", textAlign: "center" }}>
@@ -162,25 +193,37 @@ export default function DashboardContent() {
         onPageChange={setCurrentPage}
         onFiltersChange={handleFiltersChange}
         actionButtons={
-          <Link href="/dashboard/createOrder" passHref>
-            <button
-              style={{
-                padding: "8px 16px",
-                backgroundColor: "#96781a",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                fontSize: "1rem",
-                fontWeight: "500",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <AddFilled fontWeight={600} color="white" width={16} height={16} /> Crear Orden
-            </button>
-          </Link>
+          <div ref={dropdownRef} style={{ position: "relative" }}>
+            <ButtonComponent
+              text="Crear Orden"
+              icon={
+                <AddFilled
+                  fontWeight={600}
+                  color="white"
+                  width={16}
+                  height={16}
+                />
+              }
+              className={styles.createOrderButton}
+              onClick={handleButtonClick}
+            />
+            {showDropdown && (
+              <div className={styles.dropdownMenu}>
+                <ButtonComponent
+                  text="Nuevo Viaje"
+                  icon={<DocumentAddRegular width={16} height={16} />}
+                  className={styles.dropdownItem}
+                  onClick={() => handleMenuItemClick("/dashboard/createOrder")}
+                />
+                <ButtonComponent
+                  text="Viaje frecuente"
+                  icon={<ArrowRepeatAllRegular width={16} height={16} />}
+                  className={styles.dropdownItem}
+                  onClick={() => handleMenuItemClick("/dashboard")}
+                />
+              </div>
+            )}
+          </div>
         }
       />
     </div>

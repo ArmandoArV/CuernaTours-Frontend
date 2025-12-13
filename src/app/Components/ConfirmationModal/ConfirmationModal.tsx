@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import styles from "./ConfirmationModal.module.css";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 
@@ -17,7 +17,7 @@ interface Parada {
 interface ConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (sendNotification: boolean) => void;
   orderData: any;
   tripFormData: any;
   paradas: Parada[];
@@ -33,6 +33,8 @@ export default function ConfirmationModal({
   paradas,
   lugares = [],
 }: ConfirmationModalProps) {
+  const [sendNotification, setSendNotification] = useState(true);
+
   if (!isOpen) return null;
 
   return (
@@ -153,15 +155,25 @@ export default function ConfirmationModal({
           <div className={styles.summarySection}>
             <div className={styles.radioBlock}>
               <span className={styles.radioTitle}>
-                Mandar notificación al cliente *
+                Mandar notificación al cliente <strong style={{color:"red"}} >*</strong>
               </span>
               <div className={styles.radioOptions}>
                 <label className={styles.radioOption}>
-                  <input type="radio" name="notif" defaultChecked />
+                  <input 
+                    type="radio" 
+                    name="notif" 
+                    checked={sendNotification === true}
+                    onChange={() => setSendNotification(true)}
+                  />
                   <span>Sí</span>
                 </label>
                 <label className={styles.radioOption}>
-                  <input type="radio" name="notif" />
+                  <input 
+                    type="radio" 
+                    name="notif" 
+                    checked={sendNotification === false}
+                    onChange={() => setSendNotification(false)}
+                  />
                   <span>No</span>
                 </label>
               </div>
@@ -186,7 +198,7 @@ export default function ConfirmationModal({
           />
           <ButtonComponent
             type="button"
-            onClick={onConfirm}
+            onClick={() => onConfirm(sendNotification)}
             text="Confirmar"
             className={`${styles.button} ${styles.confirmButton}`}
           />
