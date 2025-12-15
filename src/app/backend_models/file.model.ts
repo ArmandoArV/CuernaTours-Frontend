@@ -196,11 +196,6 @@ export interface FileValidationResult {
 }
 
 /**
- * Multer file interface (for file uploads)
- */
-export type MulterFile = Express.Multer.File;
-
-/**
  * File processing options
  */
 export interface FileProcessingOptions {
