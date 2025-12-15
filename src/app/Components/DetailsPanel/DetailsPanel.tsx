@@ -5,7 +5,7 @@ import DateDisplayComponent from "@/app/Components/DateDisplayComponent";
 import { TripCollection, type TripData } from "@/app/Types/TripTypes";
 import { Contract, type ContractData } from "@/app/Types/ContractTypes";
 
-interface DetailsPanelProps {
+export interface DetailsPanelProps {
   data: any;
   loading?: boolean;
   error?: string | null;
