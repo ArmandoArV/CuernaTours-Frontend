@@ -1,9 +1,10 @@
 import EditOrderPageWrapper from "@/app/Components/EditOrderPageWrapper/EditOrderPageWrapper";
 
-export default function EditOrderPage({
+export default async function EditOrderPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  return <EditOrderPageWrapper contractId={params.id} />;
+  const { id } = await params;
+  return <EditOrderPageWrapper contractId={id} />;
 }
