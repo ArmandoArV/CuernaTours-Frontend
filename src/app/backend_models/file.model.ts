@@ -4,7 +4,18 @@
  * Models for file upload system with support for local and S3 storage
  */
 
-import { FileCategory } from '../config/storage.config.js';
+/**
+ * File category enumeration
+ */
+export enum FileCategory {
+  PROFILE_PICTURES = 'profile-pictures',
+  DOCUMENTS = 'documents',
+  CONTRACTS = 'contracts',
+  RECEIPTS = 'receipts',
+  VEHICLE_PHOTOS = 'vehicle-photos',
+  PLACE_PHOTOS = 'place-photos',
+  MISC = 'misc',
+}
 
 /**
  * File status enumeration
