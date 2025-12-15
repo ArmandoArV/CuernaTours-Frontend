@@ -53,9 +53,11 @@ export const API_ENDPOINTS = {
     BY_ID: (id: number) => `/contracts/${id}`,
     DETAILS: (id: number) => `/contracts/details/${id}`,
     ALL_DETAILS: '/contracts/details',
-    MARK_PAID: (id: number) => `/contracts/${id}/mark-paid`,
-    MONEY_RECEIPT: (id: number) => `/contracts/${id}/money-receipt`,
-    PENDING_MONEY_RECEIPT: '/contracts/pending-money-receipt',
+    CANCELLED: '/contracts/cancelled',
+    PENDING_MONEY_RECEIVED: '/contracts/pending-money-received',
+    CANCEL: (id: number) => `/contracts/${id}/cancel`,
+    UNCANCEL: (id: number) => `/contracts/${id}/uncancel`,
+    MONEY_RECEIVED: (id: number) => `/contracts/${id}/money-received`,
     SEND_CONFIRMATION: (id: number) => `/contracts/${id}/send-confirmation`,
   },
   
@@ -78,8 +80,11 @@ export const API_ENDPOINTS = {
     CREATE: '/trips',
     BY_ID: (id: number) => `/trips/${id}`,
     BY_CONTRACT: (contractId: number) => `/trips/contract/${contractId}`,
+    BY_EXTERNAL_DRIVER: (id: number) => `/trips/external-driver/${id}`,
     ASSIGN_DRIVER: (id: number) => `/trips/${id}/assign-driver`,
     UPDATE_STATUS: (id: number) => `/trips/${id}/status`,
+    STATUSES: '/trip/status',
+    FLIGHTS: '/flights',
   },
   
   // Driver Payment endpoints
@@ -111,6 +116,8 @@ export const API_ENDPOINTS = {
     BASE: '/places',
     BY_ID: (id: number) => `/places/${id}`,
     SEARCH: '/places/search',
+    BY_CITY: (city: string) => `/places/city/${city}`,
+    BY_STATE: (state: string) => `/places/state/${state}`,
   },
   
   // Driver endpoints
@@ -119,6 +126,8 @@ export const API_ENDPOINTS = {
     BY_ID: (id: number) => `/drivers/${id}`,
     AVAILABLE: '/drivers/available',
     SEARCH: '/drivers/search',
+    PAYMENTS: (id: number) => `/drivers/${id}/payments`,
+    SPENDINGS: (id: number) => `/drivers/${id}/spendings`,
   },
   
   // External Provider endpoints
@@ -134,6 +143,7 @@ export const API_ENDPOINTS = {
     BY_ID: (id: number) => `/vehicles/${id}`,
     AVAILABLE: '/vehicles/available',
     SEARCH: '/vehicles/search',
+    STATUS: '/vehicles/status',
   },
   
   // User endpoints
@@ -143,6 +153,7 @@ export const API_ENDPOINTS = {
     PROFILE: '/users/profile',
     UPDATE_PASSWORD: (id: number) => `/users/${id}/password`,
     CONTACTS: (id: number) => `/users/${id}/contacts`,
+    BY_PHONE: (phone: string, country: string) => `/users/phone/${phone}/country/${country}`,
   },
   
   // Agreement endpoints
@@ -175,17 +186,31 @@ export const API_ENDPOINTS = {
     BY_ID: (id: number) => `/payments/${id}`,
     BY_CONTRACT: (contractId: number) => `/payments/contract/${contractId}`,
   },
+
+  // Spendings endpoints
+  SPENDINGS: {
+    BASE: '/spendings',
+    BY_ID: (id: number) => `/spendings/${id}`,
+    FILES: (spendingId: number) => `/spending-files/${spendingId}`,
+    UPLOAD_FILE: '/spending-files',
+  },
+
+  // Driver Receipts endpoints
+  DRIVER_RECEIPTS: {
+    BASE: '/driver-receipts',
+    BY_ID: (id: number) => `/driver-receipts/${id}`,
+  },
   
   // System/Reference data endpoints
   REFERENCE: {
     // Client types
     CLIENT_TYPES: '/client-types',
     
-    // Contract statuses
-    CONTRACT_STATUSES: '/contract-statuses',
+    // Contract statuses (backend uses /contract-status)
+    CONTRACT_STATUSES: '/contract-status',
     
-    // Trip statuses
-    TRIP_STATUSES: '/trip-statuses',
+    // Trip statuses (backend uses /trip/status)
+    TRIP_STATUSES: '/trip/status',
     
     // Payment types
     PAYMENT_TYPES: '/payment-types',
@@ -197,7 +222,7 @@ export const API_ENDPOINTS = {
     AREAS: '/areas',
     
     // Vehicle statuses
-    VEHICLE_STATUSES: '/vehicle-statuses',
+    VEHICLE_STATUSES: '/vehicles/status',
   },
   
   // System endpoints

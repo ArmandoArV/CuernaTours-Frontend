@@ -13,6 +13,10 @@ import type { Place } from '@/app/backend_models/place.model';
 import type { Vehicle } from '@/app/backend_models/vehicle.model';
 import type { User } from '@/app/backend_models/user.model';
 import type { PaymentType } from '@/app/backend_models/payment.model';
+import type { ClientWithContacts as ClientWithContactsType } from './clients.service';
+
+// Re-export for backward compatibility
+export type { ClientWithContactsType as ClientWithContacts };
 
 // Prefillable data response
 export interface PrefillableData {
@@ -32,11 +36,6 @@ export interface ClientReference {
   client_type_id?: number;
   client_type_name?: string;
   comments?: string;
-}
-
-export interface ClientWithContacts extends ClientReference {
-  contacts?: Contact[];
-  primary_contact?: Contact;
 }
 
 export interface PlaceReference {
@@ -120,11 +119,11 @@ class ReferenceService {
   /**
    * Search clients by name
    */
-  async searchClients(query: string): Promise<ClientWithContacts[]> {
-    const response = await apiClient.get<ClientWithContacts[]>(
+  async searchClients(query: string): Promise<ClientWithContactsType[]> {
+    const response = await apiClient.get<ClientWithContactsType[]>(
       `${API_ENDPOINTS.CLIENTS.SEARCH}?q=${encodeURIComponent(query)}`
     );
-    return validateResponse<ClientWithContacts[]>(response);
+    return validateResponse<ClientWithContactsType[]>(response);
   }
 
   /**
@@ -140,7 +139,7 @@ class ReferenceService {
   /**
    * Get client by ID with contacts
    */
-  async getClientById(clientId: number): Promise<ClientWithContacts> {
+  async getClientById(clientId: number): Promise<ClientWithContactsType> {
     // Fetch both client data and contacts
     const [clientResponse, contactsResponse] = await Promise.all([
       apiClient.get<Client>(API_ENDPOINTS.CLIENTS.BY_ID(clientId)),

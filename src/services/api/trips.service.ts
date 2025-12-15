@@ -106,21 +106,6 @@ class TripsService {
   }
 
   /**
-   * Record payment for trip
-   */
-  async recordPayment(
-    tripId: number,
-    paymentData: TripPaymentRequest
-  ): Promise<{ payment_id: number }> {
-    const endpoint = API_ENDPOINTS.TRIPS.PAYMENTS(tripId);
-    const response = await apiClient.post<{ payment_id: number }>(
-      endpoint,
-      paymentData
-    );
-    return validateResponse<{ payment_id: number }>(response);
-  }
-
-  /**
    * Update trip status
    */
   async updateStatus(
