@@ -45,6 +45,7 @@ export function isPaginatedResponse<T>(data: any): data is PaginatedResponse<T> 
     isApiResponse(data) &&
     'pagination' in data &&
     typeof data.pagination === 'object' &&
+    data.pagination !== null &&
     typeof data.pagination.page === 'number' &&
     typeof data.pagination.limit === 'number' &&
     typeof data.pagination.total === 'number' &&
