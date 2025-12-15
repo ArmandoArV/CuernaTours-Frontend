@@ -25,6 +25,7 @@ export interface UpdateClientRequest {
 
 export interface ClientWithContacts extends Client {
   contacts?: Contact[];
+  primary_contact?: Contact;
 }
 
 export interface CreateContactRequest {
