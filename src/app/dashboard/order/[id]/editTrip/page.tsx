@@ -1,9 +1,10 @@
 import EditTripPageWrapper from "@/app/Components/EditTripPageWrapper/EditTripPageWrapper";
 
-export default function EditOrderTripPage({
+export default async function EditOrderTripPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  return <EditTripPageWrapper contractId={params.id} />;
+  const { id } = await params;
+  return <EditTripPageWrapper contractId={id} />;
 }
