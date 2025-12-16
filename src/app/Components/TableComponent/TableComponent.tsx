@@ -218,6 +218,16 @@ const TableComponent: React.FC<TableComponentProps> = ({
     const paginatedData = data.slice(startIndex, endIndex);
     const totalPages = Math.ceil(data.length / itemsPerPage);
 
+    console.log("📊 PAGINATION DEBUG:", {
+      activePage,
+      itemsPerPage,
+      totalDataLength: data.length,
+      startIndex,
+      endIndex,
+      paginatedDataLength: paginatedData.length,
+      totalPages,
+    });
+
     return { paginatedData, totalPages };
   }, [data, activePage, itemsPerPage, enablePagination]);
 
@@ -252,11 +262,21 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
   // Handle page change
   const handlePageChange = (page: number) => {
+    console.log("📄 PAGE CHANGE:", {
+      newPage: page,
+      previousPage: activePage,
+      selectedRowIndex,
+      openDropdown,
+    });
     if (onPageChange) {
       onPageChange(page);
     } else {
       setInternalCurrentPage(page);
     }
+    // Reset dropdown and selection when changing pages
+    setOpenDropdown(null);
+    setSelectedRowIndex(null);
+    setSelectedRow(null);
   };
 
   // Map status text to its corresponding color
@@ -308,6 +328,11 @@ const TableComponent: React.FC<TableComponentProps> = ({
     row: { [key: string]: any },
     rowIndex: number
   ) => {
+    console.log("👆 ROW CLICK:", {
+      rowIndex,
+      currentSelectedRowIndex: selectedRowIndex,
+      isTogglingOff: selectedRowIndex === rowIndex,
+    });
     // Close dropdown on row click
     setOpenDropdown(null);
 
@@ -430,11 +455,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
       ) : (
         <>
           <table className={styles.table}>
-            <thead
-              className={styles.tableHeader}>
-              <tr
-              className={styles.tableHeaderRow}
-              >
+            <thead className={styles.tableHeader}>
+              <tr className={styles.tableHeaderRow}>
                 {columns.map((col) => (
                   <th
                     key={col}
@@ -448,19 +470,23 @@ const TableComponent: React.FC<TableComponentProps> = ({
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((row, rowIndex) => {
+              {paginatedData.map((row, paginatedIndex) => {
                 const rowId = getRowId(row);
+                // Calculate global row index accounting for pagination
+                const globalRowIndex = enablePagination
+                  ? (activePage - 1) * itemsPerPage + paginatedIndex
+                  : paginatedIndex;
                 const isSelected =
-                  selectedRowIndex === rowIndex && selectedRow !== null;
+                  selectedRowIndex === globalRowIndex && selectedRow !== null;
                 const status = getStatusFromRow(row);
                 const statusColor = getStatusColor(status);
 
                 return (
-                  <React.Fragment key={rowId || rowIndex}>
+                  <React.Fragment key={`${globalRowIndex}-${rowId || "no-id"}`}>
                     <tr
                       onClick={() => {
                         if (onRowClick) onRowClick(row);
-                        handleRowClick(row, rowIndex);
+                        handleRowClick(row, globalRowIndex);
                       }}
                       className={`${styles.rowWithColorIndicator} ${
                         isSelected ? styles.selectedRow : ""
@@ -475,10 +501,16 @@ const TableComponent: React.FC<TableComponentProps> = ({
                         return (
                           <td
                             key={col}
-                            id={`cell-${rowId || rowIndex}-${col
+                            id={`cell-${rowId || globalRowIndex}-${col
                               .toLowerCase()
                               .replace(/\s+/g, "-")}`}
-                            style={colIndex === 0 ? { '--indicator-color': statusColor } as React.CSSProperties : undefined}
+                            style={
+                              colIndex === 0
+                                ? ({
+                                    "--indicator-color": statusColor,
+                                  } as React.CSSProperties)
+                                : undefined
+                            }
                           >
                             {isStatusColumn ? (
                               <span
@@ -505,7 +537,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               if (onViewDetails) {
                                 onViewDetails(row);
                               } else {
-                                handleRowClick(row, rowIndex);
+                                handleRowClick(row, globalRowIndex);
                               }
                             }}
                             onMouseEnter={(e) => {
@@ -538,10 +570,10 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               className={styles.editButton}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDropdownClick(e, rowIndex);
+                                handleDropdownClick(e, globalRowIndex);
                               }}
                               onMouseEnter={(e) => {
-                                setHoveredButton(`actions-${rowIndex}`);
+                                setHoveredButton(`actions-${globalRowIndex}`);
                                 const rect =
                                   e.currentTarget.getBoundingClientRect();
                                 setTooltipPosition({
@@ -553,8 +585,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
                             >
                               <MoreVerticalFilled />
                             </button>
-                            {hoveredButton === `actions-${rowIndex}` &&
-                              openDropdown !== rowIndex && (
+                            {hoveredButton === `actions-${globalRowIndex}` &&
+                              openDropdown !== globalRowIndex && (
                                 <div
                                   className={styles.tooltip}
                                   style={{
@@ -567,7 +599,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               )}
                           </div>
 
-                          {openDropdown === rowIndex && (
+                          {openDropdown === globalRowIndex && (
                             <div
                               className={styles.dropdownMenu}
                               style={{
