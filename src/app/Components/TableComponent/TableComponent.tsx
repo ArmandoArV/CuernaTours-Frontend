@@ -430,8 +430,11 @@ const TableComponent: React.FC<TableComponentProps> = ({
       ) : (
         <>
           <table className={styles.table}>
-            <thead>
-              <tr>
+            <thead
+              className={styles.tableHeader}>
+              <tr
+              className={styles.tableHeaderRow}
+              >
                 {columns.map((col) => (
                   <th
                     key={col}
