@@ -22,8 +22,16 @@
   vertical-align: middle;
 }
 
+.table tbody tr td:first-child {
+  padding-left: 36px; /* 16px + 20px for the color bar */
+}
+
 .table thead tr {
-  border-left: 5px solid transparent;
+  border-left: none;
+}
+
+.table th:first-child {
+  padding-left: 36px; /* Match the body cells */
 }
 
 .table th {
@@ -72,8 +80,20 @@
   border-bottom: none;
 }
 
-.rowWithColorIndicator {
-  border-left: 5px solid transparent; /* Default transparent border */
+.rowWithColorIndicator td:first-child {
+  position: relative;
+}
+
+.rowWithColorIndicator td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  background-color: var(--indicator-color, transparent);
+  border-top-left-radius: 7px;
+  border-bottom-left-radius: 7px;
 }
 
 
@@ -193,7 +213,7 @@
 
 .statusPill {
   padding: 4px 12px;
-  border-radius: 16px;
+  border-radius: 4px;
   font-weight: 600;
   font-size: 12px;
   display: inline-block;

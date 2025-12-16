@@ -462,9 +462,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
                       className={`${styles.rowWithColorIndicator} ${
                         isSelected ? styles.selectedRow : ""
                       }`}
-                      style={{ borderLeftColor: statusColor }}
                     >
-                      {columns.map((col) => {
+                      {columns.map((col, colIndex) => {
                         const cellValue = row[col];
                         const isStatusColumn =
                           col.toLowerCase() === "estatus" ||
@@ -476,6 +475,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                             id={`cell-${rowId || rowIndex}-${col
                               .toLowerCase()
                               .replace(/\s+/g, "-")}`}
+                            style={colIndex === 0 ? { '--indicator-color': statusColor } as React.CSSProperties : undefined}
                           >
                             {isStatusColumn ? (
                               <span
