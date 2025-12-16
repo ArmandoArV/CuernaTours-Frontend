@@ -9,6 +9,8 @@ import {
   Edit24Regular,
   AddFilled,
   Payment24Regular,
+  MoneyHandRegular,
+  PersonSettingsRegular,
 } from "@fluentui/react-icons";
 import { Pagination } from "@/app/PaginationComponent/PaginationComponent";
 import DetailsPanel from "@/app/Components/DetailsPanel/DetailsPanel";
@@ -16,6 +18,7 @@ import AssignDriverModal from "@/app/Components/AssignDriverModal/AssignDriverMo
 import { ContractTrip } from "@/app/backend_models/trip.model";
 import { TripCollection, TripData } from "@/app/Types/TripTypes";
 import DriverPaymentModal from "@/app/Components/DriverPaymentModal/DriverPaymentModal";
+import { useUserRole } from "@/app/hooks/useUserRole";
 export type TableComponentProps = {
   data: Array<{ [key: string]: any }>;
   columns: string[];
@@ -78,6 +81,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
   fetchDetails,
 }) => {
   const router = useRouter();
+  const { isChofer, isOficina } = useUserRole();
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [internalCurrentPage, setInternalCurrentPage] = useState(
@@ -446,6 +450,23 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               className={`${styles.actionButton} ${styles.editButton}`}
                               onClick={(e) => {
                                 e.stopPropagation();
+                                
+                                // If user is Chofer, redirect to expenses
+                                if (isChofer) {
+                                  router.push('/expenses');
+                                  return;
+                                }
+
+                                // If user is Oficina, open AssignDriverModal
+                                if (isOficina) {
+                                  setSelectedRowForDriver(
+                                    row as ContractTrip | TripCollection | TripData
+                                  );
+                                  setIsAssignDriverModalOpen(true);
+                                  return;
+                                }
+
+                                // Default behavior for other roles (show dropdown)
                                 if (openDropdown === rowIndex) {
                                   setOpenDropdown(null);
                                 } else {
@@ -499,10 +520,16 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                 }
                               }}
                             >
-                              <MoreVerticalFilled color="#61636E" />
+                              {isChofer ? (
+                                <MoneyHandRegular color="#61636E" />
+                              ) : isOficina ? (
+                                <PersonSettingsRegular color="#61636E" />
+                              ) : (
+                                <MoreVerticalFilled color="#61636E" />
+                              )}
                             </button>
 
-                            {openDropdown === rowIndex && (
+                            {openDropdown === rowIndex && !isChofer && !isOficina && (
                               <div
                                 className={styles.dropdownMenu}
                                 style={{

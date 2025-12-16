@@ -6,6 +6,7 @@ import { AddFilled, DocumentAddRegular, ArrowRepeatAllRegular } from "@fluentui/
 import { useRouter } from "next/navigation";
 import { contractsService, ApiError } from "@/services/api";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
+import { useUserRole } from "@/app/hooks/useUserRole";
 import styles from "./DashboardContent.module.css";
 
 // Status mapping based on provided ids
@@ -46,6 +47,7 @@ function transformApiData(apiData: any[]): any[] {
 
 export default function DashboardContent() {
   const router = useRouter();
+  const { hasFullAccess } = useUserRole();
   const [currentPage, setCurrentPage] = useState(1);
   const [contractsData, setContractsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -193,37 +195,39 @@ export default function DashboardContent() {
         onPageChange={setCurrentPage}
         onFiltersChange={handleFiltersChange}
         actionButtons={
-          <div ref={dropdownRef} style={{ position: "relative" }}>
-            <ButtonComponent
-              text="Crear Orden"
-              icon={
-                <AddFilled
-                  fontWeight={600}
-                  color="white"
-                  width={16}
-                  height={16}
-                />
-              }
-              className={styles.createOrderButton}
-              onClick={handleButtonClick}
-            />
-            {showDropdown && (
-              <div className={styles.dropdownMenu}>
-                <ButtonComponent
-                  text="Nuevo Viaje"
-                  icon={<DocumentAddRegular width={16} height={16} />}
-                  className={styles.dropdownItem}
-                  onClick={() => handleMenuItemClick("/dashboard/createOrder")}
-                />
-                <ButtonComponent
-                  text="Viaje frecuente"
-                  icon={<ArrowRepeatAllRegular width={16} height={16} />}
-                  className={styles.dropdownItem}
-                  onClick={() => handleMenuItemClick("/dashboard")}
-                />
-              </div>
-            )}
-          </div>
+          hasFullAccess ? (
+            <div ref={dropdownRef} style={{ position: "relative" }}>
+              <ButtonComponent
+                text="Crear Orden"
+                icon={
+                  <AddFilled
+                    fontWeight={600}
+                    color="white"
+                    width={16}
+                    height={16}
+                  />
+                }
+                className={styles.createOrderButton}
+                onClick={handleButtonClick}
+              />
+              {showDropdown && (
+                <div className={styles.dropdownMenu}>
+                  <ButtonComponent
+                    text="Nuevo Viaje"
+                    icon={<DocumentAddRegular width={16} height={16} />}
+                    className={styles.dropdownItem}
+                    onClick={() => handleMenuItemClick("/dashboard/createOrder")}
+                  />
+                  <ButtonComponent
+                    text="Viaje frecuente"
+                    icon={<ArrowRepeatAllRegular width={16} height={16} />}
+                    className={styles.dropdownItem}
+                    onClick={() => handleMenuItemClick("/dashboard")}
+                  />
+                </div>
+              )}
+            </div>
+          ) : null
         }
       />
     </div>
