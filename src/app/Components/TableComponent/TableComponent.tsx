@@ -83,16 +83,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
 }) => {
   const router = useRouter();
   const { isChofer, isOficina, roleId, roleName } = useUserRole();
-  console.log(
-    "🔑 User Role - roleId:",
-    roleId,
-    "roleName:",
-    roleName,
-    "isOficina:",
-    isOficina,
-    "isChofer:",
-    isChofer
-  );
+
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [internalCurrentPage, setInternalCurrentPage] = useState(
@@ -218,15 +209,6 @@ const TableComponent: React.FC<TableComponentProps> = ({
     const paginatedData = data.slice(startIndex, endIndex);
     const totalPages = Math.ceil(data.length / itemsPerPage);
 
-    console.log("📊 PAGINATION DEBUG:", {
-      activePage,
-      itemsPerPage,
-      totalDataLength: data.length,
-      startIndex,
-      endIndex,
-      paginatedDataLength: paginatedData.length,
-      totalPages,
-    });
 
     return { paginatedData, totalPages };
   }, [data, activePage, itemsPerPage, enablePagination]);
@@ -262,12 +244,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
   // Handle page change
   const handlePageChange = (page: number) => {
-    console.log("📄 PAGE CHANGE:", {
-      newPage: page,
-      previousPage: activePage,
-      selectedRowIndex,
-      openDropdown,
-    });
+
     if (onPageChange) {
       onPageChange(page);
     } else {
@@ -328,11 +305,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
     row: { [key: string]: any },
     rowIndex: number
   ) => {
-    console.log("👆 ROW CLICK:", {
-      rowIndex,
-      currentSelectedRowIndex: selectedRowIndex,
-      isTogglingOff: selectedRowIndex === rowIndex,
-    });
+
     // Close dropdown on row click
     setOpenDropdown(null);
 
@@ -402,13 +375,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
   };
 
   const handleDropdownClick = (e: React.MouseEvent, rowIndex: number) => {
-    console.log("🔵 Dropdown button clicked for row:", rowIndex);
-    console.log("🔵 Current openDropdown state:", openDropdown);
     if (openDropdown === rowIndex) {
-      console.log("🔴 Closing dropdown");
       setOpenDropdown(null);
     } else {
-      console.log("🟢 Opening dropdown");
       const rect = e.currentTarget.getBoundingClientRect();
       const dropdownWidth = 200;
       const viewportWidth = window.innerWidth;
@@ -432,8 +401,6 @@ const TableComponent: React.FC<TableComponentProps> = ({
       }
 
       setDropdownPosition({ top, left });
-      console.log("🟢 Setting dropdown position:", { top, left });
-      console.log("🟢 Setting openDropdown to:", rowIndex);
       setOpenDropdown(rowIndex);
     }
   };
@@ -611,7 +578,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               {isOficina && (
                                 <button
                                   className={styles.dropdownItem}
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     if (onEditOrder) onEditOrder(row);
                                     setOpenDropdown(null);
                                   }}
@@ -623,7 +591,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               {isOficina && (
                                 <button
                                   className={styles.dropdownItem}
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     if (onAssignDriver) onAssignDriver(row);
                                     setOpenDropdown(null);
                                   }}
@@ -635,7 +604,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               {isOficina && (
                                 <button
                                   className={styles.dropdownItem}
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     if (onPayDriver) onPayDriver(row);
                                     setOpenDropdown(null);
                                   }}

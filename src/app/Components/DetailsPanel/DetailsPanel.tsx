@@ -27,10 +27,6 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
   // Check if this is detailed API data (has contract_id) or simple row data (has Spanish field names)
   const isDetailedData = data.hasOwnProperty("contract_id");
 
-  console.log("🎨 DetailsPanel received data:", data);
-  console.log("🎨 Is detailed data (has contract_id):", isDetailedData);
-  console.log("🎨 Available data keys:", Object.keys(data));
-
   // Create Contract instance if detailed data, otherwise use TripCollection for simple data
   let contract: Contract | null = null;
   let tripCollection: TripCollection;
@@ -40,15 +36,6 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
     // Use Contract class for detailed API data
     contract = new Contract(data as ContractData);
     tripCollection = contract.trips;
-
-    console.log("🎨 Using Contract class:", {
-      clientName: contract.clientName,
-      contractStatus: contract.contractStatusName,
-      contractId: contract.contractId,
-      tripCount: contract.tripCount,
-      tripType: contract.tripTypeSummary,
-      formattedAmount: contract.formattedAmount,
-    });
   } else {
     // Fallback to simple data structure
     extractedData = {
@@ -166,7 +153,7 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
                 <>
                   <div className={styles.dateFieldSeparator} />
                   <div className={styles.dateFieldRight}>
-                    <div className={styles.label}>{" "}</div>
+                    <div className={styles.label}> </div>
                     <DateDisplayComponent
                       date={
                         contract

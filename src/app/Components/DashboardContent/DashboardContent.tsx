@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { contractsService, ApiError } from "@/services/api";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import { useUserRole } from "@/app/hooks/useUserRole";
+import AssignDriverModal from "../AssignDriverModal/AssignDriverModal";
+import DriverPaymentModal from "../DriverPaymentModal/DriverPaymentModal";
 import styles from "./DashboardContent.module.css";
 
 // Status mapping based on provided ids
@@ -37,8 +39,11 @@ function transformApiData(apiData: any[]): any[] {
           ? `${trip.driver.name} ${trip.driver.lastname}`
           : "",
         Estatus: STATUS_MAP[trip.status?.id] || trip.status?.name || "",
-        // Include contract_id for the details functionality
+        // Include IDs for functionality
         contract_id: contract.contract_id,
+        trip_id: trip.trip_id,
+        // Store full trip object for modals
+        _tripData: trip,
       });
     });
   });
@@ -54,6 +59,12 @@ export default function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Modal states
+  const [isAssignDriverModalOpen, setIsAssignDriverModalOpen] = useState(false);
+  const [isDriverPaymentModalOpen, setIsDriverPaymentModalOpen] = useState(false);
+  const [selectedTripData, setSelectedTripData] = useState<any>(null);
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -160,6 +171,39 @@ export default function DashboardContent() {
     router.push(path);
   };
 
+  // Action handlers for table dropdown actions
+  const handleEditOrder = (row: any) => {
+    if (row.contract_id) {
+      router.push(`/dashboard/order/${row.contract_id}`);
+    }
+  };
+
+  const handleAssignDriver = (row: any) => {
+    // Use the stored trip data object for the modal
+    setSelectedTripData(row._tripData || row);
+    setIsAssignDriverModalOpen(true);
+  };
+
+  const handlePayDriver = (row: any) => {
+    // Use trip_id if available, otherwise fall back to contract_id
+    const tripId = row.trip_id || row.contract_id;
+    setSelectedTripId(tripId ? String(tripId) : null);
+    setIsDriverPaymentModalOpen(true);
+  };
+
+  const handleDriverAssignment = async (assignmentData: any) => {
+    console.log("Driver assigned:", assignmentData);
+    // Refresh table data after assignment
+    try {
+      const data = await contractsService.getAll();
+      setContractsData(data);
+    } catch (err) {
+      console.error("Error refreshing contracts:", err);
+    }
+    setIsAssignDriverModalOpen(false);
+    setSelectedTripData(null);
+  };
+
   if (loading) {
     return (
       <div style={{ padding: "20px", textAlign: "center" }}>
@@ -194,6 +238,9 @@ export default function DashboardContent() {
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         onFiltersChange={handleFiltersChange}
+        onEditOrder={handleEditOrder}
+        onAssignDriver={handleAssignDriver}
+        onPayDriver={handlePayDriver}
         actionButtons={
           hasFullAccess ? (
             <div ref={dropdownRef} style={{ position: "relative" }}>
@@ -229,6 +276,26 @@ export default function DashboardContent() {
             </div>
           ) : null
         }
+      />
+
+      {/* Modals */}
+      <AssignDriverModal
+        isOpen={isAssignDriverModalOpen}
+        onClose={() => {
+          setIsAssignDriverModalOpen(false);
+          setSelectedTripData(null);
+        }}
+        tripData={selectedTripData}
+        onAssign={handleDriverAssignment}
+      />
+
+      <DriverPaymentModal
+        isOpen={isDriverPaymentModalOpen}
+        onClose={() => {
+          setIsDriverPaymentModalOpen(false);
+          setSelectedTripId(null);
+        }}
+        tripId={selectedTripId}
       />
     </div>
   );

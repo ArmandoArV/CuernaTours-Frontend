@@ -850,23 +850,6 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
   const currentVehicleInfo = getCurrentVehicleInfo();
   const currentPlate = getCurrentPlate();
 
-  // DEBUG: Log extracted values
-  console.log("=== Extracted Values ===");
-  console.log("Origin:", getOriginName());
-  console.log("Destination:", getDestinationName());
-  console.log("Trip Type:", getTripType());
-  console.log("Service Date:", getServiceDate());
-  console.log("Passengers:", getPassengers());
-  console.log("Current Driver ID:", getCurrentDriverId());
-  console.log("Current Vehicle ID:", getCurrentVehicleId());
-  console.log("Current Driver Name:", currentDriverName);
-  console.log("Current Vehicle Info:", currentVehicleInfo);
-  console.log("Current Plate:", currentPlate);
-  console.log("Has External Driver:", hasExternalDriver());
-  console.log("Driver Options:", driverOptions);
-  console.log("Vehicle Options:", vehicleOptions);
-  console.log("========================");
-
   const handleAssign = () => {
     let assignmentData = {};
     if (driverType === "internal") {
