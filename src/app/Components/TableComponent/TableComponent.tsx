@@ -19,6 +19,7 @@ import { ContractTrip } from "@/app/backend_models/trip.model";
 import { TripCollection, TripData } from "@/app/Types/TripTypes";
 import DriverPaymentModal from "@/app/Components/DriverPaymentModal/DriverPaymentModal";
 import { useUserRole } from "@/app/hooks/useUserRole";
+import { contractsService } from "@/services/api/contracts.service";
 export type TableComponentProps = {
   data: Array<{ [key: string]: any }>;
   columns: string[];
@@ -81,7 +82,17 @@ const TableComponent: React.FC<TableComponentProps> = ({
   fetchDetails,
 }) => {
   const router = useRouter();
-  const { isChofer, isOficina } = useUserRole();
+  const { isChofer, isOficina, roleId, roleName } = useUserRole();
+  console.log(
+    "🔑 User Role - roleId:",
+    roleId,
+    "roleName:",
+    roleName,
+    "isOficina:",
+    isOficina,
+    "isChofer:",
+    isChofer
+  );
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [internalCurrentPage, setInternalCurrentPage] = useState(
@@ -140,20 +151,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
   // Default fetch implementation used when fetchDetails prop not provided
   const defaultFetchDetails = async (id: any) => {
-    const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
-    if (!baseUrl) throw new Error("Missing NEXT_PUBLIC_API_URL");
-    const url = `${baseUrl}/contracts/details/${id}`;
-    const token = getCookie("accessToken");
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    const resp = await fetch(url, { method: "GET", headers });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
-    if (!json || !json.success || !json.data)
-      throw new Error("Invalid response format");
-    return json.data;
+    const contractId = parseInt(String(id), 10);
+    if (isNaN(contractId)) throw new Error("Invalid contract ID");
+    return await contractsService.getContractDetails(contractId);
   };
 
   // Sync internal state with external currentPage prop
@@ -169,7 +169,22 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
   // Close dropdown when clicking outside or scrolling
   useEffect(() => {
-    const handleClickOutside = () => {
+    console.log(
+      "⚡ useEffect for dropdown running, openDropdown:",
+      openDropdown
+    );
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      console.log("👆 Click outside detected, target:", target);
+      // Don't close if clicking inside a dropdown or dropdown button
+      if (
+        target.closest(`.${styles.dropdownMenu}`) ||
+        target.closest(`.${styles.editButton}`)
+      ) {
+        console.log("✋ Click was on dropdown or button, ignoring");
+        return;
+      }
+      console.log("❌ Closing dropdown from click outside");
       setOpenDropdown(null);
     };
 
@@ -178,7 +193,12 @@ const TableComponent: React.FC<TableComponentProps> = ({
     };
 
     if (openDropdown !== null) {
-      document.addEventListener("click", handleClickOutside);
+      // Add listener on next tick to avoid immediate closure
+      console.log("📡 Adding click listener with setTimeout");
+      setTimeout(() => {
+        console.log("📡 Click listener added to document");
+        document.addEventListener("click", handleClickOutside);
+      }, 0);
       window.addEventListener("scroll", handleScroll, true);
       return () => {
         document.removeEventListener("click", handleClickOutside);
@@ -259,13 +279,140 @@ const TableComponent: React.FC<TableComponentProps> = ({
       case "en curso":
         return "#4D5DBC";
       case "por pagar":
-        return "#F59A31";
+        return "#E53E7C";
       case "finalizado":
         return "#80C26C";
       default:
         return "#C7C7C7"; // default gray
     }
   };
+
+  const getStatusFromRow = (row: { [key: string]: any }): string => {
+    const statusKeys = [
+      "status",
+      "estatus",
+      "Status",
+      "Estatus",
+      "state",
+      "State",
+    ];
+    for (const key of statusKeys) {
+      if (row[key]) {
+        return row[key];
+      }
+    }
+    return "";
+  };
+
+  const handleRowClick = async (
+    row: { [key: string]: any },
+    rowIndex: number
+  ) => {
+    // Close dropdown on row click
+    setOpenDropdown(null);
+
+    // Toggle details view for the clicked row
+    if (selectedRowIndex === rowIndex) {
+      setSelectedRow(null);
+      setSelectedRowIndex(null);
+      setSelectedRowError(null);
+      setSelectedRowLoading(false);
+    } else {
+      setSelectedRowIndex(rowIndex);
+      setSelectedRow(null);
+      setSelectedRowError(null);
+      setSelectedRowLoading(true);
+
+      // Determine if row contains an identifier we can use to fetch full details
+      const idKeys = [
+        "contract_id",
+        "contractId",
+        "id",
+        "ID",
+        "ID_CONTRACT",
+        "Contract ID",
+        "ID de Contrato", // Spanish version
+      ];
+      let foundId: any = null;
+      for (const k of idKeys) {
+        if (
+          Object.prototype.hasOwnProperty.call(row, k) &&
+          row[k] !== undefined &&
+          row[k] !== null &&
+          row[k] !== ""
+        ) {
+          foundId = row[k];
+          break;
+        }
+      }
+
+      if (!foundId) {
+        // If no id found, just select the row object we already have
+        setSelectedRow(row);
+        setSelectedRowLoading(false);
+        onViewDetails && onViewDetails(row);
+        return;
+      }
+
+      // Fetch details using the contracts service
+      try {
+        const contractId = parseInt(String(foundId), 10);
+        if (isNaN(contractId)) {
+          throw new Error("Invalid contract ID");
+        }
+
+        const contractData = await contractsService.getContractDetails(
+          contractId
+        );
+        setSelectedRow(contractData);
+        onViewDetails && onViewDetails(contractData);
+      } catch (err: any) {
+        setSelectedRowError(err?.message || String(err));
+        // Set fallback data for error display
+        setSelectedRow(row);
+      } finally {
+        setSelectedRowLoading(false);
+      }
+    }
+  };
+
+  const handleDropdownClick = (e: React.MouseEvent, rowIndex: number) => {
+    console.log("🔵 Dropdown button clicked for row:", rowIndex);
+    console.log("🔵 Current openDropdown state:", openDropdown);
+    if (openDropdown === rowIndex) {
+      console.log("🔴 Closing dropdown");
+      setOpenDropdown(null);
+    } else {
+      console.log("🟢 Opening dropdown");
+      const rect = e.currentTarget.getBoundingClientRect();
+      const dropdownWidth = 200;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      let left = rect.right - dropdownWidth;
+      let top = rect.bottom + 4;
+
+      // Adjust if dropdown goes off-screen horizontally
+      if (left < 10) {
+        left = rect.left;
+      }
+      if (left + dropdownWidth > viewportWidth - 10) {
+        left = viewportWidth - dropdownWidth - 10;
+      }
+
+      // Adjust if dropdown goes off-screen vertically
+      const dropdownHeight = 150; // Approximate height
+      if (top + dropdownHeight > viewportHeight - 10) {
+        top = rect.top - dropdownHeight - 4;
+      }
+
+      setDropdownPosition({ top, left });
+      console.log("🟢 Setting dropdown position:", { top, left });
+      console.log("🟢 Setting openDropdown to:", rowIndex);
+      setOpenDropdown(rowIndex);
+    }
+  };
+
   return (
     <div
       className={`${styles.tableContainer} ${className || ""}`}
@@ -298,142 +445,68 @@ const TableComponent: React.FC<TableComponentProps> = ({
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((row, rowIndex) => (
-                <React.Fragment key={rowIndex}>
-                  <tr
-                    onClick={() => onRowClick && onRowClick(row)}
-                    style={{ cursor: onRowClick ? "pointer" : "default" }}
-                  >
-                    {columns.map((col) => (
-                      <td key={col}>
-                        {col.toLowerCase() === "estatus" ? (
-                          <div className={styles.statusCell}>
-                            <span
-                              className={styles.statusDot}
-                              style={{
-                                backgroundColor: getStatusColor(row[col]),
-                              }}
-                            />
-                            <span>{row[col]}</span>
-                          </div>
-                        ) : (
-                          row[col]
-                        )}
-                      </td>
-                    ))}
-                    {showActions && (
-                      <td>
-                        <div className={styles.actionsContainer}>
+              {paginatedData.map((row, rowIndex) => {
+                const rowId = getRowId(row);
+                const isSelected =
+                  selectedRowIndex === rowIndex && selectedRow !== null;
+                const status = getStatusFromRow(row);
+                const statusColor = getStatusColor(status);
+
+                return (
+                  <React.Fragment key={rowId || rowIndex}>
+                    <tr
+                      onClick={() => {
+                        if (onRowClick) onRowClick(row);
+                        handleRowClick(row, rowIndex);
+                      }}
+                      className={`${styles.rowWithColorIndicator} ${
+                        isSelected ? styles.selectedRow : ""
+                      }`}
+                      style={{ borderLeftColor: statusColor }}
+                    >
+                      {columns.map((col) => {
+                        const cellValue = row[col];
+                        const isStatusColumn =
+                          col.toLowerCase() === "estatus" ||
+                          col.toLowerCase() === "status";
+
+                        return (
+                          <td
+                            key={col}
+                            id={`cell-${rowId || rowIndex}-${col
+                              .toLowerCase()
+                              .replace(/\s+/g, "-")}`}
+                          >
+                            {isStatusColumn ? (
+                              <span
+                                className={styles.statusPill}
+                                style={{
+                                  backgroundColor: `${statusColor}20`, // 20 for 12.5% opacity
+                                  color: statusColor,
+                                }}
+                              >
+                                {cellValue}
+                              </span>
+                            ) : (
+                              cellValue
+                            )}
+                          </td>
+                        );
+                      })}
+                      {showActions && (
+                        <td className={styles.actionsContainer}>
                           <button
-                            className={`${styles.actionButton} ${styles.viewButton}`}
-                            onClick={async (e) => {
+                            className={styles.viewButton}
+                            onClick={(e) => {
                               e.stopPropagation();
-                              // Toggle off if already selected
-                              if (selectedRowIndex === rowIndex) {
-                                setSelectedRow(null);
-                                setSelectedRowIndex(null);
-                                setSelectedRowError(null);
-                                setSelectedRowLoading(false);
-                                return;
-                              }
-
-                              // Set the selected row index immediately to show loading state
-                              setSelectedRowIndex(rowIndex);
-                              setSelectedRow(null);
-                              setSelectedRowError(null);
-                              setSelectedRowLoading(true);
-
-                              // Determine if row contains an identifier we can use to fetch full details
-                              const idKeys = [
-                                "contract_id",
-                                "contractId",
-                                "id",
-                                "ID",
-                                "ID_CONTRACT",
-                                "Contract ID",
-                                "ID de Contrato", // Spanish version
-                              ];
-                              let foundId: any = null;
-                              for (const k of idKeys) {
-                                if (
-                                  Object.prototype.hasOwnProperty.call(
-                                    row,
-                                    k
-                                  ) &&
-                                  row[k] !== undefined &&
-                                  row[k] !== null &&
-                                  row[k] !== ""
-                                ) {
-                                  foundId = row[k];
-                                  break;
-                                }
-                              }
-
-                              if (!foundId) {
-                              }
-
-                              // If no id found, just select the row object we already have
-                              if (!foundId) {
-                                setSelectedRow(row);
-                                setSelectedRowLoading(false);
-                                onViewDetails && onViewDetails(row);
-                                return;
-                              }
-
-                              // Fetch details from API using NEXT_PUBLIC_API_URL if available
-                              const baseUrl = (
-                                process.env.NEXT_PUBLIC_API_URL || ""
-                              ).replace(/\/$/, "");
-
-                              if (!baseUrl) {
-                                // Can't fetch without base URL; fallback to selecting row
-                                setSelectedRow(row);
-                                setSelectedRowLoading(false);
-                                onViewDetails && onViewDetails(row);
-                                return;
-                              }
-
-                              const url = `${baseUrl}/contracts/details/${foundId}`;
-
-                              try {
-                                const token = getCookie("accessToken");
-                                const headers: Record<string, string> = {
-                                  "Content-Type": "application/json",
-                                };
-                                if (token)
-                                  headers["Authorization"] = `Bearer ${token}`;
-
-                                const resp = await fetch(url, {
-                                  method: "GET",
-                                  headers,
-                                });
-
-                                if (!resp.ok) {
-                                  throw new Error(
-                                    `HTTP ${resp.status}: ${resp.statusText}`
-                                  );
-                                }
-                                const json = await resp.json();
-
-                                if (json && json.success && json.data) {
-                                  // The API returns the specific contract data
-                                  setSelectedRow(json.data);
-                                  onViewDetails && onViewDetails(json.data);
-                                } else {
-                                  throw new Error("Invalid response format");
-                                }
-                              } catch (err: any) {
-                                setSelectedRowError(
-                                  err?.message || String(err)
-                                );
-                                // Set fallback data for error display
-                                setSelectedRow(row);
-                              } finally {
-                                setSelectedRowLoading(false);
+                              if (onViewDetails) {
+                                onViewDetails(row);
+                              } else {
+                                handleRowClick(row, rowIndex);
                               }
                             }}
                             onMouseEnter={(e) => {
-                              setHoveredButton(`details-${rowIndex}`);
+                              setHoveredButton("view");
                               const rect =
                                 e.currentTarget.getBoundingClientRect();
                               setTooltipPosition({
@@ -443,202 +516,123 @@ const TableComponent: React.FC<TableComponentProps> = ({
                             }}
                             onMouseLeave={() => setHoveredButton(null)}
                           >
-                            <EyeFilled color="#61636E" />
+                            <EyeFilled />
                           </button>
-                          <div className={styles.dropdownContainer}>
-                            <button
-                              className={`${styles.actionButton} ${styles.editButton}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                
-                                // If user is Chofer, redirect to expenses
-                                if (isChofer) {
-                                  router.push('/expenses');
-                                  return;
-                                }
-
-                                // If user is Oficina, open AssignDriverModal
-                                if (isOficina) {
-                                  setSelectedRowForDriver(
-                                    row as ContractTrip | TripCollection | TripData
-                                  );
-                                  setIsAssignDriverModalOpen(true);
-                                  return;
-                                }
-
-                                // Default behavior for other roles (show dropdown)
-                                if (openDropdown === rowIndex) {
-                                  setOpenDropdown(null);
-                                } else {
-                                  const rect =
-                                    e.currentTarget.getBoundingClientRect();
-                                  const dropdownWidth = 200;
-                                  const viewportWidth = window.innerWidth;
-                                  const viewportHeight = window.innerHeight;
-
-                                  let left = rect.right - dropdownWidth;
-                                  let top = rect.bottom + 4;
-
-                                  // Adjust if dropdown goes off-screen horizontally
-                                  if (left < 10) {
-                                    left = rect.left;
-                                  }
-                                  if (
-                                    left + dropdownWidth >
-                                    viewportWidth - 10
-                                  ) {
-                                    left = viewportWidth - dropdownWidth - 10;
-                                  }
-
-                                  // Adjust if dropdown goes off-screen vertically
-                                  const dropdownHeight = 150; // Approximate height
-                                  if (
-                                    top + dropdownHeight >
-                                    viewportHeight - 10
-                                  ) {
-                                    top = rect.top - dropdownHeight - 4;
-                                  }
-
-                                  setDropdownPosition({ top, left });
-                                  setOpenDropdown(rowIndex);
-                                }
-                              }}
-                              onMouseEnter={(e) => {
-                                if (openDropdown === null) {
-                                  setHoveredButton(`edit-${rowIndex}`);
-                                  const rect =
-                                    e.currentTarget.getBoundingClientRect();
-                                  setTooltipPosition({
-                                    x: rect.left + rect.width / 2,
-                                    y: rect.top - 10,
-                                  });
-                                }
-                              }}
-                              onMouseLeave={() => {
-                                if (openDropdown === null) {
-                                  setHoveredButton(null);
-                                }
+                          {hoveredButton === "view" && (
+                            <div
+                              className={styles.tooltip}
+                              style={{
+                                left: tooltipPosition.x,
+                                top: tooltipPosition.y,
                               }}
                             >
-                              {isChofer ? (
-                                <MoneyHandRegular color="#61636E" />
-                              ) : isOficina ? (
-                                <PersonSettingsRegular color="#61636E" />
-                              ) : (
-                                <MoreVerticalFilled color="#61636E" />
-                              )}
-                            </button>
+                              Ver Detalles
+                            </div>
+                          )}
 
-                            {openDropdown === rowIndex && !isChofer && !isOficina && (
-                              <div
-                                className={styles.dropdownMenu}
-                                style={{
-                                  top: `${dropdownPosition.top}px`,
-                                  left: `${dropdownPosition.left}px`,
-                                }}
-                              >
-                                <button
-                                  className={styles.dropdownItem}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenDropdown(null);
-                                    // Navigate to edit order page
-                                    const orderId = getRowId(row);
-                                    if (orderId) {
-                                      router.push(
-                                        `/dashboard/order/${orderId}`
-                                      );
-                                    }
-                                    onEditOrder && onEditOrder(row);
+                          <div className={styles.dropdownContainer}>
+                            <button
+                              className={styles.editButton}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDropdownClick(e, rowIndex);
+                              }}
+                              onMouseEnter={(e) => {
+                                setHoveredButton(`actions-${rowIndex}`);
+                                const rect =
+                                  e.currentTarget.getBoundingClientRect();
+                                setTooltipPosition({
+                                  x: rect.left + rect.width / 2,
+                                  y: rect.top - 10,
+                                });
+                              }}
+                              onMouseLeave={() => setHoveredButton(null)}
+                            >
+                              <MoreVerticalFilled />
+                            </button>
+                            {hoveredButton === `actions-${rowIndex}` &&
+                              openDropdown !== rowIndex && (
+                                <div
+                                  className={styles.tooltip}
+                                  style={{
+                                    left: tooltipPosition.x,
+                                    top: tooltipPosition.y,
                                   }}
                                 >
-                                  <Edit24Regular color="#61636E" />
+                                  Más Acciones
+                                </div>
+                              )}
+                          </div>
+
+                          {openDropdown === rowIndex && (
+                            <div
+                              className={styles.dropdownMenu}
+                              style={{
+                                top: dropdownPosition.top,
+                                left: dropdownPosition.left,
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {isOficina && (
+                                <button
+                                  className={styles.dropdownItem}
+                                  onClick={() => {
+                                    if (onEditOrder) onEditOrder(row);
+                                    setOpenDropdown(null);
+                                  }}
+                                >
+                                  <Edit24Regular />
                                   Editar Orden
                                 </button>
+                              )}
+                              {isOficina && (
                                 <button
                                   className={styles.dropdownItem}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
+                                  onClick={() => {
+                                    if (onAssignDriver) onAssignDriver(row);
                                     setOpenDropdown(null);
-                                    setSelectedRowForDriver(
-                                      row as
-                                        | ContractTrip
-                                        | TripCollection
-                                        | TripData
-                                    );
-                                    setIsAssignDriverModalOpen(true);
-                                    onAssignDriver && onAssignDriver(row);
                                   }}
                                 >
-                                  <AddFilled className={styles.dropdownIcon} />
-                                  Asignar chofer y unidad
+                                  <PersonSettingsRegular />
+                                  Asignar Chofer
                                 </button>
+                              )}
+                              {isOficina && (
                                 <button
                                   className={styles.dropdownItem}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
+                                  onClick={() => {
+                                    if (onPayDriver) onPayDriver(row);
                                     setOpenDropdown(null);
-                                    onPayDriver && onPayDriver(row);
-                                    const tripId = getRowId(row);
-                                    if (tripId) {
-                                      setSelectedTripIdForPayment(tripId);
-                                      setIsDriverPaymentModalOpen(true);
-                                    }
                                   }}
                                 >
-                                  <Payment24Regular
-                                    className={styles.dropdownIcon}
-                                  />
-                                  Pagar a chofer
+                                  <MoneyHandRegular />
+                                  Pagar a Chofer
                                 </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-
-                  {/* Details row inserted immediately after the selected row */}
-                  {selectedRowIndex === rowIndex && (
-                    <tr key={`details-${rowIndex}`}>
-                      <td
-                        className={styles.detailsRowCell}
-                        colSpan={columns.length + (showActions ? 1 : 0)}
-                      >
-                        <DetailsPanel
-                          data={selectedRow}
-                          loading={selectedRowLoading}
-                          error={selectedRowError}
-                          onClose={() => {
-                            setSelectedRow(null);
-                            setSelectedRowIndex(null);
-                            setSelectedRowError(null);
-                            setSelectedRowLoading(false);
-                          }}
-                        />
-                      </td>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                      )}
                     </tr>
-                  )}
-                </React.Fragment>
-              ))}
+                    {isSelected && (
+                      <tr>
+                        <td
+                          colSpan={columns.length + (showActions ? 1 : 0)}
+                          className={styles.detailsRowCell}
+                        >
+                          <DetailsPanel
+                            data={selectedRow}
+                            loading={selectedRowLoading}
+                            error={selectedRowError}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
-
-          {/* Tooltip */}
-          {hoveredButton && openDropdown === null && (
-            <div
-              className={styles.tooltip}
-              style={{
-                left: `${tooltipPosition.x}px`,
-                top: `${tooltipPosition.y}px`,
-              }}
-            >
-              {hoveredButton.includes("details") ? "Ver detalles" : "Editar"}
-            </div>
-          )}
-
-          {/* details now render inline as a table row directly after the selected row */}
 
           {/* Pagination */}
           {enablePagination && totalPages > 1 && (
