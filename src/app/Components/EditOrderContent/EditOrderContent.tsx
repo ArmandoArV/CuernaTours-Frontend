@@ -663,13 +663,14 @@ export default function EditOrderContent({
             <SelectComponent
               value={formData.tipoPago}
               onChange={handleSelectChange("tipoPago")}
-              options={
-                prefillableData?.payment_types
+              options={[
+                { value: "POR_ASIGNAR", label: "POR ASIGNAR" },
+                ...(prefillableData?.payment_types
                   ? referenceService.transformPaymentTypesForSelect(
                       prefillableData.payment_types
                     )
-                  : []
-              }
+                  : [])
+              ]}
               label="Tipo de pago"
               placeholder="Seleccione..."
               required={true}
@@ -870,14 +871,15 @@ export default function EditOrderContent({
             <SelectComponent
               value={formData.coordinadorViaje}
               onChange={handleSelectChange("coordinadorViaje")}
-              options={
-                prefillableData?.coordinators
+              options={[
+                { value: "POR_ASIGNAR", label: "POR ASIGNAR" },
+                ...(prefillableData?.coordinators
                   ? prefillableData.coordinators.map((coord) => ({
                       value: coord.user_id.toString(),
                       label: coord.display_name,
                     }))
-                  : []
-              }
+                  : [])
+              ]}
               label="Coordinador del viaje"
               placeholder="Seleccione..."
               className={styles.select}

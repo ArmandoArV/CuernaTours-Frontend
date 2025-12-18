@@ -931,14 +931,20 @@ export default function CreateTripContent() {
           <div className={styles.section}>
             <SelectComponent
               label="Chofer"
-              options={choferes}
+              options={[
+                { value: "POR_ASIGNAR", label: "POR ASIGNAR" },
+                ...choferes
+              ]}
               value={tripFormData.nombreChofer || ""}
               onChange={handleTripSelectChange("nombreChofer")}
               className={styles.input}
             />
             <SelectComponent
               label="Unidad"
-              options={unidades}
+              options={[
+                { value: "POR_ASIGNAR", label: "POR ASIGNAR" },
+                ...unidades
+              ]}
               value={tripFormData.unidadAsignada || ""}
               onChange={handleTripSelectChange("unidadAsignada")}
               className={styles.input}
