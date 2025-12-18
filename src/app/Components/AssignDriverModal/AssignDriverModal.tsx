@@ -1116,11 +1116,13 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
                 type="cancel"
                 onClick={onClose}
                 text="Cancelar"
+                className={styles.cancelButton}
               />
               <ButtonComponent
                 type="button"
                 onClick={handleAssign}
                 text="Asignar"
+                className={styles.assignButton}
               />
             </div>
           </>

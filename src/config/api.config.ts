@@ -50,11 +50,14 @@ export const API_ENDPOINTS = {
   CONTRACTS: {
     BASE: '/contracts',
     CREATE: '/contracts/create',
+    CREATE_WITH_TRIPS: '/contracts/create-with-trips',
     BY_ID: (id: number) => `/contracts/${id}`,
     DETAILS: (id: number) => `/contracts/details/${id}`,
     ALL_DETAILS: '/contracts/details',
     CANCELLED: '/contracts/cancelled',
     PENDING_MONEY_RECEIVED: '/contracts/pending-money-received',
+    PENDING_ASSIGNMENTS: '/contracts/pending-assignments',
+    COMPLETED: '/contracts/completed',
     CANCEL: (id: number) => `/contracts/${id}/cancel`,
     UNCANCEL: (id: number) => `/contracts/${id}/uncancel`,
     MONEY_RECEIVED: (id: number) => `/contracts/${id}/money-received`,
@@ -63,6 +66,7 @@ export const API_ENDPOINTS = {
   
   // Commission endpoints
   COMMISSIONS: {
+    BASE: '/commissions',
     PENDING: '/commissions/pending',
     MARK_PAID: (id: number) => `/commissions/${id}/mark-paid`,
   },
@@ -82,6 +86,7 @@ export const API_ENDPOINTS = {
     BY_CONTRACT: (contractId: number) => `/trips/contract/${contractId}`,
     BY_EXTERNAL_DRIVER: (id: number) => `/trips/external-driver/${id}`,
     ASSIGN_DRIVER: (id: number) => `/trips/${id}/assign-driver`,
+    ASSIGN_RESOURCES: (id: number) => `/trips/${id}/assign-resources`,
     UPDATE_STATUS: (id: number) => `/trips/${id}/status`,
     STATUSES: '/trip/status',
     FLIGHTS: '/flights',

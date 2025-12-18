@@ -122,6 +122,87 @@ class TripsService {
     const promises = trips.map(trip => this.create(trip));
     return Promise.all(promises);
   }
+
+  /**
+   * Get all trips
+   */
+  async getAll(options?: any): Promise<ContractTrip[]> {
+    let endpoint = API_ENDPOINTS.TRIPS.BASE;
+    
+    if (options) {
+      const params = new URLSearchParams();
+      if (options.page) params.append('page', options.page.toString());
+      if (options.limit) params.append('limit', options.limit.toString());
+      if (options.sortBy) params.append('sortBy', options.sortBy);
+      if (options.sortOrder) params.append('order', options.sortOrder);
+      
+      const queryString = params.toString();
+      if (queryString) {
+        endpoint += `?${queryString}`;
+      }
+    }
+
+    const response = await apiClient.get<ContractTrip[]>(endpoint);
+    return validateResponse<ContractTrip[]>(response);
+  }
+
+  /**
+   * Assign driver and/or vehicle to a trip
+   */
+  async assignTripResources(
+    tripId: number,
+    driverId?: number | null,
+    vehicleId?: number | null,
+    externalDriverId?: number | null
+  ): Promise<ContractTrip> {
+    const endpoint = API_ENDPOINTS.TRIPS.ASSIGN_RESOURCES(tripId) || API_ENDPOINTS.TRIPS.BY_ID(tripId);
+    const data: any = {};
+    
+    if (driverId !== undefined) data.driver_id = driverId;
+    if (vehicleId !== undefined) data.vehicle_id = vehicleId;
+    if (externalDriverId !== undefined) data.external_driver_id = externalDriverId;
+
+    const response = await apiClient.patch<ContractTrip>(endpoint, data);
+    return validateResponse<ContractTrip>(response);
+  }
+
+  /**
+   * Get all trip statuses
+   */
+  async getAllTripStatuses(): Promise<any[]> {
+    const response = await apiClient.get<any[]>(API_ENDPOINTS.TRIPS.STATUSES);
+    return validateResponse<any[]>(response);
+  }
+
+  /**
+   * Get all flights
+   */
+  async getAllFlights(options?: any): Promise<any[]> {
+    let endpoint = API_ENDPOINTS.TRIPS.FLIGHTS;
+    
+    if (options) {
+      const params = new URLSearchParams();
+      if (options.page) params.append('page', options.page.toString());
+      if (options.limit) params.append('limit', options.limit.toString());
+      
+      const queryString = params.toString();
+      if (queryString) {
+        endpoint += `?${queryString}`;
+      }
+    }
+
+    const response = await apiClient.get<any[]>(endpoint);
+    return validateResponse<any[]>(response);
+  }
+
+  /**
+   * Get trips by external driver ID
+   */
+  async getTripsByExternalDriverId(externalDriverId: number): Promise<ContractTrip[]> {
+    const endpoint = API_ENDPOINTS.TRIPS.BY_EXTERNAL_DRIVER(externalDriverId);
+    const response = await apiClient.get<ContractTrip[]>(endpoint);
+    return validateResponse<ContractTrip[]>(response);
+  }
 }
 
 // Export singleton instance

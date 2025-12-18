@@ -22,32 +22,42 @@ const STATUS_MAP: Record<number, string> = {
   7: "Cancelado",
 };
 
-// Function to transform API data to table format
+// Function to transform API data to table format (contract-based)
 function transformApiData(apiData: any[]): any[] {
-  const rows: any[] = [];
-  apiData.forEach((contract) => {
-    (contract.trips || []).forEach((trip: any) => {
-      rows.push({
-        "Empresa o Cliente": contract.client_name,
-        Origen: trip.origin?.name || "",
-        Destino: trip.destination?.name || "",
-        Fecha: trip.service_date
-          ? new Date(trip.service_date).toLocaleDateString()
-          : "",
-        Unidad: trip.vehicle?.type || trip.unit_type || "",
-        Chofer: trip.driver
-          ? `${trip.driver.name} ${trip.driver.lastname}`
-          : "",
-        Estatus: STATUS_MAP[trip.status?.id] || trip.status?.name || "",
-        // Include IDs for functionality
-        contract_id: contract.contract_id,
-        trip_id: trip.trip_id,
-        // Store full trip object for modals
-        _tripData: trip,
-      });
-    });
+  return apiData.map((contract) => {
+    const trips = contract.trips || [];
+    const firstTrip = trips[0] || {};
+    
+    // Get contract status
+    const contractStatusId = contract.contract_status_id || contract.status?.id;
+    const contractStatus = STATUS_MAP[contractStatusId] || contract.contract_status_name || contract.status?.name || "";
+    
+    // Calculate trip count and assignment status
+    const tripCount = trips.length;
+    const assignedTrips = trips.filter((t: any) => 
+      (t.driver_id || t.external_driver_id) && t.vehicle_id
+    ).length;
+    const assignmentStatus = tripCount > 0 
+      ? `${assignedTrips}/${tripCount}` 
+      : "0/0";
+    
+    return {
+      "ID Contrato": contract.contract_id,
+      "Empresa o Cliente": contract.client_name || "",
+      "Fecha": firstTrip.service_date
+        ? new Date(firstTrip.service_date).toLocaleDateString()
+        : "",
+      "Viajes": tripCount,
+      "Asignados": assignmentStatus,
+      "Monto": contract.amount ? `$${contract.amount.toLocaleString()}` : "",
+      "Estatus": contractStatus,
+      // Include IDs and data for functionality
+      contract_id: contract.contract_id,
+      // Store full contract object for details and modals
+      _contractData: contract,
+      _trips: trips,
+    };
   });
-  return rows;
 }
 
 export default function DashboardContent() {
@@ -115,38 +125,31 @@ export default function DashboardContent() {
 
   const columns = [
     "Empresa o Cliente",
-    "Origen",
-    "Destino",
     "Fecha",
-    "Unidad",
-    "Chofer",
+    "Viajes",
+    "Asignados",
+    "Monto",
     "Estatus",
   ];
 
   // Configure filters for the table
   const filterConfigs: FilterConfig[] = [
     FilterPresets.createSelectFilter(
-      "Chofer",
-      "Chofer",
-      Array.from(new Set(sampleData.map((item) => item.Chofer))),
-      "Filtrar por Chofer"
+      "Empresa o Cliente",
+      "Cliente",
+      Array.from(new Set(sampleData.map((item) => item["Empresa o Cliente"]).filter(Boolean))),
+      "Filtrar por Cliente"
     ),
     FilterPresets.createStatusFilter(
       "Estatus",
-      Array.from(new Set(sampleData.map((item) => item.Estatus))),
+      Array.from(new Set(sampleData.map((item) => item.Estatus).filter(Boolean))),
       "Filtrar por Estatus"
     ),
     FilterPresets.createSelectFilter(
-      "Unidad",
-      "Tipo de Unidad",
-      Array.from(new Set(sampleData.map((item) => item.Unidad))),
-      "Filtrar por Unidad"
-    ),
-    FilterPresets.createSelectFilter(
-      "Origen",
-      "Ciudad de Origen",
-      Array.from(new Set(sampleData.map((item) => item.Origen))),
-      "Filtrar por Origen"
+      "Viajes",
+      "Cantidad de Viajes",
+      Array.from(new Set(sampleData.map((item) => String(item.Viajes)))),
+      "Filtrar por Cantidad"
     ),
   ];
 
@@ -179,16 +182,31 @@ export default function DashboardContent() {
   };
 
   const handleAssignDriver = (row: any) => {
-    // Use the stored trip data object for the modal
-    setSelectedTripData(row._tripData || row);
-    setIsAssignDriverModalOpen(true);
+    // Get the first unassigned trip from the contract
+    const trips = row._trips || [];
+    const unassignedTrip = trips.find((t: any) => 
+      !t.driver_id && !t.external_driver_id
+    );
+    const tripToAssign = unassignedTrip || trips[0];
+    
+    if (tripToAssign) {
+      setSelectedTripData(tripToAssign);
+      setIsAssignDriverModalOpen(true);
+    } else {
+      console.warn('No trips found in contract');
+    }
   };
 
   const handlePayDriver = (row: any) => {
-    // Use trip_id if available, otherwise fall back to contract_id
-    const tripId = row.trip_id || row.contract_id;
-    setSelectedTripId(tripId ? String(tripId) : null);
-    setIsDriverPaymentModalOpen(true);
+    // Get the first trip from the contract
+    const trips = row._trips || [];
+    if (trips.length > 0) {
+      const tripId = trips[0].trip_id || trips[0].contract_trip_id;
+      setSelectedTripId(tripId ? String(tripId) : null);
+      setIsDriverPaymentModalOpen(true);
+    } else {
+      console.warn('No trips found in contract');
+    }
   };
 
   const handleDriverAssignment = async (assignmentData: any) => {
@@ -207,7 +225,7 @@ export default function DashboardContent() {
   if (loading) {
     return (
       <div style={{ padding: "20px", textAlign: "center" }}>
-        <p>Cargando viajes...</p>
+        <p>Cargando contratos...</p>
       </div>
     );
   }
@@ -224,7 +242,7 @@ export default function DashboardContent() {
   return (
     <div>
       <FilterableTableComponent
-        title="Lista de viajes"
+        title="Lista de contratos"
         originalData={sampleData}
         columns={columns}
         filterConfigs={filterConfigs}
@@ -232,7 +250,7 @@ export default function DashboardContent() {
         enableSearch={true}
         showActions={true}
         onSearch={handleSearch}
-        emptyMessage="No hay viajes disponibles"
+        emptyMessage="No hay contratos disponibles"
         enablePagination={true}
         itemsPerPage={5}
         currentPage={currentPage}

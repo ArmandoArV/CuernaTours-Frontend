@@ -64,6 +64,91 @@ export interface UpdateContractRequest {
   payment_status?: 'pending' | 'paid';
 }
 
+export interface CreateContractWithTripsRequest {
+  // Contract data
+  client_id: number;
+  payment_type_id: number;
+  IVA: boolean;
+  amount: number;
+  coordinator_id?: number;
+  creator_id?: number;
+  observations?: string;
+  internal_observations?: string;
+  
+  // Commission data (optional)
+  commission?: {
+    type: 'percentage' | 'arranged';
+    amount?: number;
+    arranged_deal?: string;
+    establishment?: string;
+  };
+  
+  // Trip data
+  trip: {
+    service_date: string;
+    origin: {
+      place_id?: number;
+      name?: string;
+      address?: string;
+      city?: string;
+      state?: string;
+      zip_code?: string;
+      annotations?: string;
+    };
+    destination: {
+      place_id?: number;
+      name?: string;
+      address?: string;
+      city?: string;
+      state?: string;
+      zip_code?: string;
+      annotations?: string;
+    };
+    origin_time: string;
+    passengers: number;
+    unit_type?: string;
+    driver_id?: number;
+    vehicle_id?: number;
+    observations?: string;
+    internal_observations?: string;
+    
+    // Flight data (optional)
+    flight?: {
+      flight_number: string;
+      airline?: string;
+      arrival_time?: string;
+      flight_origin?: string;
+      notes?: string;
+    };
+    
+    // Round trip flag
+    is_round_trip?: boolean;
+    return_date?: string;
+    return_time?: string;
+  };
+
+  // Notification control
+  send_notification?: boolean;
+}
+
+export interface CreateContractWithTripsResponse {
+  contract: Contract;
+  commission?: any;
+  origin_place: any;
+  destination_place: any;
+  flight?: any;
+  outbound_trip: any;
+  return_trip?: any;
+}
+
+export interface CreateCommissionRequest {
+  contract_id: number;
+  type: 'percentage' | 'arranged';
+  amount?: number;
+  arranged_deal?: string;
+  establishment?: string;
+}
+
 class ContractsService {
   /**
    * Get all contracts with details
@@ -163,6 +248,155 @@ class ContractsService {
     paymentStatus: 'pending' | 'paid'
   ): Promise<Contract> {
     return this.update(contractId, { payment_status: paymentStatus });
+  }
+
+  /**
+   * Create contract with trips
+   */
+  async createWithTrips(data: CreateContractWithTripsRequest): Promise<CreateContractWithTripsResponse> {
+    const response = await apiClient.post<CreateContractWithTripsResponse>(
+      API_ENDPOINTS.CONTRACTS.CREATE_WITH_TRIPS,
+      data
+    );
+    return validateResponse<CreateContractWithTripsResponse>(response);
+  }
+
+  /**
+   * Send trip confirmation notification
+   */
+  async sendTripConfirmation(contractId: number): Promise<{ success: boolean; message: string; error?: string }> {
+    const endpoint = API_ENDPOINTS.CONTRACTS.SEND_CONFIRMATION(contractId);
+    const response = await apiClient.post<{ success: boolean; message: string; error?: string }>(endpoint, {});
+    return validateResponse<{ success: boolean; message: string; error?: string }>(response);
+  }
+
+  /**
+   * Get all contract statuses
+   */
+  async getStatuses(): Promise<any[]> {
+    const response = await apiClient.get<any[]>(API_ENDPOINTS.REFERENCE.CONTRACT_STATUSES);
+    return validateResponse<any[]>(response);
+  }
+
+  /**
+   * Get all commissions
+   */
+  async getCommissions(options?: QueryOptions): Promise<any[]> {
+    let endpoint = API_ENDPOINTS.COMMISSIONS.BASE || '/commissions';
+    
+    if (options) {
+      const params = new URLSearchParams();
+      if (options.page) params.append('page', options.page.toString());
+      if (options.limit) params.append('limit', options.limit.toString());
+      if (options.sortBy) params.append('sortBy', options.sortBy);
+      if (options.sortOrder) params.append('order', options.sortOrder);
+      
+      const queryString = params.toString();
+      if (queryString) {
+        endpoint += `?${queryString}`;
+      }
+    }
+
+    const response = await apiClient.get<any[]>(endpoint);
+    return validateResponse<any[]>(response);
+  }
+
+  /**
+   * Create commission
+   */
+  async createCommission(data: CreateCommissionRequest): Promise<any> {
+    const response = await apiClient.post<any>(
+      API_ENDPOINTS.COMMISSIONS.BASE || '/commissions',
+      data
+    );
+    return validateResponse<any>(response);
+  }
+
+  /**
+   * Mark contract money as received
+   */
+  async markMoneyReceived(
+    contractId: number,
+    receivedDate?: string
+  ): Promise<Contract> {
+    const endpoint = API_ENDPOINTS.CONTRACTS.MONEY_RECEIVED(contractId);
+    const response = await apiClient.patch<Contract>(endpoint, { received_date: receivedDate });
+    return validateResponse<Contract>(response);
+  }
+
+  /**
+   * Get contracts pending money receipt
+   */
+  async getPendingMoneyReceipt(): Promise<Contract[]> {
+    const response = await apiClient.get<Contract[]>(API_ENDPOINTS.CONTRACTS.PENDING_MONEY_RECEIVED);
+    return validateResponse<Contract[]>(response);
+  }
+
+  /**
+   * Mark commission as paid
+   */
+  async markCommissionPaid(
+    commissionId: number,
+    paidDate?: string
+  ): Promise<any> {
+    const endpoint = API_ENDPOINTS.COMMISSIONS.MARK_PAID(commissionId);
+    const response = await apiClient.patch<any>(endpoint, { paid_date: paidDate });
+    return validateResponse<any>(response);
+  }
+
+  /**
+   * Get pending commissions
+   */
+  async getPendingCommissions(): Promise<any[]> {
+    const response = await apiClient.get<any[]>(API_ENDPOINTS.COMMISSIONS.PENDING);
+    return validateResponse<any[]>(response);
+  }
+
+  /**
+   * Cancel contract
+   */
+  async cancelContract(
+    contractId: number,
+    cancellationReason: string
+  ): Promise<Contract> {
+    const endpoint = API_ENDPOINTS.CONTRACTS.CANCEL(contractId);
+    const response = await apiClient.patch<Contract>(endpoint, { cancellation_reason: cancellationReason });
+    return validateResponse<Contract>(response);
+  }
+
+  /**
+   * Get cancelled contracts
+   */
+  async getCancelledContracts(): Promise<Contract[]> {
+    const response = await apiClient.get<Contract[]>(API_ENDPOINTS.CONTRACTS.CANCELLED);
+    return validateResponse<Contract[]>(response);
+  }
+
+  /**
+   * Uncancel contract
+   */
+  async uncancelContract(contractId: number): Promise<Contract> {
+    const endpoint = API_ENDPOINTS.CONTRACTS.UNCANCEL(contractId);
+    const response = await apiClient.patch<Contract>(endpoint, {});
+    return validateResponse<Contract>(response);
+  }
+
+  /**
+   * Get contracts with pending assignments
+   */
+  async getPendingAssignments(): Promise<ContractWithDetails[]> {
+    const endpoint = API_ENDPOINTS.CONTRACTS.PENDING_ASSIGNMENTS || '/contracts/pending-assignments';
+    const response = await apiClient.get<ContractWithDetails[]>(endpoint);
+    return validateResponse<ContractWithDetails[]>(response);
+  }
+
+  /**
+   * Get completed contracts
+   */
+  async getCompletedContracts(): Promise<ContractWithDetails[]> {
+    const endpoint = API_ENDPOINTS.CONTRACTS.COMPLETED || '/contracts/completed';
+    const response = await apiClient.get<ContractWithDetails[]>(endpoint);
+    return validateResponse<ContractWithDetails[]>(response);
   }
 }
 
