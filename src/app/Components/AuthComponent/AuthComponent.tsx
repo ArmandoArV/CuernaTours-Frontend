@@ -10,6 +10,7 @@ import {
   tokens 
 } from "@fluentui/react-components";
 import { authService, ApiError } from "@/services/api";
+import LoadingComponent from "../LoadingComponent/LoadingComponent";
 
 const useLoadingStyles = makeStyles({
   container: {
@@ -88,23 +89,7 @@ export default function AuthComponent({ children }: AuthRouteProps) {
 
   if (isAuthenticated === null) {
     return (
-      <div className={styles.container}>
-        <Card className={styles.card}>
-          <CardHeader>
-            <div className={styles.content}>
-              <div className={styles.spinnerContainer}>
-                <Spinner size="extra-large" />
-              </div>
-              <Text size={500} className={styles.title}>
-                CuernaTours
-              </Text>
-              <Text size={300} className={styles.subtitle}>
-                Validando sesión, por favor espera...
-              </Text>
-            </div>
-          </CardHeader>
-        </Card>
-      </div>
+      <LoadingComponent message="Validando sesión, por favor espera..." />
     );
   }
 

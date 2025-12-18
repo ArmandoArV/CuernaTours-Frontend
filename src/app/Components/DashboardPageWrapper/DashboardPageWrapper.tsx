@@ -3,7 +3,9 @@
 import DashboardLayout from "@/app/Components/Containers/DashboardLayout/DashboardLayout";
 import DashboardContent from "@/app/Components/DashboardContent/DashboardContent";
 import AuthComponent from "@/app/Components/AuthComponent/AuthComponent";
+import LoadingComponent from "../LoadingComponent/LoadingComponent";
 import { useUserRole } from "@/app/hooks";
+
 
 export default function DashboardPageWrapper() {
   const { hasFullAccess, isMaestro, isLoading } = useUserRole();
@@ -12,9 +14,7 @@ export default function DashboardPageWrapper() {
     return (
       <AuthComponent>
         <DashboardLayout>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-            <p>Cargando...</p>
-          </div>
+          <LoadingComponent message="Cargando panel de control..." />
         </DashboardLayout>
       </AuthComponent>
     );

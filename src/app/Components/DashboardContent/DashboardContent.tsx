@@ -9,6 +9,7 @@ import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import { useUserRole } from "@/app/hooks/useUserRole";
 import AssignDriverModal from "../AssignDriverModal/AssignDriverModal";
 import DriverPaymentModal from "../DriverPaymentModal/DriverPaymentModal";
+import LoadingComponent from "../LoadingComponent/LoadingComponent";
 import styles from "./DashboardContent.module.css";
 
 // Status mapping based on provided ids
@@ -231,11 +232,7 @@ export default function DashboardContent() {
   };
 
   if (loading) {
-    return (
-      <div style={{ padding: "20px", textAlign: "center" }}>
-        <p>Cargando contratos...</p>
-      </div>
-    );
+    return <LoadingComponent message="Cargando contratos..." />;
   }
 
   if (error) {
