@@ -445,8 +445,15 @@ const TableComponent: React.FC<TableComponentProps> = ({
                   <React.Fragment key={`${globalRowIndex}-${rowId || "no-id"}`}>
                     <tr
                       onClick={() => {
-                        if (onRowClick) onRowClick(row);
-                        handleRowClick(row, globalRowIndex);
+                        if (onRowClick) {
+                          onRowClick(row);
+                        } else {
+                          // Navigate to trips page
+                          const contractId = getRowId(row);
+                          if (contractId) {
+                            router.push(`/dashboard/trips/${contractId}`);
+                          }
+                        }
                       }}
                       className={`${styles.rowWithColorIndicator} ${
                         isSelected ? styles.selectedRow : ""
@@ -494,10 +501,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
                             className={styles.viewButton}
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (onViewDetails) {
-                                onViewDetails(row);
-                              } else {
-                                handleRowClick(row, globalRowIndex);
+                              const contractId = getRowId(row);
+                              if (contractId) {
+                                router.push(`/dashboard/trips/${contractId}`);
                               }
                             }}
                             onMouseEnter={(e) => {
@@ -522,91 +528,6 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               }}
                             >
                               Ver Detalles
-                            </div>
-                          )}
-
-                          <div className={styles.dropdownContainer}>
-                            <button
-                              className={styles.editButton}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDropdownClick(e, globalRowIndex);
-                              }}
-                              onMouseEnter={(e) => {
-                                setHoveredButton(`actions-${globalRowIndex}`);
-                                const rect =
-                                  e.currentTarget.getBoundingClientRect();
-                                setTooltipPosition({
-                                  x: rect.left + rect.width / 2,
-                                  y: rect.top - 10,
-                                });
-                              }}
-                              onMouseLeave={() => setHoveredButton(null)}
-                            >
-                              <MoreVerticalFilled />
-                            </button>
-                            {hoveredButton === `actions-${globalRowIndex}` &&
-                              openDropdown !== globalRowIndex && (
-                                <div
-                                  className={styles.tooltip}
-                                  style={{
-                                    left: tooltipPosition.x,
-                                    top: tooltipPosition.y,
-                                  }}
-                                >
-                                  Más Acciones
-                                </div>
-                              )}
-                          </div>
-
-                          {openDropdown === globalRowIndex && (
-                            <div
-                              className={styles.dropdownMenu}
-                              style={{
-                                top: dropdownPosition.top,
-                                left: dropdownPosition.left,
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {isOficina && (
-                                <button
-                                  className={styles.dropdownItem}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (onEditOrder) onEditOrder(row);
-                                    setOpenDropdown(null);
-                                  }}
-                                >
-                                  <Edit24Regular />
-                                  Editar Orden
-                                </button>
-                              )}
-                              {isOficina && (
-                                <button
-                                  className={styles.dropdownItem}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (onAssignDriver) onAssignDriver(row);
-                                    setOpenDropdown(null);
-                                  }}
-                                >
-                                  <PersonSettingsRegular />
-                                  Asignar Chofer
-                                </button>
-                              )}
-                              {isOficina && (
-                                <button
-                                  className={styles.dropdownItem}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (onPayDriver) onPayDriver(row);
-                                    setOpenDropdown(null);
-                                  }}
-                                >
-                                  <MoneyHandRegular />
-                                  Pagar a Chofer
-                                </button>
-                              )}
                             </div>
                           )}
                         </td>
