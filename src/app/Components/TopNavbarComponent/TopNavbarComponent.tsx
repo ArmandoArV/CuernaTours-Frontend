@@ -39,11 +39,11 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
           const userData = JSON.parse(userCookie);
           console.log("Loaded user data from cookie:", userData);
 
-          // Map the user data structure to match component expectations
+          // Use display_name as the primary name source
           const displayName =
             userData.display_name ||
+            `${userData.name || ""} ${userData.first_lastname || userData.lastname || ""}`.trim() ||
             userData.username ||
-            `${userData.name || ""} ${userData.lastname || ""}`.trim() ||
             userData.email?.split("@")[0] ||
             "Usuario";
 
@@ -61,16 +61,23 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
           const userRole =
             userData.role?.name ||
             userData.role ||
-            (userData.roleId ? getRoleName(userData.roleId) : "Usuario");
+            (userData.role_id ? getRoleName(userData.role_id) : 
+             userData.roleId ? getRoleName(userData.roleId) : "Usuario");
 
           setUserInfo({
             name: displayName,
             role: userRole,
-            avatar: userData.avatar || null,
+            avatar: userData.picture_url || userData.avatar || null,
             email: userData.email || "",
-            userId: userData.userId,
-            roleId: userData.roleId,
+            userId: userData.user_id || userData.userId,
+            roleId: userData.role_id || userData.roleId,
             username: userData.username,
+          });
+
+          console.log("User info set in state:", {
+            name: displayName,
+            role: userRole,
+            avatar: userData.picture_url || userData.avatar || null,
           });
         }
       } catch (error) {

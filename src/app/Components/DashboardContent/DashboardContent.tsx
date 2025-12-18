@@ -24,7 +24,15 @@ const STATUS_MAP: Record<number, string> = {
 
 // Function to transform API data to table format (contract-based)
 function transformApiData(apiData: any[]): any[] {
-  return apiData.map((contract) => {
+  // Filter out "Finalizado" (6) and "Cancelado" (7) contracts
+  const activeContracts = apiData.filter((contract) => {
+    const statusId = contract.contract_status_id || contract.status?.id;
+    const statusName = contract.contract_status_name || contract.status?.name;
+    return statusId !== 6 && statusId !== 7 && 
+           statusName !== "Finalizado" && statusName !== "Cancelado";
+  });
+
+  return activeContracts.map((contract) => {
     const trips = contract.trips || [];
     const firstTrip = trips[0] || {};
     

@@ -63,12 +63,14 @@ export default function HomeWrapper() {
     }
 
     try {
+      // authService.login() handles all cookie storage internally
       const data = await authService.login(formData.email, formData.password);
-      
+
       // Show success alert
+      const welcomeName = data.user.display_name || data.user.name || "Usuario";
       showSuccessAlert(
         "Inicio de sesión exitoso",
-        `Bienvenido, ${data.user.display_name || data.user.name}!`,
+        `Bienvenido, ${welcomeName}!`,
         () => {
           // Redirect to dashboard after alert is closed
           router.push("/dashboard");

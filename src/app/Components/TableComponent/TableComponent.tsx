@@ -160,10 +160,6 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
   // Close dropdown when clicking outside or scrolling
   useEffect(() => {
-    console.log(
-      "⚡ useEffect for dropdown running, openDropdown:",
-      openDropdown
-    );
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       console.log("👆 Click outside detected, target:", target);
@@ -209,7 +205,6 @@ const TableComponent: React.FC<TableComponentProps> = ({
     const paginatedData = data.slice(startIndex, endIndex);
     const totalPages = Math.ceil(data.length / itemsPerPage);
 
-
     return { paginatedData, totalPages };
   }, [data, activePage, itemsPerPage, enablePagination]);
 
@@ -244,7 +239,6 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
   // Handle page change
   const handlePageChange = (page: number) => {
-
     if (onPageChange) {
       onPageChange(page);
     } else {
@@ -305,7 +299,6 @@ const TableComponent: React.FC<TableComponentProps> = ({
     row: { [key: string]: any },
     rowIndex: number
   ) => {
-
     // Close dropdown on row click
     setOpenDropdown(null);
 
