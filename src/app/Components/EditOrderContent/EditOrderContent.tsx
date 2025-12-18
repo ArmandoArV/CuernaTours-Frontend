@@ -874,7 +874,7 @@ export default function EditOrderContent({
                 prefillableData?.coordinators
                   ? prefillableData.coordinators.map((coord) => ({
                       value: coord.user_id.toString(),
-                      label: `${coord.name} ${coord.first_lastname}`,
+                      label: coord.display_name,
                     }))
                   : []
               }

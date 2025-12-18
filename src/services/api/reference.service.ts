@@ -103,6 +103,7 @@ export interface UserReference {
   first_lastname?: string;
   second_lastname?: string;
   email?: string;
+  display_name: string;
 }
 
 class ReferenceService {
