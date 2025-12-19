@@ -86,7 +86,7 @@ export const API_ENDPOINTS = {
     BY_CONTRACT: (contractId: number) => `/trips/contract/${contractId}`,
     BY_EXTERNAL_DRIVER: (id: number) => `/trips/external-driver/${id}`,
     ASSIGN_DRIVER: (id: number) => `/trips/${id}/assign-driver`,
-    ASSIGN_RESOURCES: (id: number) => `/trips/${id}/assign-resources`,
+    ASSIGN_RESOURCES: (id: number) => `/trips/${id}/assign`,
     UPDATE_STATUS: (id: number) => `/trips/${id}/status`,
     STATUSES: '/trip/status',
     FLIGHTS: '/flights',

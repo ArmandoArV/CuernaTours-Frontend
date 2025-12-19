@@ -13,7 +13,7 @@ export default function ButtonComponent({
   return (
     <button
       type={type === "cancel" ? "button" : type}
-      onClick={onClick}
+      onClick={(e) => onClick?.(e)}
       className={`${styles.button} ${className}`} // Combine default and custom classes
       disabled={disabled}
     >

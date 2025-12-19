@@ -276,12 +276,11 @@ useEffect(() => {
                       className={styles.actionButton}
                     />
                     <div className={styles.dropdownContainer}>
-                      <button
+                      <ButtonComponent
+                        icon={<MoreVerticalFilled />}
+                        onClick={(e) => e && handleDropdownClick(e, index)}
                         className={styles.moreActionsButton}
-                        onClick={(e) => handleDropdownClick(e, index)}
-                      >
-                        <MoreVerticalFilled />
-                      </button>
+                      />
                       {openDropdown === index && (
                         <div
                           className={styles.dropdownMenu}
@@ -292,39 +291,36 @@ useEffect(() => {
                           }}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <button
-                            className={styles.dropdownItem}
+                          <ButtonComponent
+                            text="Editar Orden"
+                            icon={<Edit24Regular />}
                             onClick={(e) => {
-                              e.stopPropagation();
+                              e?.stopPropagation();
                               handleEditTrip(tripId);
                               setOpenDropdown(null);
                             }}
-                          >
-                            <Edit24Regular />
-                            Editar Orden
-                          </button>
-                          <button
                             className={styles.dropdownItem}
+                          />
+                          <ButtonComponent
+                            text="Asignar Chofer"
+                            icon={<PersonSettingsRegular />}
                             onClick={(e) => {
-                              e.stopPropagation();
+                              e?.stopPropagation();
                               handleAssignDriver(trip);
                               setOpenDropdown(null);
                             }}
-                          >
-                            <PersonSettingsRegular />
-                            Asignar Chofer
-                          </button>
-                          <button
                             className={styles.dropdownItem}
+                          />
+                          <ButtonComponent
+                            text="Pagar a Chofer"
+                            icon={<MoneyHandRegular />}
                             onClick={(e) => {
-                              e.stopPropagation();
+                              e?.stopPropagation();
                               handlePayDriver(trip);
                               setOpenDropdown(null);
                             }}
-                          >
-                            <MoneyHandRegular />
-                            Pagar a Chofer
-                          </button>
+                            className={styles.dropdownItem}
+                          />
                         </div>
                       )}
                     </div>

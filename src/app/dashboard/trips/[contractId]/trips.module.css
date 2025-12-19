@@ -1,5 +1,5 @@
 .container {
-  padding: 2rem;
+  padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -13,7 +13,7 @@
 
 .backButton {
   background-color: #f3f2f1;
-  color: #323130;
+  color: #333;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -22,7 +22,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s ease;
 }
 
 .backButton:hover {
@@ -30,9 +30,9 @@
 }
 
 .title {
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 600;
-  color: #323130;
+  color: #333;
   margin: 0;
 }
 
@@ -58,13 +58,13 @@
 
 .summaryLabel {
   font-size: 0.875rem;
-  color: #605e5c;
+  color: #666;
   font-weight: 500;
 }
 
 .summaryValue {
   font-size: 1.125rem;
-  color: #323130;
+  color: #333;
   font-weight: 600;
 }
 
@@ -89,7 +89,7 @@
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.3s ease;
 }
 
 .tripCard:hover {
@@ -112,7 +112,7 @@
 .tripTitle {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #323130;
+  color: #333;
   margin: 0 0 0.5rem 0;
 }
 
@@ -125,7 +125,7 @@
 
 .tripDate {
   font-size: 0.875rem;
-  color: #605e5c;
+  color: #666;
 }
 
 .tripActions {
@@ -146,7 +146,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s ease;
 }
 
 .actionButton:hover {
@@ -167,8 +167,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #605e5c;
-  transition: all 0.2s;
+  color: #666;
+  transition: all 0.3s ease;
   width: 36px;
   height: 36px;
 }
@@ -189,22 +189,21 @@
   overflow: hidden;
 }
 
-.dropdownItem {
-  display: flex;
-  align-items: center;
+.dropdownMenu > button.dropdownItem {
   gap: 0.75rem;
   width: 100%;
   padding: 0.75rem 1rem;
-  background: white;
+  background: transparent;
   border: none;
   cursor: pointer;
   font-size: 0.875rem;
-  color: #323130;
-  transition: background-color 0.2s;
+  color: #333;
+  transition: background-color 0.3s ease;
   text-align: left;
+  justify-content: flex-start;
 }
 
-.dropdownItem:hover {
+.dropdownMenu > button.dropdownItem:hover {
   background-color: #f3f2f1;
 }
 
@@ -238,19 +237,19 @@
 
 .detailLabel {
   font-size: 0.875rem;
-  color: #605e5c;
+  color: #666;
   font-weight: 500;
 }
 
 .detailValue {
   font-size: 1rem;
-  color: #323130;
+  color: #333;
 }
 
 .emptyMessage {
   text-align: center;
   padding: 3rem;
-  color: #605e5c;
+  color: #666;
   font-size: 1rem;
   background: white;
   border-radius: 8px;
@@ -273,10 +272,10 @@
   margin-bottom: 1.5rem;
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments for mobile */
 @media (max-width: 768px) {
   .container {
-    padding: 1rem;
+    padding: 20px 15px;
   }
 
   .header {
