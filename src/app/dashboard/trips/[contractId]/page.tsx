@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { contractsService, tripsService } from "@/services/api";
 import LoadingComponent from "@/app/Components/LoadingComponent/LoadingComponent";
 import ButtonComponent from "@/app/Components/ButtonComponent/ButtonComponent";
+import { useUserRole } from "@/app/hooks/useUserRole";
 import AssignDriverModal from "@/app/Components/AssignDriverModal/AssignDriverModal";
 import DriverPaymentModal from "@/app/Components/DriverPaymentModal/DriverPaymentModal";
 import { 
@@ -41,6 +42,7 @@ export default function TripsPage() {
   const params = useParams();
   const router = useRouter();
   const contractId = params?.contractId as string;
+  const { canAssignResources } = useUserRole();
 
   const [contractData, setContractData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -301,26 +303,30 @@ useEffect(() => {
                             }}
                             className={styles.dropdownItem}
                           />
-                          <ButtonComponent
-                            text="Asignar Chofer"
-                            icon={<PersonSettingsRegular />}
-                            onClick={(e) => {
-                              e?.stopPropagation();
-                              handleAssignDriver(trip);
-                              setOpenDropdown(null);
-                            }}
-                            className={styles.dropdownItem}
-                          />
-                          <ButtonComponent
-                            text="Pagar a Chofer"
-                            icon={<MoneyHandRegular />}
-                            onClick={(e) => {
-                              e?.stopPropagation();
-                              handlePayDriver(trip);
-                              setOpenDropdown(null);
-                            }}
-                            className={styles.dropdownItem}
-                          />
+                          {canAssignResources && (
+                            <ButtonComponent
+                              text="Asignar Chofer"
+                              icon={<PersonSettingsRegular />}
+                              onClick={(e) => {
+                                e?.stopPropagation();
+                                handleAssignDriver(trip);
+                                setOpenDropdown(null);
+                              }}
+                              className={styles.dropdownItem}
+                            />
+                          )}
+                          {canAssignResources && (
+                            <ButtonComponent
+                              text="Pagar a Chofer"
+                              icon={<MoneyHandRegular />}
+                              onClick={(e) => {
+                                e?.stopPropagation();
+                                handlePayDriver(trip);
+                                setOpenDropdown(null);
+                              }}
+                              className={styles.dropdownItem}
+                            />
+                          )}
                         </div>
                       )}
                     </div>

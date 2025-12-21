@@ -71,7 +71,7 @@ function transformApiData(apiData: any[]): any[] {
 
 export default function DashboardContent() {
   const router = useRouter();
-  const { hasFullAccess } = useUserRole();
+  const { hasFullAccess, canCreateOrders, canAssignResources } = useUserRole();
   const [currentPage, setCurrentPage] = useState(1);
   const [contractsData, setContractsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -262,10 +262,10 @@ export default function DashboardContent() {
         onPageChange={setCurrentPage}
         onFiltersChange={handleFiltersChange}
         onEditOrder={handleEditOrder}
-        onAssignDriver={handleAssignDriver}
-        onPayDriver={handlePayDriver}
+        onAssignDriver={canAssignResources ? handleAssignDriver : undefined}
+        onPayDriver={canAssignResources ? handlePayDriver : undefined}
         actionButtons={
-          hasFullAccess ? (
+          canCreateOrders ? (
             <div ref={dropdownRef} style={{ position: "relative" }}>
               <ButtonComponent
                 text="Crear Orden"

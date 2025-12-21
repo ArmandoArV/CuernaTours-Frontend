@@ -24,6 +24,7 @@ import { useOrderContext } from "@/app/Contexts/OrderContext";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import ParadaItem from "../ParadaItem/ParadaItem";
 import { useRouter } from "next/navigation";
+import { useUserRole } from "@/app/hooks/useUserRole";
 import {
   referenceService,
   contractsService,
@@ -45,6 +46,7 @@ interface Parada {
 export default function CreateTripContent() {
   const { orderData, tripData, setTripData, clearData } = useOrderContext();
   const router = useRouter();
+  const { canAssignResources } = useUserRole();
 
   // Trip-specific form data
   const [tripFormData, setTripFormData] = useState({
@@ -910,62 +912,66 @@ export default function CreateTripContent() {
             />
           ))}
 
-          <div className={styles.divider}>
-            <h2 className={styles.sectionTitle}>Asignación</h2>
-          </div>
+          {canAssignResources && (
+            <>
+              <div className={styles.divider}>
+                <h2 className={styles.sectionTitle}>Asignación</h2>
+              </div>
 
-          <div className={styles.section}>
-            <InputComponent
-              type="text"
-              value={tripFormData.tipoUnidad || ""}
-              onChange={handleTripInputChange("tipoUnidad")}
-              label={
-                <p>
-                  Tipo de unidad (Provisional){" "}
-                  <strong style={{ color: "red" }}>*</strong>
-                </p>
-              }
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.section}>
-            <SelectComponent
-              label="Chofer"
-              options={[
-                { value: "POR_ASIGNAR", label: "POR ASIGNAR" },
-                ...choferes
-              ]}
-              value={tripFormData.nombreChofer || ""}
-              onChange={handleTripSelectChange("nombreChofer")}
-              className={styles.input}
-            />
-            <SelectComponent
-              label="Unidad"
-              options={[
-                { value: "POR_ASIGNAR", label: "POR ASIGNAR" },
-                ...unidades
-              ]}
-              value={tripFormData.unidadAsignada || ""}
-              onChange={handleTripSelectChange("unidadAsignada")}
-              className={styles.input}
-            />
-            <InputComponent
-              type="text"
-              value={tripFormData.placa || ""}
-              onChange={handleTripInputChange("placa")}
-              label="Placa"
-              className={styles.input}
-            />
-          </div>
-          <div className={styles.section}>
-            <InputComponent
-              type="textarea"
-              value={tripFormData.observacionesChofer || ""}
-              onChange={handleTripInputChange("observacionesChofer")}
-              label="Notas adicionales"
-              className={styles.textarea}
-            />
-          </div>
+              <div className={styles.section}>
+                <InputComponent
+                  type="text"
+                  value={tripFormData.tipoUnidad || ""}
+                  onChange={handleTripInputChange("tipoUnidad")}
+                  label={
+                    <p>
+                      Tipo de unidad (Provisional){" "}
+                      <strong style={{ color: "red" }}>*</strong>
+                    </p>
+                  }
+                  className={styles.input}
+                />
+              </div>
+              <div className={styles.section}>
+                <SelectComponent
+                  label="Chofer"
+                  options={[
+                    { value: "POR_ASIGNAR", label: "POR ASIGNAR" },
+                    ...choferes
+                  ]}
+                  value={tripFormData.nombreChofer || ""}
+                  onChange={handleTripSelectChange("nombreChofer")}
+                  className={styles.input}
+                />
+                <SelectComponent
+                  label="Unidad"
+                  options={[
+                    { value: "POR_ASIGNAR", label: "POR ASIGNAR" },
+                    ...unidades
+                  ]}
+                  value={tripFormData.unidadAsignada || ""}
+                  onChange={handleTripSelectChange("unidadAsignada")}
+                  className={styles.input}
+                />
+                <InputComponent
+                  type="text"
+                  value={tripFormData.placa || ""}
+                  onChange={handleTripInputChange("placa")}
+                  label="Placa"
+                  className={styles.input}
+                />
+              </div>
+              <div className={styles.section}>
+                <InputComponent
+                  type="textarea"
+                  value={tripFormData.observacionesChofer || ""}
+                  onChange={handleTripInputChange("observacionesChofer")}
+                  label="Notas adicionales"
+                  className={styles.textarea}
+                />
+              </div>
+            </>
+          )}
           <div className={styles.section}>
             <InputComponent
               type="textarea"
