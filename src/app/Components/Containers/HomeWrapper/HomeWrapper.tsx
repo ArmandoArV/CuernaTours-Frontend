@@ -4,6 +4,7 @@ import styles from "./HomeWrapper.module.css";
 import Image from "next/image";
 import InputComponent from "../../InputComponent/InputComponent";
 import ButtonComponent from "../../ButtonComponent/ButtonComponent";
+import ForgotPasswordModal from "../../ForgotPasswordModal/ForgotPasswordModal";
 import { LoginUserType } from "@/app/Types/LoginUserType";
 import Link from "next/link";
 import { showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
@@ -16,6 +17,7 @@ export default function HomeWrapper() {
     email: "",
     password: "",
   });
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = React.useState(false);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -153,13 +155,22 @@ export default function HomeWrapper() {
           <div className={styles["forgotPassword"]}>
             <p className={styles["forgotPasswordText"]}>
               ¿Olvidaste tu contraseña?{" "}
-              <Link href="#" className={styles["forgotPasswordLink"]}>
+              <button
+                type="button"
+                onClick={() => setShowForgotPasswordModal(true)}
+                className={styles["forgotPasswordLink"]}
+              >
                 Da clic aquí
-              </Link>
+              </button>
             </p>
           </div>
         </form>
       </div>
+
+      <ForgotPasswordModal
+        isOpen={showForgotPasswordModal}
+        onClose={() => setShowForgotPasswordModal(false)}
+      />
     </div>
   );
 }

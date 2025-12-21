@@ -113,9 +113,19 @@
 }
 
 .forgotPasswordLink {
-  color: var(--Main-1A2E47);
+  color: var(--Main-96781A);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
   text-decoration: none;
+  font-family: inherit;
+  font-size: inherit;
   font-weight: 600;
+}
+
+.forgotPasswordLink:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 767px) {

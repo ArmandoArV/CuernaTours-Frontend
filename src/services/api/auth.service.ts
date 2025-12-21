@@ -321,6 +321,42 @@ class AuthService {
 
     return !!accessToken;
   }
+
+  /**
+   * Request password reset
+   */
+  async requestPasswordReset(email: string): Promise<void> {
+    const response = await apiClient.post<void>(
+      API_ENDPOINTS.AUTH.REQUEST_PASSWORD_RESET,
+      { email },
+      { skipAuth: true }
+    );
+    validateResponse<void>(response);
+  }
+
+  /**
+   * Verify reset token is valid
+   */
+  async verifyResetToken(token: string): Promise<{ valid: boolean }> {
+    const response = await apiClient.post<{ valid: boolean }>(
+      API_ENDPOINTS.AUTH.VERIFY_RESET_TOKEN,
+      { token },
+      { skipAuth: true }
+    );
+    return validateResponse<{ valid: boolean }>(response);
+  }
+
+  /**
+   * Reset password with token
+   */
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const response = await apiClient.post<void>(
+      API_ENDPOINTS.AUTH.RESET_PASSWORD,
+      { token, newPassword },
+      { skipAuth: true }
+    );
+    validateResponse<void>(response);
+  }
 }
 
 // Export singleton instance
