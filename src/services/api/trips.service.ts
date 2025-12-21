@@ -79,7 +79,7 @@ class TripsService {
    */
   async update(tripId: number, data: UpdateTripRequest): Promise<ContractTrip> {
     const endpoint = API_ENDPOINTS.TRIPS.BY_ID(tripId);
-    const response = await apiClient.patch<ContractTrip>(endpoint, data);
+    const response = await apiClient.post<ContractTrip>(endpoint, data);
     return validateResponse<ContractTrip>(response);
   }
 
