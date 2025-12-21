@@ -850,31 +850,70 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
   const currentVehicleInfo = getCurrentVehicleInfo();
   const currentPlate = getCurrentPlate();
 
-  const handleAssign = () => {
-    let assignmentData = {};
-    if (driverType === "internal") {
-      assignmentData = {
-        driverType,
-        sameDriver,
-        driverId,
-        vehicleId,
-        plate,
-        ...(sameDriver === "no" && {
-          returnDriverId,
-          returnVehicleId,
-          returnPlate,
-        }),
-      };
-    } else {
-      assignmentData = {
-        driverType,
-        providerName,
-        externalDriverName,
-        externalContact,
-        externalVehicleType,
-      };
+  const handleAssign = async () => {
+    try {
+      setIsLoading(true);
+      
+      const tripId = getTripId();
+      if (!tripId) {
+        console.error("No trip ID found");
+        alert("Error: No se pudo encontrar el ID del viaje");
+        return;
+      }
+
+      if (driverType === "internal") {
+        // Assign internal driver and vehicle to the trip
+        const driverIdNum = driverId ? parseInt(driverId) : null;
+        const vehicleIdNum = vehicleId ? parseInt(vehicleId) : null;
+
+        await tripsService.assignTripResources(
+          tripId,
+          driverIdNum,
+          vehicleIdNum,
+          null // external driver id is null for internal drivers
+        );
+
+        // If round trip with different return driver/vehicle, handle return trip
+        if (isRoundTrip && sameDriver === "no") {
+          // You may need to handle return trip assignment here
+          // This depends on how your backend handles round trips
+          console.log("Round trip with different return driver - may need additional logic");
+        }
+
+        const assignmentData = {
+          driverType,
+          sameDriver,
+          driverId,
+          vehicleId,
+          plate,
+          ...(sameDriver === "no" && {
+            returnDriverId,
+            returnVehicleId,
+            returnPlate,
+          }),
+        };
+        onAssign(assignmentData);
+      } else {
+        // Handle external driver assignment
+        // Note: You may need to create the external driver first if not exists
+        console.log("External driver assignment - implement based on your backend API");
+        const assignmentData = {
+          driverType,
+          providerName,
+          externalDriverName,
+          externalContact,
+          externalVehicleType,
+        };
+        onAssign(assignmentData);
+      }
+      
+      onClose();
+    } catch (error) {
+      console.error("Error assigning driver:", error);
+      alert("Error al asignar chofer: " + (error instanceof Error ? error.message : "Error desconocido"));
+    } finally {
+      setIsLoading(false);
     }
-    onAssign(assignmentData);
   };
 
   const isRoundTrip = getTripType() === "Redondo";
