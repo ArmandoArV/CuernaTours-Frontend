@@ -186,6 +186,33 @@ class ReferenceService {
   }
 
   /**
+   * Create new client with contact in a single request
+   */
+  async createClientWithContact(data: {
+    client_type_id: number;
+    name: string;
+    comments?: string;
+    contact: {
+      name: string;
+      first_lastname: string;
+      second_lastname?: string;
+      country_code?: string;
+      phone?: string;
+      email?: string;
+      is_whatsapp_available: boolean;
+      role?: string;
+      is_primary: boolean;
+      comments?: string;
+    };
+  }): Promise<{ client: Client; contact: Contact; client_contact: any }> {
+    const response = await apiClient.post<{ client: Client; contact: Contact; client_contact: any }>(
+      API_ENDPOINTS.CLIENTS.CREATE,
+      data
+    );
+    return validateResponse<{ client: Client; contact: Contact; client_contact: any }>(response);
+  }
+
+  /**
    * Create new place
    */
   async createPlace(data: {

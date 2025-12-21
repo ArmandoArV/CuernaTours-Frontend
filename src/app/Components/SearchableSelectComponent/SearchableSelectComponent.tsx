@@ -51,6 +51,8 @@ export default function SearchableSelectComponent({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [lastSearchQuery, setLastSearchQuery] = useState(''); // Preserve query for no-results display
+  const [searchPerformed, setSearchPerformed] = useState(false); // Track if search was performed
   
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -75,17 +77,22 @@ export default function SearchableSelectComponent({
       if (!query.trim()) {
         setOptions([]);
         setIsLoading(false);
+        setLastSearchQuery('');
+        setSearchPerformed(false);
         return;
       }
 
       try {
         setIsLoading(true);
+        setLastSearchQuery(query); // Preserve the query
         const results = await onSearch(query);
         setOptions(results);
         setSelectedIndex(-1);
+        setSearchPerformed(true); // Mark search as completed
       } catch (error) {
         console.error('Search error:', error);
         setOptions([]);
+        setSearchPerformed(true); // Still mark as performed even on error
       } finally {
         setIsLoading(false);
       }
@@ -222,6 +229,20 @@ export default function SearchableSelectComponent({
             onClick={() => !disabled && setIsOpen(!isOpen)}
           />
         </div>
+        
+        {/* Persistent Create Button */}
+        {onCreate && (
+          <button
+            type="button"
+            className={styles.externalCreateButton}
+            onClick={handleCreateNew}
+            disabled={disabled}
+            title={createButtonText}
+          >
+            <Add20Regular className={styles.createIcon} />
+            <span className={styles.createButtonLabel}>{createButtonText}</span>
+          </button>
+        )}
 
         {isOpen && (
           <div className={styles.dropdown}>
@@ -254,19 +275,15 @@ export default function SearchableSelectComponent({
                   </div>
                 )}
               </>
-            ) : searchQuery.trim() ? (
+            ) : searchPerformed && lastSearchQuery.trim() ? (
               <div className={styles.noResults}>
-                <div className={styles.noResultsText}>{noResultsText}</div>
-                {onCreate && (
-                  <button
-                    type="button"
-                    className={styles.createButton}
-                    onClick={handleCreateNew}
-                  >
-                    <Add20Regular className={styles.createIcon} />
-                    {createButtonText}
-                  </button>
-                )}
+                <div className={styles.noResultsText}>
+                  {noResultsText} para "{lastSearchQuery}"
+                </div>
+              </div>
+            ) : !isLoading && displayValue.trim() ? (
+              <div className={styles.noResults}>
+                <div className={styles.noResultsText}>Escribe para buscar...</div>
               </div>
             ) : null}
           </div>

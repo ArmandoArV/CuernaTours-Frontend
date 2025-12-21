@@ -109,14 +109,7 @@ export default function CreateClientModal({
     setIsSubmitting(true);
 
     try {
-      // Create client
-      const newClient = await referenceService.createClient({
-        name: formData.name,
-        client_type_id: parseInt(formData.client_type_id),
-        comments: formData.comments || undefined,
-      });
-
-      // Create primary contact for the client
+      // Create client with contact in a single request
       const contactData = {
         name: formData.contactName,
         first_lastname: formData.first_lastname,
@@ -130,15 +123,17 @@ export default function CreateClientModal({
         comments: undefined,
       };
 
-      await referenceService.createClientContact(
-        newClient.client_id,
-        contactData
-      );
+      const result = await referenceService.createClientWithContact({
+        name: formData.name,
+        client_type_id: parseInt(formData.client_type_id),
+        comments: formData.comments || undefined,
+        contact: contactData,
+      });
 
       showSuccessAlert("Éxito", "Cliente creado exitosamente");
 
       // Pass back the client info and contact data for auto-fill
-      onClientCreated(newClient.client_id, newClient.name, contactData);
+      onClientCreated(result.client.client_id, result.client.name, contactData);
 
       // Reset form
       setFormData({

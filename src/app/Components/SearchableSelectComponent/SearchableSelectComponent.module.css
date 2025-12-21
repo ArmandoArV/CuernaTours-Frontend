@@ -20,12 +20,16 @@
 .inputWrapper {
   position: relative;
   width: 100%;
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
 }
 
 .inputContainer {
   position: relative;
   display: flex;
   align-items: center;
+  flex: 1;
   width: 100%;
 }
 
@@ -162,6 +166,58 @@
 .createIcon {
   width: 1rem;
   height: 1rem;
+}
+
+/* External persistent create button */
+.externalCreateButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background-color: var(--Main-1A2E47);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  min-width: fit-content;
+  height: 2.625rem; /* Match input height */
+}
+
+.externalCreateButton:hover:not(:disabled) {
+  background-color: #090b17;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.externalCreateButton:active:not(:disabled) {
+  background-color: #090b17;
+  transform: translateY(0);
+}
+
+.externalCreateButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.createButtonLabel {
+  display: inline;
+}
+
+/* Responsive: hide label text on small screens */
+@media (max-width: 640px) {
+  .createButtonLabel {
+    display: none;
+  }
+  
+  .externalCreateButton {
+    padding: 0.625rem;
+    min-width: 2.625rem;
+  }
 }
 
 /* Scrollbar styling */
