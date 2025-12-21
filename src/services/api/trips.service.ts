@@ -101,7 +101,7 @@ class TripsService {
     driverData: AssignDriverRequest
   ): Promise<ContractTrip> {
     const endpoint = API_ENDPOINTS.TRIPS.ASSIGN_DRIVER(tripId);
-    const response = await apiClient.patch<ContractTrip>(endpoint, driverData);
+    const response = await apiClient.post<ContractTrip>(endpoint, driverData);
     return validateResponse<ContractTrip>(response);
   }
 
@@ -162,7 +162,7 @@ class TripsService {
     if (vehicleId !== undefined) data.vehicle_id = vehicleId;
     if (externalDriverId !== undefined) data.external_driver_id = externalDriverId;
 
-    const response = await apiClient.patch<ContractTrip>(endpoint, data);
+    const response = await apiClient.post<ContractTrip>(endpoint, data);
     return validateResponse<ContractTrip>(response);
   }
 
