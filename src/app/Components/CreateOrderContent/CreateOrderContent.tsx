@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import { referenceService, ApiError } from "@/services/api";
 import type { PrefillableData, ClientTypeReference, PaymentTypeReference } from "@/services/api/reference.service";
 export default function CreateOrderContent() {
-  const { orderData, setOrderData } = useOrderContext();
+  const { orderData, setOrderData, clearData } = useOrderContext();
   const router = useRouter();
 
   // Use context data as form data
@@ -334,12 +334,38 @@ export default function CreateOrderContent() {
   };
 
   useEffect(() => {
-    fetchPrefillableData();
+    const initializeForm = async () => {
+      // Clear any persisted data on initial mount
+      clearData();
+      
+      // Fetch prefillable data
+      await fetchPrefillableData();
+    };
     
-    // Sync form data with context data
-    console.log("CreateOrderContent - OrderData from context:", orderData);
-    setFormData(orderData);
-  }, [fetchPrefillableData, orderData]);
+    initializeForm();
+  }, []); // Empty dependency array - only run on mount
+
+  // Set default values after prefillable data is loaded
+  useEffect(() => {
+    if (prefillableData && !orderData.empresa) {
+      // Only set defaults if form is empty (no empresa selected)
+      const porAsignarPaymentType = prefillableData.payment_types.find(
+        type => type.name.toLowerCase().includes('por asignar')
+      );
+      const porAsignarCoordinator = prefillableData.coordinators?.find(
+        coord => coord.display_name?.toLowerCase().includes('por asignar')
+      );
+
+      setFormData(prev => ({
+        ...prev,
+        tieneWhatsapp: 'Si',
+        aplicaIva: 'Si',
+        llevaComision: 'No',
+        tipoPago: porAsignarPaymentType ? porAsignarPaymentType.payment_type_id.toString() : '',
+        coordinadorViaje: porAsignarCoordinator ? porAsignarCoordinator.user_id.toString() : '',
+      }));
+    }
+  }, [prefillableData, orderData.empresa]);
 
   // Also sync when formData changes
   useEffect(() => {
@@ -528,7 +554,7 @@ export default function CreateOrderContent() {
               value={formData.tipoPago}
               onChange={handleSelectChange("tipoPago")}
               options={[
-                { value: "POR_ASIGNAR", label: "POR ASIGNAR" },
+                { value: "POR_ASIGNAR", label: "Por asignar" },
                 ...(prefillableData?.payment_types
                   ? referenceService.transformPaymentTypesForSelect(prefillableData.payment_types)
                   : [])
@@ -734,7 +760,7 @@ export default function CreateOrderContent() {
               value={formData.coordinadorViaje}
               onChange={handleSelectChange("coordinadorViaje")}
               options={[
-                { value: "POR_ASIGNAR", label: "POR ASIGNAR" },
+                { value: "POR_ASIGNAR", label: "Por asignar" },
                 ...(prefillableData?.coordinators
                   ? prefillableData.coordinators.map(coord => ({
                       value: coord.user_id.toString(),
