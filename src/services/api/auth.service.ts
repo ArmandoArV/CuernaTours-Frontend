@@ -326,12 +326,16 @@ class AuthService {
    * Request password reset
    */
   async requestPasswordReset(email: string): Promise<void> {
-    const response = await apiClient.post<void>(
+    const response = await apiClient.post(
       API_ENDPOINTS.AUTH.REQUEST_PASSWORD_RESET,
       { email },
       { skipAuth: true }
     );
-    validateResponse<void>(response);
+    
+    // Response only has success and message, no data field
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to request password reset');
+    }
   }
 
   /**
@@ -350,12 +354,16 @@ class AuthService {
    * Reset password with token
    */
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    const response = await apiClient.post<void>(
+    const response = await apiClient.post(
       API_ENDPOINTS.AUTH.RESET_PASSWORD,
       { token, newPassword },
       { skipAuth: true }
     );
-    validateResponse<void>(response);
+    
+    // Response only has success and message, no data field
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to reset password');
+    }
   }
 }
 

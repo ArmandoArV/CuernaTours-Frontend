@@ -52,7 +52,7 @@ export default function ForgotPasswordModal({
       console.error("Error requesting password reset:", error);
       showErrorAlert(
         "Error",
-        "No se pudo enviar el correo. Por favor, intenta nuevamente."
+        "No se pudo procesar la solicitud. Por favor, intenta nuevamente."
       );
     } finally {
       setLoading(false);
