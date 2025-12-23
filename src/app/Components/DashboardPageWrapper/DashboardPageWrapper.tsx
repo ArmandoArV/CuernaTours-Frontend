@@ -4,7 +4,8 @@ import DashboardLayout from "@/app/Components/Containers/DashboardLayout/Dashboa
 import DashboardContent from "@/app/Components/DashboardContent/DashboardContent";
 import AuthComponent from "@/app/Components/AuthComponent/AuthComponent";
 import LoadingComponent from "../LoadingComponent/LoadingComponent";
-import { useUserRole } from "@/app/hooks";
+import RoleGuard from "../RoleGuard/RoleGuard";
+import { useUserRole, UserRole } from "@/app/hooks";
 
 
 export default function DashboardPageWrapper() {
@@ -22,9 +23,11 @@ export default function DashboardPageWrapper() {
 
   return (
     <AuthComponent>
-      <DashboardLayout userIsAdmin={hasFullAccess} userIsOwner={isMaestro}>
-        <DashboardContent />
-      </DashboardLayout>
+      <RoleGuard allowedRoles={[UserRole.MAESTRO, UserRole.ADMINISTRADOR, UserRole.OFICINA]}>
+        <DashboardLayout userIsAdmin={hasFullAccess} userIsOwner={isMaestro}>
+          <DashboardContent />
+        </DashboardLayout>
+      </RoleGuard>
     </AuthComponent>
   );
 }

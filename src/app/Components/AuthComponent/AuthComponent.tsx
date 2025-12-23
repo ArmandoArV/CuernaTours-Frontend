@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { 
   Spinner, 
   Text, 
@@ -11,6 +11,8 @@ import {
 } from "@fluentui/react-components";
 import { authService, ApiError } from "@/services/api";
 import LoadingComponent from "../LoadingComponent/LoadingComponent";
+import { getCookie } from "@/app/Utils/CookieUtil";
+import { UserRole } from "@/app/hooks/useUserRole";
 
 const useLoadingStyles = makeStyles({
   container: {
@@ -53,6 +55,7 @@ type AuthRouteProps = {
 
 export default function AuthComponent({ children }: AuthRouteProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const styles = useLoadingStyles();
   
@@ -64,9 +67,32 @@ export default function AuthComponent({ children }: AuthRouteProps) {
         if (data.tokenValid) {
           setIsAuthenticated(true);
           
-          // Auto redirect to dashboard if we're on the home page
-          if (window.location.pathname === '/') {
-            router.push("/dashboard");
+          // Get user role from cookie
+          const userCookie = getCookie("user");
+          let userRole: number | null = null;
+          
+          if (userCookie) {
+            try {
+              const userData = JSON.parse(userCookie);
+              userRole = userData.roleId || userData.role_id || null;
+            } catch (e) {
+              console.error("Error parsing user cookie:", e);
+            }
+          }
+          
+          // Auto redirect based on role if we're on the home page
+          if (pathname === '/') {
+            // Redirect drivers to their specific dashboard
+            if (userRole === UserRole.CHOFER) {
+              router.push("/chofer/dashboard");
+            } else {
+              // All other roles go to main dashboard
+              router.push("/dashboard");
+            }
+          }
+          // If a driver tries to access main dashboard, redirect to driver dashboard
+          else if (pathname === '/dashboard' && userRole === UserRole.CHOFER) {
+            router.push("/chofer/dashboard");
           }
         } else {
           // Token is invalid
@@ -85,7 +111,7 @@ export default function AuthComponent({ children }: AuthRouteProps) {
     };
 
     validateToken();
-  }, [router]);
+  }, [router, pathname]);
 
   if (isAuthenticated === null) {
     return (

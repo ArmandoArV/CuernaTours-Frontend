@@ -1,13 +1,20 @@
+"use client";
+
 import DashboardLayout from "../Components/Containers/DashboardLayout/DashboardLayout";
 import UsersContent from "../Components/UsersContent/UsersContent";
+import AuthComponent from "../Components/AuthComponent/AuthComponent";
+import RoleGuard from "../Components/RoleGuard/RoleGuard";
+import { UserRole } from "../hooks/useUserRole";
 
 export default function UsersPage() {
-  // Server-side component - can fetch users data here
-  // const usersData = await getUsersData(); // Example server-side data fetching
-  
+  // Only Maestro and Administrador can manage users
   return (
-    <DashboardLayout userIsAdmin={true} userIsOwner={false}>
-      <UsersContent />
-    </DashboardLayout>
+    <AuthComponent>
+      <RoleGuard allowedRoles={[UserRole.MAESTRO, UserRole.ADMINISTRADOR]}>
+        <DashboardLayout userIsAdmin={true} userIsOwner={false}>
+          <UsersContent />
+        </DashboardLayout>
+      </RoleGuard>
+    </AuthComponent>
   );
 }
