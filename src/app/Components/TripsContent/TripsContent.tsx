@@ -294,7 +294,7 @@ export default function TripsContent({ contractId }: TripsContentProps) {
 
                   <div className={styles.tripActions}>
                     <ButtonComponent
-                      text="Ver Detalles"
+                      text=""
                       icon={<EyeFilled />}
                       onClick={() => toggleTripDetails(tripId)}
                       className={styles.actionButton}
@@ -302,6 +302,7 @@ export default function TripsContent({ contractId }: TripsContentProps) {
                     <div className={styles.dropdownContainer}>
                       <ButtonComponent
                         icon={<MoreVerticalFilled />}
+                        text=""
                         onClick={(e) => e && handleDropdownClick(e, index)}
                         className={styles.moreActionsButton}
                       />
