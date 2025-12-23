@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from "react";
 import DriverPaymentForm from "@/app/Components/forms/DriverPaymentForm";
 import { useDriverPaymentForm } from "@/app/hooks/useDriverPaymentForm";
-import { tripsService } from "@/services/api";
+import { tripsService, usersService } from "@/services/api";
 import { paymentsService } from "@/services/api/payments.service";
 import { ContractTrip } from "@/app/backend_models/trip.model";
+import { User } from "@/app/backend_models/user.model";
 
 interface DriverPaymentModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
   tripId,
 }) => {
   const [tripData, setTripData] = useState<ContractTrip | null>(null);
+  const [driverData, setDriverData] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,18 +37,31 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
     if (isOpen && tripId) {
       setLoading(true);
       setError(null);
+      
       tripsService
         .getById(Number(tripId))
-        .then((data) => {
+        .then(async (data) => {
           setTripData(data);
-          // TODO: Fetch contract details to get trip cost and expenses
-          // For now, using placeholder values
+          
+          // Fetch driver details if driver_id exists
+          if (data.driver_id) {
+            try {
+              const driver = await usersService.getById(data.driver_id);
+              setDriverData(driver);
+            } catch (err) {
+              console.error("Error fetching driver:", err);
+            }
+          } else {
+            setDriverData(null);
+          }
+          
           setFormState((prevState) => ({
             ...prevState,
             driverPayment: "",
           }));
         })
         .catch((err) => {
+          console.error("Error fetching trip:", err);
           setError(err.message || "Failed to fetch trip details.");
         })
         .finally(() => {
@@ -54,6 +69,7 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
         });
     } else {
       setTripData(null);
+      setDriverData(null);
       setFormState(initialState);
     }
   }, [isOpen, tripId, setFormState]);
@@ -97,7 +113,13 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
             tripCost={5000} // TODO: Fetch from contract
             vouchers={0} // TODO: Fetch from contract
             driverExpenses={1000} // TODO: Calculate based on trip data
-            driverName={`${tripData.driver_id || "Sin asignar"}`} // TODO: Fetch driver details
+            driverName={
+              driverData
+                ? `${driverData.name} ${driverData.first_lastname || ''}`.trim()
+                : (tripData as any).external_driver
+                ? (tripData as any).external_driver.driver_name
+                : "Sin asignar"
+            }
             formState={formState}
             onRadioChange={handleRadioChange}
             onInputChange={handleInputChange}
