@@ -80,6 +80,7 @@ const DriverPaymentForm: React.FC<DriverPaymentFormProps> = ({
                 <InputComponent
                   type="text"
                   id="cashAmount"
+                  name="cashAmount"
                   value={formState.cashAmount}
                   onChange={onInputChange}
                   label="Monto del efectivo"
@@ -105,6 +106,7 @@ const DriverPaymentForm: React.FC<DriverPaymentFormProps> = ({
             <InputComponent
               type="text"
               id="driverPayment"
+              name="driverPayment"
               value={formState.driverPayment}
               onChange={onInputChange}
               label="Monto de pago del chofer"

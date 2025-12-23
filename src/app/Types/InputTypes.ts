@@ -7,6 +7,7 @@ export type InputTypes = {
   disabled?: boolean;
   label?: React.ReactNode | string;
   id?: string;
+  name?: string;
   icon?: React.ReactNode;
   onIconClick?: () => void;
 }

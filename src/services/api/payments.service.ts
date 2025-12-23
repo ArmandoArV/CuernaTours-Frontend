@@ -16,7 +16,16 @@ class PaymentsService {
 
     async payDriver(paymentData: DriverPaymentData): Promise<any> {
         try {
-            const response = await this.apiClient.post('/payments/driver', paymentData);
+            // Submit driver receipt
+            const receiptData = {
+                contract_trip_id: Number(paymentData.tripId),
+                payment_method: paymentData.cashReceived ? 'cash' : 'transfer',
+                amount_received: paymentData.cashReceived ? (paymentData.cashAmount || 0) : 0,
+                received_date: new Date().toISOString(),
+                notes: `Driver payment amount: $${paymentData.amount}`,
+            };
+            
+            const response = await this.apiClient.post(`/driver-receipts`, receiptData);
             return response;
         } catch (error) {
             if (error instanceof ApiError) {

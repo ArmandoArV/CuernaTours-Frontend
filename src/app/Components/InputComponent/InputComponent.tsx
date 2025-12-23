@@ -11,6 +11,7 @@ export default function InputComponent({
   label = "",
   disabled = false,
   id = "",
+  name,
   icon,
   onIconClick,
   labelClassName = "",
@@ -76,6 +77,7 @@ export default function InputComponent({
           className={`${styles.input} ${className} ${icon ? styles.inputWithIcon : ""}`}
           disabled={disabled}
           id={id}
+          name={name || id}
           style={style} // Apply custom styles
         />
         {type === "password" && (
