@@ -7,6 +7,7 @@ import { tripsService, usersService } from "@/services/api";
 import { paymentsService } from "@/services/api/payments.service";
 import { ContractTrip } from "@/app/backend_models/trip.model";
 import { User } from "@/app/backend_models/user.model";
+import { showConfirmAlert, showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
 
 interface DriverPaymentModalProps {
   isOpen: boolean;
@@ -78,23 +79,63 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
     e.preventDefault();
     if (!tripId) return;
 
+    // Validate payment amount
+    const paymentAmount = parseFloat(formState.driverPayment);
+    if (isNaN(paymentAmount) || paymentAmount <= 0) {
+      showErrorAlert(
+        "Error de validación",
+        "Por favor ingrese un monto de pago válido."
+      );
+      return;
+    }
+
+    // Validate cash amount if cash was received
+    if (formState.cashReceived) {
+      const cashAmount = parseFloat(formState.cashAmount);
+      if (isNaN(cashAmount) || cashAmount <= 0) {
+        showErrorAlert(
+          "Error de validación",
+          "Por favor ingrese un monto de efectivo válido."
+        );
+        return;
+      }
+    }
+
     const paymentData = {
       tripId,
-      amount: parseFloat(formState.driverPayment),
+      amount: paymentAmount,
       cashReceived: formState.cashReceived,
       cashAmount: formState.cashReceived
         ? parseFloat(formState.cashAmount)
         : undefined,
     };
 
-    try {
-      await paymentsService.payDriver(paymentData);
-      console.log("Payment successful");
-      onClose();
-    } catch (error: any) {
-      console.error("Payment failed:", error);
-      setError(error.message || "Payment failed.");
-    }
+    showConfirmAlert(
+      "Confirmar pago",
+      `¿Está seguro de registrar el pago de $${paymentAmount} para ${driverData ? `${driverData.name} ${driverData.first_lastname || ''}`.trim() : 'este chofer'}?`,
+      "Confirmar",
+      async () => {
+        try {
+          setLoading(true);
+          await paymentsService.payDriver(paymentData);
+          showSuccessAlert(
+            "Pago registrado",
+            "El pago del chofer se ha registrado exitosamente.",
+            () => {
+              onClose();
+            }
+          );
+        } catch (error: any) {
+          console.error("Payment failed:", error);
+          showErrorAlert(
+            "Error al registrar pago",
+            error.message || "No se pudo registrar el pago del chofer."
+          );
+        } finally {
+          setLoading(false);
+        }
+      }
+    );
   };
 
   if (!isOpen) {
