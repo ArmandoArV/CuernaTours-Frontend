@@ -37,7 +37,6 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
         const userCookie = getCookie("user");
         if (userCookie) {
           const userData = JSON.parse(userCookie);
-          console.log("Loaded user data from cookie:", userData);
 
           // Use display_name as the primary name source
           const displayName =

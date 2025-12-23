@@ -43,9 +43,14 @@ function transformApiData(apiData: any[]): any[] {
     
     // Calculate trip count and assignment status
     const tripCount = trips.length;
-    const assignedTrips = trips.filter((t: any) => 
-      (t.driver_id || t.external_driver_id) && t.vehicle_id
-    ).length;
+    const assignedTrips = trips.filter((t: any) => {
+      // Check for driver assignment (either nested driver object or direct driver_id)
+      const hasDriver = t.driver?.id || t.driver_id || t.external_driver_id;
+      // Check for vehicle assignment (either nested vehicle object or direct vehicle_id)
+      const hasVehicle = t.vehicle?.id || t.vehicle_id;
+      return hasDriver && hasVehicle;
+    }).length;
+
     const assignmentStatus = tripCount > 0 
       ? `${assignedTrips}/${tripCount}` 
       : "0/0";

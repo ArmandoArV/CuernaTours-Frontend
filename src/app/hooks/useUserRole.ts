@@ -58,12 +58,9 @@ export function useUserRole(): UserRoleInfo {
     const loadUserRole = () => {
       try {
         const userCookie = getCookie("user");
-        console.log('🍪 User cookie raw:', userCookie);
         if (userCookie) {
           const userData = JSON.parse(userCookie);
-          console.log('🍪 User data parsed:', userData);
           const userRoleId = userData.roleId || userData.role_id || null;
-          console.log('🍪 Extracted roleId:', userRoleId);
           setRoleId(userRoleId);
         } else {
           console.log('⚠️ No user cookie found');
