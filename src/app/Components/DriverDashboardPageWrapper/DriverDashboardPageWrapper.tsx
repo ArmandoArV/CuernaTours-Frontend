@@ -1,6 +1,6 @@
 "use client";
 
-import DashboardLayout from "@/app/Components/Containers/DashboardLayout/DashboardLayout";
+import DriverDashboardLayout from "@/app/Components/Containers/DriverDashboardLayout/DriverDashboardLayout";
 import DriverDashboardContent from "@/app/Components/DriverDashboardContent/DriverDashboardContent";
 import AuthComponent from "@/app/Components/AuthComponent/AuthComponent";
 import LoadingComponent from "@/app/Components/LoadingComponent/LoadingComponent";
@@ -22,9 +22,9 @@ export default function DriverDashboardPageWrapper() {
   if (isLoading) {
     return (
       <AuthComponent>
-        <DashboardLayout>
+        <DriverDashboardLayout>
           <LoadingComponent message="Cargando panel de chofer..." />
-        </DashboardLayout>
+        </DriverDashboardLayout>
       </AuthComponent>
     );
   }
@@ -35,9 +35,9 @@ export default function DriverDashboardPageWrapper() {
 
   return (
     <AuthComponent>
-      <DashboardLayout userIsAdmin={false} userIsOwner={false}>
+      <DriverDashboardLayout>
         <DriverDashboardContent />
-      </DashboardLayout>
+      </DriverDashboardLayout>
     </AuthComponent>
   );
 }

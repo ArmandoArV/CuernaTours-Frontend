@@ -1,0 +1,44 @@
+.container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #323130;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: #605e5c;
+  margin: 0;
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.errorMessage {
+  color: #a4262c;
+  font-size: 1rem;
+  text-align: center;
+  max-width: 500px;
+}
