@@ -11,6 +11,7 @@ import {
   Payment24Regular,
   MoneyHandRegular,
   PersonSettingsRegular,
+  MoneyCalculatorFilled,
 } from "@fluentui/react-icons";
 import { Pagination } from "@/app/PaginationComponent/PaginationComponent";
 import DetailsPanel from "@/app/Components/DetailsPanel/DetailsPanel";
@@ -501,13 +502,17 @@ const TableComponent: React.FC<TableComponentProps> = ({
                             className={styles.viewButton}
                             onClick={(e) => {
                               e.stopPropagation();
-                              const contractId = getRowId(row);
-                              if (contractId) {
-                                router.push(`/dashboard/trips/${contractId}`);
+                              if (onViewDetails) {
+                                handleRowClick(row, globalRowIndex);
+                              } else {
+                                const contractId = getRowId(row);
+                                if (contractId) {
+                                  router.push(`/dashboard/trips/${contractId}`);
+                                }
                               }
                             }}
                             onMouseEnter={(e) => {
-                              setHoveredButton("view");
+                              setHoveredButton(`view-${globalRowIndex}`);
                               const rect =
                                 e.currentTarget.getBoundingClientRect();
                               setTooltipPosition({
@@ -519,7 +524,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                           >
                             <EyeFilled />
                           </button>
-                          {hoveredButton === "view" && (
+                          {hoveredButton === `view-${globalRowIndex}` && (
                             <div
                               className={styles.tooltip}
                               style={{
@@ -529,6 +534,42 @@ const TableComponent: React.FC<TableComponentProps> = ({
                             >
                               Ver Detalles
                             </div>
+                          )}
+
+                          {/* Show money button for drivers (chofer role) */}
+                          {isChofer && onPayDriver && (
+                            <>
+                              <button
+                                className={styles.viewButton}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onPayDriver(row);
+                                }}
+                                onMouseEnter={(e) => {
+                                  setHoveredButton(`pay-${globalRowIndex}`);
+                                  const rect =
+                                    e.currentTarget.getBoundingClientRect();
+                                  setTooltipPosition({
+                                    x: rect.left + rect.width / 2,
+                                    y: rect.top - 10,
+                                  });
+                                }}
+                                onMouseLeave={() => setHoveredButton(null)}
+                              >
+                                <MoneyCalculatorFilled />
+                              </button>
+                              {hoveredButton === `pay-${globalRowIndex}` && (
+                                <div
+                                  className={styles.tooltip}
+                                  style={{
+                                    left: tooltipPosition.x,
+                                    top: tooltipPosition.y,
+                                  }}
+                                >
+                                  Registrar Gasto
+                                </div>
+                              )}
+                            </>
                           )}
                         </td>
                       )}

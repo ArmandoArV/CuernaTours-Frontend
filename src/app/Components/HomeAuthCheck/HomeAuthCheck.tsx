@@ -9,6 +9,9 @@ export default function HomeAuthCheck() {
 
   useEffect(() => {
     const checkExistingAuth = async () => {
+      // Small delay to avoid race condition with logout cookie clearing
+      await new Promise(resolve => setTimeout(resolve, 150));
+      
       const accessToken = getCookie("accessToken");
       
       if (!accessToken) {
@@ -20,9 +23,13 @@ export default function HomeAuthCheck() {
         const validationResult = await authService.validate();
 
         if (validationResult.tokenValid) {
-          // Token is valid, user data is automatically updated by the service
-          // Auto redirect to dashboard
-          router.push("/dashboard");
+          // Double-check token still exists before redirecting (race condition safety)
+          const tokenStillExists = getCookie("accessToken");
+          if (tokenStillExists) {
+            // Token is valid, user data is automatically updated by the service
+            // Auto redirect to dashboard
+            router.push("/dashboard");
+          }
         }
         // If token is invalid, user stays on home page (login form)
       } catch (error) {

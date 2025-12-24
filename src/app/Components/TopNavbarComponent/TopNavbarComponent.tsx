@@ -171,8 +171,10 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
             "Sesión Cerrada",
             "Has cerrado sesión exitosamente.",
             () => {
-              // Navigate to home page after success message
-              router.push("/");
+              // Additional safety delay before redirect to ensure cookies are cleared
+              setTimeout(() => {
+                router.push("/");
+              }, 50);
             }
           );
         } catch (error) {
@@ -183,7 +185,10 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
             "Sesión Cerrada",
             "Has cerrado sesión exitosamente.",
             () => {
-              router.push("/");
+              // Additional safety delay before redirect to ensure cookies are cleared
+              setTimeout(() => {
+                router.push("/");
+              }, 50);
             }
           );
         }

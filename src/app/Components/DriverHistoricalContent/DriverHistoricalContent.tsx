@@ -70,7 +70,7 @@ function transformDriverHistoricalData(apiData: any[], driverId: number): any[] 
 export default function DriverHistoricalContent() {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
-  const [tripsData, setTripsData] = useState<any[]>([]);
+  const [contractsData, setContractsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [driverId, setDriverId] = useState<number | null>(null);
@@ -81,10 +81,25 @@ export default function DriverHistoricalContent() {
       const userCookie = getCookie("user");
       if (userCookie) {
         const userData = JSON.parse(userCookie);
-        setDriverId(userData.id);
+        // Try multiple possible ID fields
+        const userId = userData.id || userData.user_id || userData.userId;
+        
+        if (userId) {
+          setDriverId(userId);
+        } else {
+          console.error("No user ID found in cookie");
+          setError("No se pudo identificar el usuario");
+          setLoading(false);
+        }
+      } else {
+        console.error("No user cookie found");
+        setError("Sesión no encontrada");
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error getting user data:", error);
+      setError("Error al obtener datos del usuario");
+      setLoading(false);
     }
   }, []);
 
@@ -93,16 +108,21 @@ export default function DriverHistoricalContent() {
     const fetchHistoricalTrips = async () => {
       if (!driverId) return;
       
-      setLoading(true);
-      setError(null);
-      
       try {
-        const response = await contractsService.getAll();
-        const transformed = transformDriverHistoricalData(response, driverId);
-        setTripsData(transformed);
+        setLoading(true);
+        const data = await contractsService.getAll();
+        setContractsData(data);
+        setError(null);
       } catch (err) {
         console.error("Error fetching historical trips:", err);
-        setError(err instanceof ApiError ? err.message : "Error al cargar el histórico");
+        
+        if (err instanceof ApiError) {
+          setError(err.message);
+        } else {
+          setError(err instanceof Error ? err.message : "Error al cargar el histórico");
+        }
+        
+        setContractsData([]);
       } finally {
         setLoading(false);
       }
@@ -110,6 +130,9 @@ export default function DriverHistoricalContent() {
 
     fetchHistoricalTrips();
   }, [driverId]);
+
+  // Transform API data for the table (only trips for this driver)
+  const historicalData = driverId ? transformDriverHistoricalData(contractsData, driverId) : [];
 
   const handleRowClick = (row: any) => {
     // Navigate to trip details
@@ -124,43 +147,61 @@ export default function DriverHistoricalContent() {
       ["Finalizado", "Cancelado"],
       "Filtrar por Estatus"
     ),
+    FilterPresets.createSelectFilter(
+      "Cliente",
+      "Cliente",
+      Array.from(
+        new Set(historicalData.map((item) => item.Cliente).filter(Boolean))
+      ),
+      "Filtrar por Cliente"
+    ),
+    FilterPresets.createSelectFilter(
+      "Origen",
+      "Ciudad de Origen",
+      Array.from(
+        new Set(historicalData.map((item) => item.Origen).filter(Boolean))
+      ),
+      "Filtrar por Origen"
+    ),
   ];
 
-  if (loading) {
-    return <LoadingComponent message="Cargando histórico..." />;
-  }
+  const handleFiltersChange = (
+    activeFilters: Record<string, string | string[]>
+  ) => {
+    console.log("Filtros aplicados:", activeFilters);
+  };
+
+  const handleSearch = (searchTerm: string) => {
+    console.log("Búsqueda:", searchTerm);
+  };
 
   if (error) {
     return (
-      <div className={styles.errorContainer}>
-        <p className={styles.errorMessage}>{error}</p>
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <p style={{ color: "red" }}>Error: {error}</p>
       </div>
     );
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Histórico de Viajes</h1>
-        <p className={styles.subtitle}>
-          {tripsData.length} {tripsData.length === 1 ? "viaje completado" : "viajes completados"}
-        </p>
-      </div>
-
+    <div>
       <FilterableTableComponent
-        title="Viajes Completados"
-        originalData={tripsData}
+        title="Histórico de Viajes"
+        description="Viajes de contratos finalizados y cancelados"
+        originalData={historicalData}
         columns={["ID Viaje", "Cliente", "Fecha", "Hora", "Origen", "Destino", "Unidad", "Estatus"]}
         filterConfigs={filterConfigs}
         enableFiltering={true}
         enableSearch={true}
         showActions={false}
         onRowClick={handleRowClick}
+        onSearch={handleSearch}
         emptyMessage="No tienes viajes completados aún"
         enablePagination={true}
         itemsPerPage={10}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
+        onFiltersChange={handleFiltersChange}
       />
     </div>
   );

@@ -223,6 +223,8 @@ class AuthService {
     } finally {
       // Always clear local tokens
       this.clearSession();
+      // Small delay to ensure cookies are fully cleared before any redirect
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
   }
 
