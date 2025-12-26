@@ -31,12 +31,17 @@ export const showSuccessAlert = (
   text: string,
   func?: () => void
 ) => {
-  showAlert({
+  Swal.fire({
     title,
     text,
     icon: "success",
     confirmButtonText: "OK",
-    func,
+    timer: 2000,
+    timerProgressBar: true,
+  }).then((result: any) => {
+    if ((result.isConfirmed || result.isDismissed) && func) {
+      func();
+    }
   });
 };
 

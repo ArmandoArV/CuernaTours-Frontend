@@ -108,7 +108,7 @@ export default function CreateOrderContent() {
       newErrors.correoElectronico = "El correo electrónico no es válido";
       showErrorAlert(
         "Email inválido",
-        "Por favor, ingrese un correo electrónico válido."
+        "Ingrese un correo electrónico válido."
       );
       setErrors(newErrors);
       setShowErrors(true);
@@ -129,7 +129,7 @@ export default function CreateOrderContent() {
     if (formatErrors.length > 0) {
       showErrorAlert(
         "Formato incorrecto",
-        "Por favor, corrija los campos que contienen formato incorrecto."
+        "Corrija los campos que contienen formato incorrecto."
       );
       return false;
     }
@@ -139,7 +139,7 @@ export default function CreateOrderContent() {
       const fieldsList = missingFields.join(", ");
       showErrorAlert(
         "Campos obligatorios faltantes",
-        `Por favor, complete los siguientes campos obligatorios: ${fieldsList}`
+        `Complete los siguientes campos obligatorios: ${fieldsList}`
       );
       return false;
     }
@@ -384,7 +384,7 @@ export default function CreateOrderContent() {
           <div>
             <h1 className={styles.title}>Crear contrato de orden</h1>
             <p className={styles.subtitle} style={{color: "red"}}>
-              Los campos marcados con un asterisco rojo son obligatorios{" "}
+              Campos obligatorios{" "}
               <strong style={{ color: "red" }}>* </strong>
             </p>
           </div>
@@ -554,8 +554,7 @@ export default function CreateOrderContent() {
               value={formData.tipoPago}
               onChange={handleSelectChange("tipoPago")}
               options={[
-                { value: "POR_ASIGNAR", label: "Por asignar" },
-                ...(prefillableData?.payment_types
+                (prefillableData?.payment_types
                   ? referenceService.transformPaymentTypesForSelect(prefillableData.payment_types)
                   : [])
               ]}
@@ -777,7 +776,7 @@ export default function CreateOrderContent() {
           <div className={styles.section}>
             <div className={styles.textareaContainer}>
               <label className={styles.textareaLabel}>
-                Observaciones internas
+                Observaciones
               </label>
               <textarea
                 value={formData.observacionesInternas}

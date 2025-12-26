@@ -72,7 +72,7 @@ export default function CreatePlaceModal({
     e.preventDefault();
 
     if (!validateForm()) {
-      showErrorAlert('Error de validación', 'Por favor, corrija los errores en el formulario');
+      showErrorAlert('Error de validación', 'Corrija los errores en el formulario');
       return;
     }
 
@@ -90,7 +90,7 @@ export default function CreatePlaceModal({
         annotations: formData.annotations || undefined,
       });
 
-      showSuccessAlert('Éxito', 'Lugar creado exitosamente');
+      showSuccessAlert('Listo', `El lugar "${newPlace.name}" ha sido creado exitosamente.`);
       
       // Pass back the place info for auto-fill
       onPlaceCreated(newPlace.place_id, newPlace.name, formData);
@@ -194,7 +194,7 @@ export default function CreatePlaceModal({
               label="Colonia"
               value={formData.colonia}
               onChange={(e) => setFormData({ ...formData, colonia: e.target.value })}
-              placeholder="Colonia o vecindario"
+              placeholder="Colonia"
               disabled={isSubmitting}
             />
 
@@ -259,7 +259,7 @@ export default function CreatePlaceModal({
             />
             <ButtonComponent
               type="submit"
-              text={isSubmitting ? 'Creando...' : 'Crear Lugar'}
+              text={isSubmitting ? 'Creando...' : 'Crear'}
               disabled={isSubmitting}
               className={styles.submitButton}
             />

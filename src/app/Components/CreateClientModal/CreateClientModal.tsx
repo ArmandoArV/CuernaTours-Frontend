@@ -101,7 +101,7 @@ export default function CreateClientModal({
     if (!validateForm()) {
       showErrorAlert(
         "Campos inválidos",
-        "Por favor, corrija los errores en el formulario"
+        "Corrija los errores en el formulario"
       );
       return;
     }
@@ -396,7 +396,7 @@ export default function CreateClientModal({
             />
             <ButtonComponent
               type="submit"
-              text={isSubmitting ? "Creando..." : "Crear Cliente"}
+              text={isSubmitting ? "Creando..." : "Crear"}
               disabled={isSubmitting}
               className={styles.submitButton}
             />

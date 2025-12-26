@@ -38,17 +38,17 @@ export default function HomeWrapper() {
       if (!formData.email && !formData.password) {
         showErrorAlert(
           "Campos requeridos",
-          "Por favor, ingresa tu usuario y contraseña."
+          "Ingresa tu usuario y contraseña."
         );
       } else if (!formData.email) {
         showErrorAlert(
           "Campo requerido",
-          "Por favor, ingresa tu usuario."
+          "Ingresa tu usuario."
         );
       } else {
         showErrorAlert(
           "Campo requerido",
-          "Por favor, ingresa tu contraseña."
+          "Ingresa tu contraseña."
         );
       }
       return;
@@ -59,7 +59,7 @@ export default function HomeWrapper() {
     if (!emailRegex.test(formData.email)) {
       showErrorAlert(
         "Formato inválido",
-        "Por favor, ingresa un correo electrónico válido."
+        "Ingresa un correo electrónico válido."
       );
       return;
     }
@@ -72,7 +72,6 @@ export default function HomeWrapper() {
       const welcomeName = data.user.display_name || data.user.name || "Usuario";
       showSuccessAlert(
         "Inicio de sesión exitoso",
-        `Bienvenido, ${welcomeName}!`
       );
       
       // Redirect to dashboard immediately without waiting for alert
@@ -87,7 +86,7 @@ export default function HomeWrapper() {
         // Handle specific error types
         if (error.isAuthError()) {
           errorTitle = "Credenciales incorrectas";
-          errorMessage = "Usuario o contraseña incorrectos. Por favor, verifica tus datos e intenta nuevamente.";
+          errorMessage = "Usuario o contraseña incorrectos. Verifica tus datos e intenta nuevamente.";
         } else if (error.isNetworkError()) {
           errorTitle = "Error de conexión";
           errorMessage = "No se pudo conectar al servidor. Verifica tu conexión a internet e intenta nuevamente.";
@@ -96,7 +95,7 @@ export default function HomeWrapper() {
           errorMessage = "Has excedido el límite de intentos de inicio de sesión. Intenta más tarde.";
         } else if (error.isServerError()) {
           errorTitle = "Error del servidor";
-          errorMessage = "Error interno del servidor. Por favor, intenta más tarde.";
+          errorMessage = "Error interno del servidor. Inténtalo más tarde.";
         }
         
         showErrorAlert(errorTitle, errorMessage);

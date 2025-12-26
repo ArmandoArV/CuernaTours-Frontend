@@ -422,7 +422,7 @@ export default function CreateTripContent() {
     ) {
       showErrorAlert(
         "Error",
-        "Por favor complete todos los campos obligatorios"
+        "Complete todos los campos obligatorios"
       );
       return;
     }
@@ -480,16 +480,16 @@ export default function CreateTripContent() {
           <div>
             <h1 className={styles.title}>Crear viaje</h1>
             <p className={styles.subtitle} style={{ color: "red" }}>
-              Los campos marcados con un asterisco rojo son obligatorios{" "}
+              Campos obligatorios{" "}
               <strong style={{ color: "red" }}>* </strong>
             </p>
           </div>
         </div>
         <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
-          <h2 className={styles.sectionTitle}>Origen</h2>
+          <h2 className={styles.sectionTitle}>Dirección de origen</h2>
           <div className={styles.section}>
             <SearchableSelectComponent
-              label="Nombre lugar"
+              label="Seleccionar Dirección"
               value={tripFormData.origenNombreLugar || ""}
               onChange={(value, option) =>
                 handlePlaceSelect("origenNombreLugar", value, option)
@@ -497,7 +497,7 @@ export default function CreateTripContent() {
               onSearch={handlePlaceSearch}
               onCreate={() => handleCreatePlace("origen")}
               required
-              placeholder="Buscar lugar de origen..."
+              placeholder="Buscar"
               className={styles.input}
             />
           </div>
@@ -629,7 +629,7 @@ export default function CreateTripContent() {
                 type="text"
                 value={tripFormData.origenLugarVuelo || ""}
                 onChange={handleTripInputChange("origenLugarVuelo")}
-                label="Lugar de vuelo"
+                label="Origen de vuelo"
                 className={styles.input}
               />
             </div>
@@ -648,12 +648,12 @@ export default function CreateTripContent() {
           )}
 
           <div className={styles.divider}>
-            <h2 className={styles.sectionTitle}>Destino</h2>
+            <h2 className={styles.sectionTitle}>Dirección de destino</h2>
           </div>
 
           <div className={styles.section}>
             <SearchableSelectComponent
-              label="Nombre lugar"
+              label="Seleccionar Dirección"
               value={tripFormData.destinoNombreLugar || ""}
               onChange={(value, option) =>
                 handlePlaceSelect("destinoNombreLugar", value, option)
@@ -661,7 +661,7 @@ export default function CreateTripContent() {
               onSearch={handlePlaceSearch}
               onCreate={() => handleCreatePlace("destino")}
               required
-              placeholder="Buscar lugar de destino..."
+              placeholder="Buscar"
               className={styles.input}
             />
           </div>
@@ -986,7 +986,7 @@ export default function CreateTripContent() {
               <ButtonComponent
                 type="button"
                 onClick={handleCancel}
-                text="Atras"
+                text="Atrás"
                 className={`${styles.button} ${styles.cancelButton}`}
               />
               <ButtonComponent

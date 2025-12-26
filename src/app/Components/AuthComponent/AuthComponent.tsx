@@ -115,7 +115,7 @@ export default function AuthComponent({ children }: AuthRouteProps) {
 
   if (isAuthenticated === null) {
     return (
-      <LoadingComponent message="Validando sesión, por favor espera..." />
+      <LoadingComponent message="Validando sesión..." />
     );
   }
 

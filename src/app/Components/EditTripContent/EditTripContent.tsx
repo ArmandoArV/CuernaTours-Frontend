@@ -418,7 +418,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
     ) {
       showErrorAlert(
         "Error",
-        "Por favor complete todos los campos obligatorios"
+        "Complete todos los campos obligatorios"
       );
       return;
     }
@@ -505,7 +505,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
               Editar viaje - Contrato #{contractId}
             </h1>
             <p className={styles.subtitle} style={{ color: "red" }}>
-              Los campos marcados con un asterisco rojo son obligatorios{" "}
+              Campos obligatorios{" "}
               <strong style={{ color: "red" }}>* </strong>
             </p>
           </div>

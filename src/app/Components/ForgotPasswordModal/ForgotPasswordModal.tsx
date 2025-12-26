@@ -27,13 +27,13 @@ export default function ForgotPasswordModal({
     e.preventDefault();
 
     if (!email) {
-      showErrorAlert("Campo requerido", "Por favor, ingresa tu correo electrónico.");
+      showErrorAlert("Campo requerido", "Ingresa tu correo electrónico.");
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      showErrorAlert("Formato inválido", "Por favor, ingresa un correo electrónico válido.");
+      showErrorAlert("Formato inválido", "Ingresa un correo electrónico válido.");
       return;
     }
 

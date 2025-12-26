@@ -84,7 +84,7 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
     if (isNaN(paymentAmount) || paymentAmount <= 0) {
       showErrorAlert(
         "Error de validación",
-        "Por favor ingrese un monto de pago válido."
+        "Ingrese un monto de pago válido."
       );
       return;
     }
@@ -95,7 +95,7 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
       if (isNaN(cashAmount) || cashAmount <= 0) {
         showErrorAlert(
           "Error de validación",
-          "Por favor ingrese un monto de efectivo válido."
+          "Ingrese un monto de efectivo válido."
         );
         return;
       }

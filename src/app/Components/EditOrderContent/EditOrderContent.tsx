@@ -189,7 +189,7 @@ export default function EditOrderContent({
       newErrors.correoElectronico = "El correo electrónico no es válido";
       showErrorAlert(
         "Email inválido",
-        "Por favor, ingrese un correo electrónico válido."
+        "Ingrese un correo electrónico válido."
       );
       setErrors(newErrors);
       setShowErrors(true);
@@ -210,7 +210,7 @@ export default function EditOrderContent({
     if (formatErrors.length > 0) {
       showErrorAlert(
         "Formato incorrecto",
-        "Por favor, corrija los campos que contienen formato incorrecto."
+        "Corrija los campos que contienen formato incorrecto."
       );
       return false;
     }
@@ -220,7 +220,7 @@ export default function EditOrderContent({
       const fieldsList = missingFields.join(", ");
       showErrorAlert(
         "Campos obligatorios faltantes",
-        `Por favor, complete los siguientes campos obligatorios: ${fieldsList}`
+        `Complete los siguientes campos obligatorios: ${fieldsList}`
       );
       return false;
     }
@@ -494,7 +494,7 @@ export default function EditOrderContent({
               Editar contrato de orden #{contractId}
             </h1>
             <p className={styles.subtitle} style={{ color: "red" }}>
-              Los campos marcados con un asterisco rojo son obligatorios{" "}
+              Campos obligatorios{" "}
               <strong style={{ color: "red" }}>* </strong>
             </p>
           </div>
@@ -889,7 +889,7 @@ export default function EditOrderContent({
           <div className={styles.section}>
             <div className={styles.textareaContainer}>
               <label className={styles.textareaLabel}>
-                Observaciones internas
+                Observaciones
               </label>
               <textarea
                 value={formData.observacionesInternas}

@@ -241,7 +241,7 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
                   </strong>
                   {contract && contract.hasInternalObservations && (
                     <div style={{ marginTop: "16px" }}>
-                      <div className={styles.label}>Observaciones internas</div>
+                      <div className={styles.label}>Observaciones</div>
                       <div className={styles.value}>
                         {contract.internalObservations}
                       </div>
