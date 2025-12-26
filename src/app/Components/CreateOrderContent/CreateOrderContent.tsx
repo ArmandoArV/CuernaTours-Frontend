@@ -554,7 +554,7 @@ export default function CreateOrderContent() {
               value={formData.tipoPago}
               onChange={handleSelectChange("tipoPago")}
               options={[
-                (prefillableData?.payment_types
+                ...(prefillableData?.payment_types
                   ? referenceService.transformPaymentTypesForSelect(prefillableData.payment_types)
                   : [])
               ]}

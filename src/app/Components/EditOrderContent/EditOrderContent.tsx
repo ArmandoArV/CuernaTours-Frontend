@@ -664,7 +664,6 @@ export default function EditOrderContent({
               value={formData.tipoPago}
               onChange={handleSelectChange("tipoPago")}
               options={[
-                { value: "POR_ASIGNAR", label: "POR ASIGNAR" },
                 ...(prefillableData?.payment_types
                   ? referenceService.transformPaymentTypesForSelect(
                       prefillableData.payment_types
