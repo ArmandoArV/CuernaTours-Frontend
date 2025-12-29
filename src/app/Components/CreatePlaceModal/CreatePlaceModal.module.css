@@ -15,7 +15,8 @@
 .modal {
   background-color: white;
   border-radius: 0.75rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   max-width: 45rem;
   width: 100%;
   max-height: 90vh;
@@ -122,8 +123,9 @@
 }
 
 .cancelButton {
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: transparent;
+  border: 1px solid #96781a;
+  color: #96781a;
 }
 
 .cancelButton:hover {
@@ -131,12 +133,14 @@
 }
 
 .submitButton {
-  background-color: #3b82f6;
+  background-color: var(--Main-1A2E47);
   color: white;
+  border: none;
 }
 
 .submitButton:hover {
-  background-color: #2563eb;
+  background-color: var(--Shadows-1A2E47-80);
+  transform: scale(1.02);
 }
 
 .submitButton:disabled {

@@ -44,10 +44,7 @@ export default function CreateOrderContent() {
       missingFields.push("Primer apellido");
       newErrors.primerApellido = "El primer apellido es obligatorio";
     }
-    if (!formData.telefono.trim()) {
-      missingFields.push("Teléfono");
-      newErrors.telefono = "El teléfono es obligatorio";
-    } else if (!isValidPhone(formData.telefono)) {
+    if (formData.telefono.trim() && !isValidPhone(formData.telefono)) {
       newErrors.telefono = "El teléfono solo debe contener números";
     }
 
@@ -469,11 +466,7 @@ export default function CreateOrderContent() {
                 type="text"
                 value={formData.telefono}
                 onChange={handleInputChange("telefono")}
-                label={
-                  <p>
-                    Teléfono <strong style={{ color: "red" }}>*</strong>
-                  </p>
-                }
+                label="Teléfono"
                 placeholder=""
                 className={`${styles.input} ${
                   showErrors && errors.telefono ? styles.inputError : ""
@@ -711,45 +704,79 @@ export default function CreateOrderContent() {
 
               <div className={styles.row}>
                 {formData.tipoComision === "Porcentaje" && (
+                  <>
+                    <div className={styles.col}>
+                      <SelectComponent
+                        value={formData.porcentaje}
+                        onChange={(e) => {
+                          const percentage = e.target.value;
+                          const tripCost = parseFloat(formData.costoViaje) || 0;
+                          const calculatedAmount = tripCost * (parseFloat(percentage) / 100);
+                          
+                          setFormData((prev) => ({
+                            ...prev,
+                            porcentaje: percentage,
+                            montoArreglado: calculatedAmount > 0 ? calculatedAmount.toFixed(2) : "",
+                          }));
+                        }}
+                        options={[
+                          { value: "", label: "Seleccione..." },
+                          { value: "10", label: "10%" },
+                          { value: "15", label: "15%" },
+                          { value: "20", label: "20%" },
+                        ]}
+                        label="Porcentaje (%)"
+                        placeholder="Seleccione..."
+                        className={`${styles.select} ${
+                          showErrors && errors.porcentaje ? styles.selectError : ""
+                        }`}
+                      />
+                      {showErrors && errors.porcentaje && (
+                        <p className={styles.errorMessage}>{errors.porcentaje}</p>
+                      )}
+                    </div>
+                    <div className={styles.col}>
+                      <InputComponent
+                        type="text"
+                        value={formData.montoArreglado}
+                        onChange={handleInputChange("montoArreglado")}
+                        label="Monto del porcentaje ($)"
+                        placeholder=""
+                        className={`${styles.input} ${
+                          showErrors && errors.montoArreglado
+                            ? styles.inputError
+                            : ""
+                        }`}
+                      />
+                      {showErrors && errors.montoArreglado && (
+                        <p className={styles.errorMessage}>
+                          {errors.montoArreglado}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
+                {formData.tipoComision === "Arreglada" && (
                   <div className={styles.col}>
                     <InputComponent
                       type="text"
-                      value={formData.porcentaje}
-                      onChange={handleInputChange("porcentaje")}
-                      label="Porcentaje (%)"
+                      value={formData.montoArreglado}
+                      onChange={handleInputChange("montoArreglado")}
+                      label="Monto de la comisión ($)"
                       placeholder=""
                       className={`${styles.input} ${
-                        showErrors && errors.porcentaje ? styles.inputError : ""
+                        showErrors && errors.montoArreglado
+                          ? styles.inputError
+                          : ""
                       }`}
                     />
-                    {showErrors && errors.porcentaje && (
-                      <p className={styles.errorMessage}>{errors.porcentaje}</p>
+                    {showErrors && errors.montoArreglado && (
+                      <p className={styles.errorMessage}>
+                        {errors.montoArreglado}
+                      </p>
                     )}
                   </div>
                 )}
-                <div className={styles.col}>
-                  <InputComponent
-                    type="text"
-                    value={formData.montoArreglado}
-                    onChange={handleInputChange("montoArreglado")}
-                    label={
-                      formData.tipoComision === "Porcentaje"
-                        ? "Monto del porcentaje ($)"
-                        : "Monto de la comisión ($)"
-                    }
-                    placeholder=""
-                    className={`${styles.input} ${
-                      showErrors && errors.montoArreglado
-                        ? styles.inputError
-                        : ""
-                    }`}
-                  />
-                  {showErrors && errors.montoArreglado && (
-                    <p className={styles.errorMessage}>
-                      {errors.montoArreglado}
-                    </p>
-                  )}
-                </div>
               </div>
             </>
           )}
@@ -767,7 +794,7 @@ export default function CreateOrderContent() {
                     }))
                   : [])
               ]}
-              label="Coordinador del viaje"
+              label="Chofer programado"
               placeholder="Seleccione..."
               className={styles.select}
             />
