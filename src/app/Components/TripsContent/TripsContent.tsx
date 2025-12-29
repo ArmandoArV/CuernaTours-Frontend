@@ -45,7 +45,7 @@ interface TripsContentProps {
 
 export default function TripsContent({ contractId }: TripsContentProps) {
   const router = useRouter();
-  const { canAssignResources } = useUserRole();
+  const { canAssignResources, isChofer } = useUserRole();
 
   const [contractData, setContractData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -338,7 +338,7 @@ export default function TripsContent({ contractId }: TripsContentProps) {
                               className={styles.dropdownItem}
                             />
                           )}
-                          {canAssignResources && (
+                          {isChofer && (
                             <ButtonComponent
                               text="Pagar a Chofer"
                               icon={<MoneyHandRegular />}
