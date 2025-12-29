@@ -55,12 +55,26 @@ function transformApiData(apiData: any[]): any[] {
       ? `${assignedTrips}/${tripCount}` 
       : "0/0";
     
+    // Extract time from service_date or service_time
+    let scheduleTime = "";
+    if (firstTrip.service_date) {
+      const serviceDate = new Date(firstTrip.service_date);
+      scheduleTime = serviceDate.toLocaleTimeString('es-MX', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+      });
+    } else if (firstTrip.service_time) {
+      scheduleTime = firstTrip.service_time;
+    }
+    
     return {
       "ID Contrato": contract.contract_id,
       "Empresa o Cliente": contract.client_name || "",
       "Fecha": firstTrip.service_date
         ? new Date(firstTrip.service_date).toLocaleDateString()
         : "",
+      "Horario": scheduleTime,
       "Viajes": tripCount,
       "Asignados": assignmentStatus,
       "Monto": contract.amount ? `$${contract.amount.toLocaleString()}` : "",
@@ -70,7 +84,15 @@ function transformApiData(apiData: any[]): any[] {
       // Store full contract object for details and modals
       _contractData: contract,
       _trips: trips,
+      // Store raw date for sorting
+      _sortDate: firstTrip.service_date ? new Date(firstTrip.service_date) : null,
     };
+  }).sort((a, b) => {
+    // Sort by date and time (earliest first)
+    if (!a._sortDate && !b._sortDate) return 0;
+    if (!a._sortDate) return 1;
+    if (!b._sortDate) return -1;
+    return a._sortDate.getTime() - b._sortDate.getTime();
   });
 }
 
@@ -140,6 +162,7 @@ export default function DashboardContent() {
   const columns = [
     "Empresa o Cliente",
     "Fecha",
+    "Horario",
     "Viajes",
     "Asignados",
     "Monto",
@@ -159,11 +182,10 @@ export default function DashboardContent() {
       Array.from(new Set(sampleData.map((item) => item.Estatus).filter(Boolean))),
       "Filtrar por Estatus"
     ),
-    FilterPresets.createSelectFilter(
-      "Viajes",
-      "Cantidad de Viajes",
-      Array.from(new Set(sampleData.map((item) => String(item.Viajes)))),
-      "Filtrar por Cantidad"
+    FilterPresets.createDateFilter(
+      "Fecha",
+      Array.from(new Set(sampleData.map((item) => item.Fecha).filter(Boolean))),
+      "Filtrar por Fecha"
     ),
   ];
 
