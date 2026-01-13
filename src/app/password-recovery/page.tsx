@@ -14,6 +14,8 @@ export default function PasswordRecoveryPage() {
   
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [validatingToken, setValidatingToken] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);
@@ -145,23 +147,43 @@ export default function PasswordRecoveryPage() {
         <h2 className={styles.title}>Recuperar contraseña</h2>
 
         <form className={styles.form} onSubmit={handleSubmit}>
-          <input
-            type="password"
-            placeholder="Contraseña nueva"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={styles.input}
-            autoComplete="new-password"
-          />
+          <div className={styles.passwordContainer}>
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Contraseña nueva"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={styles.input}
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              className={styles.togglePassword}
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
 
-          <input
-            type="password"
-            placeholder="Confirmar contraseña nueva"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className={styles.input}
-            autoComplete="new-password"
-          />
+          <div className={styles.passwordContainer}>
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirmar contraseña nueva"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className={styles.input}
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              className={styles.togglePassword}
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            >
+              {showConfirmPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
 
           <button type="submit" className={styles.submitBtn} disabled={loading}>
             {loading ? "Restableciendo..." : "Restablecer contraseña"}

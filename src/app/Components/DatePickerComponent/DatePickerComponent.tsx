@@ -12,6 +12,8 @@ type Props = {
   onChange?: (value: string) => void;
   placeholder?: string;
   required?: boolean;
+  hasError?: boolean;
+  errorMessage?: string;
 };
 
 const formatDateToDDMMYYYY = (date: Date): string => {
@@ -46,13 +48,15 @@ export default function DatePickerComponent({
   onChange,
   placeholder = "Select a date",
   required = false,
+  hasError = false,
+  errorMessage = "",
 }: Props) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const selectedDate = value
-    ? parseDDMMYYYYToDate(value) || undefined
-    : undefined;
+    ? parseDDMMYYYYToDate(value) || null
+    : null;
 
   // Memoize restrictedDates: generate dates from (today - 20 years) up to yesterday.
   // This keeps the array small (~7.3k entries) and still covers typical past selections.
@@ -71,7 +75,7 @@ export default function DatePickerComponent({
   }, [today]);
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${hasError ? styles.containerError : ''}`}>
       <Field
         label={label}
         required={required}
@@ -92,6 +96,9 @@ export default function DatePickerComponent({
           parseDateFromString={(str: string) => parseDDMMYYYYToDate(str)}
         />
       </Field>
+      {hasError && errorMessage && (
+        <span className={styles.errorMessage}>{errorMessage}</span>
+      )}
     </div>
   );
 }

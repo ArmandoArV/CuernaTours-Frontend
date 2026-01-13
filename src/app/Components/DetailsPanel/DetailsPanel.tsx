@@ -18,6 +18,19 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
   error,
   onClose,
 }) => {
+  // Helper function to determine trip label
+  const getTripLabel = (index: number, totalTrips: number): string => {
+    if (totalTrips === 1) {
+      return "Ida";
+    } else if (index === 0) {
+      return "Ida";
+    } else if (index === totalTrips - 1) {
+      return "Regreso";
+    } else {
+      return `Parada ${index}`;
+    }
+  };
+
   if (loading)
     return <div className={styles.loading}>Cargando detalles...</div>;
   if (error) return <div className={styles.error}>Error: {error}</div>;
@@ -175,7 +188,7 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
               <div className={styles.tripInfo}>
                 <div className={styles.label}>No. Pasajeros:</div>
                 <div className={styles.value}>
-                  {tripCollection.totalPassengers}
+                  {contract ? contract.passengersSummary : tripCollection.totalPassengers}
                 </div>
               </div>
               <div className={styles.tripInfo}>
@@ -187,9 +200,21 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
                 </div>
               </div>
               <div className={styles.tripInfo}>
+                <div className={styles.label}>Tipo de unidad:</div>
+                <div className={styles.value}>
+                  {contract
+                    ? contract.trips.vehicles.map(v => v.type).filter((v, i, arr) => arr.indexOf(v) === i).join(", ")
+                    : tripCollection.vehicles.map(v => v.type).filter((v, i, arr) => arr.indexOf(v) === i).join(", ") || "N/A"}
+                </div>
+              </div>
+              <div className={styles.tripInfo}>
                 <div className={styles.label}>Coordinador:</div>
                 <div className={styles.value}>
-                  {contract ? contract.coordinatorName : "N/A"}
+                  {contract 
+                    ? (contract.coordinatorFirstName && contract.coordinatorLastName 
+                        ? contract.coordinatorName 
+                        : "No aplica")
+                    : "N/A"}
                 </div>
               </div>
               <div className={styles.tripInfo}>
@@ -200,7 +225,13 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
               </div>
               <div className={styles.tripInfo}>
                 <div className={styles.label}>Fecha del pago:</div>
-                <div className={styles.value}></div>
+                <div className={styles.value}>
+                  {contract 
+                    ? (contract.paymentTypeName?.toLowerCase().includes("cobrar") 
+                        ? "Pendiente" 
+                        : "N/A")
+                    : "N/A"}
+                </div>
               </div>
             </div>
           </div>
@@ -209,7 +240,7 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
           tripCollection.trips.map((trip, index) => (
             <div key={trip.tripId} className={styles.section}>
               <div className={styles.tripHeader}>
-                <h4>Viaje {index + 1}</h4>
+                <h4>{getTripLabel(index, tripCollection.trips.length)}</h4>
               </div>
               <div className={styles.tripDetails}>
                 <div className={styles.tripInfo}>

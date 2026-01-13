@@ -19,12 +19,16 @@ export default function InputComponent({
   style = {},
   containerClassName = "",
   containerStyle = {},
+  hasError = false,
+  errorMessage = "",
 }: InputTypes & {
   labelClassName?: string;
   labelStyle?: React.CSSProperties;
   style?: React.CSSProperties;
   containerClassName?: string;
   containerStyle?: React.CSSProperties;
+  hasError?: boolean;
+  errorMessage?: string;
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -74,7 +78,7 @@ export default function InputComponent({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`${styles.input} ${className} ${icon ? styles.inputWithIcon : ""}`}
+          className={`${styles.input} ${className} ${icon ? styles.inputWithIcon : ""} ${hasError ? styles.inputError : ""}`}
           disabled={disabled}
           id={id}
           name={name || id}
@@ -95,6 +99,9 @@ export default function InputComponent({
           </button>
         )}
       </div>
+      {hasError && errorMessage && (
+        <span className={styles.errorMessage}>{errorMessage}</span>
+      )}
     </div>
   );
 }

@@ -80,13 +80,22 @@ export default function ConfirmationModal({
               <div className={styles.infoItem}>
                 <div className={styles.summaryLabel}>No. pasajeros</div>
                 <div className={styles.summaryValue}>
-                  {tripFormData?.numeroPasajeros || "0"}
+                  {tripFormData?.idaPasajeros || tripFormData?.numeroPasajeros || "0"}
                 </div>
               </div>
 
               <div className={styles.infoItem}>
                 <div className={styles.summaryLabel}>No. unidades</div>
-                <div className={styles.summaryValue}>{"2"}</div>
+                <div className={styles.summaryValue}>
+                  {tripFormData?.unidadAsignada ? "1" : "0"}
+                </div>
+              </div>
+
+              <div className={styles.infoItem}>
+                <div className={styles.summaryLabel}>Coordinador</div>
+                <div className={styles.summaryValue}>
+                  {orderData?.coordinadorViaje || "Sin asignar"}
+                </div>
               </div>
 
               <div className={styles.infoItem}>
@@ -94,7 +103,7 @@ export default function ConfirmationModal({
                 <div className={styles.summaryValue}>
                   {tripFormData?.idaFecha || "00/00/0000, 00:00"}
                   <br />
-                  {tripFormData?.tipoViaje === "roundTrip" &&
+                  {tripFormData?.tipoViaje === "redondo" &&
                   tripFormData?.regresoFecha
                     ? tripFormData.regresoFecha
                     : "SOLO IDA"}

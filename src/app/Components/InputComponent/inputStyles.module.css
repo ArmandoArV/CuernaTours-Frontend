@@ -103,3 +103,20 @@
 .clickableIcon:hover {
   opacity: 0.7;
 }
+
+.inputError {
+  border-color: #D13438 !important;
+  border-width: 2px !important;
+}
+
+.inputError:focus {
+  box-shadow: 0 0 0 2px rgba(209, 52, 56, 0.2) !important;
+  border-color: #D13438 !important;
+}
+
+.errorMessage {
+  color: #D13438;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}

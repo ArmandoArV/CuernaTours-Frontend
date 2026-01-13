@@ -89,8 +89,7 @@ export default function ForgotPasswordModal({
               className={styles.input}
             />
             <p className={styles.hint}>
-              *Si la dirección de correo existe, te llegará un correo con un enlace para
-              restablecer tu contraseña
+              Si el correo está registrado, te enviaremos un enlace para restablecer tu contraseña.
             </p>
 
             <ButtonComponent

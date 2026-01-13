@@ -24,16 +24,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   userIsOwner = false,
 }) => {
   const lateralNavItems: LateralNavbarType[] = [
-    { title: "Home", link: "/dashboard", icon: <HomeFilled /> }, // Visible to all
+    { title: "Inicio", link: "/dashboard", icon: <HomeFilled /> }, // Visible to all
     {
       title: "Historial",
       link: "/dashboard/historical",
       icon: <HistoryFilled />,
     }, // Visible to all
-    { title: "Profile", link: "/profile", icon: <PersonCircleFilled /> }, // Visible to all
-    { title: "Admin Panel", link: "/admin", isAdmin: true, icon: <AppsListFilled /> }, // Only admin and owner
-    { title: "User Management", link: "/users", isAdmin: true, icon: <PersonAccountsFilled /> }, // Only admin and owner
-    { title: "System Settings", link: "/settings", isOwner: true, icon: <SettingsFilled /> }, // Only owner
+    { title: "Perfil", link: "/profile", icon: <PersonCircleFilled /> }, // Visible to all
   ];
 
   const handleNotificationClick = () => {

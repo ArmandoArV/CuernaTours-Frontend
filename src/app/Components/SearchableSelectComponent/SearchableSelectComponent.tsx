@@ -26,6 +26,8 @@ interface SearchableSelectComponentProps {
   noResultsText?: string;
   loadingText?: string;
   debounceMs?: number;
+  hasError?: boolean;
+  errorMessage?: string;
 }
 
 export default function SearchableSelectComponent({
@@ -44,6 +46,8 @@ export default function SearchableSelectComponent({
   noResultsText = 'No results found',
   loadingText = 'Loading...',
   debounceMs = 300,
+  hasError = false,
+  errorMessage = '',
 }: SearchableSelectComponentProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [displayValue, setDisplayValue] = useState('');
@@ -208,7 +212,7 @@ export default function SearchableSelectComponent({
       )}
       
       <div className={styles.inputWrapper}>
-        <div className={styles.inputContainer}>
+        <div className={`${styles.inputContainer} ${hasError ? styles.inputError : ''}`}>
           <Search20Regular className={styles.searchIcon} />
           <input
             ref={inputRef}
@@ -289,6 +293,9 @@ export default function SearchableSelectComponent({
           </div>
         )}
       </div>
+      {hasError && errorMessage && (
+        <span className={styles.errorMessage}>{errorMessage}</span>
+      )}
     </div>
   );
 }

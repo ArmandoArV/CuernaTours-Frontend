@@ -184,9 +184,9 @@ export default function TripsContent({ contractId }: TripsContentProps) {
       <div className={styles.errorContainer}>
         <p className={styles.errorMessage}>Error: {error}</p>
         <ButtonComponent
-          text="Volver al Dashboard"
+          text="Volver"
           icon={<ArrowLeftRegular />}
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.back()}
         />
       </div>
     );
@@ -205,10 +205,10 @@ export default function TripsContent({ contractId }: TripsContentProps) {
         <ButtonComponent
           text="Volver"
           icon={<ArrowLeftRegular />}
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.back()}
           className={styles.backButton}
         />
-        <h1 className={styles.title}>Viajes del Contrato #{contractId}</h1>
+        <h1 className={styles.title}>Orden #{contractId}</h1>
       </div>
 
       {/* Contract Summary */}
@@ -230,6 +230,18 @@ export default function TripsContent({ contractId }: TripsContentProps) {
               }}
             >
               {contractStatus}
+            </span>
+          </div>
+          <div className={styles.summaryItem}>
+            <span className={styles.summaryLabel}>Estado de Pago:</span>
+            <span
+              className={styles.statusPill}
+              style={{
+                backgroundColor: contractData?.payment_status === 'paid' ? '#107C1020' : '#D1343820',
+                color: contractData?.payment_status === 'paid' ? '#107C10' : '#D13438',
+              }}
+            >
+              {contractData?.payment_status === 'paid' ? 'Pagado' : 'Pendiente de pago'}
             </span>
           </div>
           <div className={styles.summaryItem}>
@@ -278,6 +290,11 @@ export default function TripsContent({ contractId }: TripsContentProps) {
                             )
                           : "Fecha no disponible"}
                       </span>
+                      {trip.unit_type && (
+                        <span className={styles.vehicleType}>
+                          🚐 {trip.unit_type}
+                        </span>
+                      )}
                       {tripStatus && (
                         <span
                           className={styles.statusPill}

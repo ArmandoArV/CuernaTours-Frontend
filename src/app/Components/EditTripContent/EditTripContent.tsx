@@ -454,7 +454,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
 
       showSuccessAlert("Éxito", "Contrato actualizado correctamente");
       clearData();
-      router.push("/dashboard");
+      router.back();
     } catch (error) {
       console.error("Error updating contract:", error);
 
@@ -507,6 +507,10 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
             <p className={styles.subtitle} style={{ color: "red" }}>
               Campos obligatorios{" "}
               <strong style={{ color: "red" }}>* </strong>
+            </p>
+            <p className={styles.subtitle} style={{ color: "#0078D4", marginTop: "8px" }}>
+              Nota: Solo se pueden editar los datos del contrato (coordinador, costo, observaciones). 
+              Los datos del viaje son solo de referencia.
             </p>
           </div>
         </div>
