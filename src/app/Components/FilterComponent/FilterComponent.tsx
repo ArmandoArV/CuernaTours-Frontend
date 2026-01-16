@@ -7,6 +7,7 @@ import {
   ActiveFilter,
   FilterComponentProps,
 } from "./FilterTypes";
+import { formatDateStandard } from "@/app/Utils/FormatUtil";
 
 const FilterComponent: React.FC<FilterComponentProps> = ({
   filters,
@@ -23,15 +24,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
 
   // Format date for display
   const formatDate = useCallback((dateString: string): string => {
-    try {
-      return new Date(dateString).toLocaleDateString("es-ES", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    } catch {
-      return dateString;
-    }
+    return formatDateStandard(dateString) || dateString;
   }, []);
 
   // Handle filter change

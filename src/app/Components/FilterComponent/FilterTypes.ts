@@ -1,4 +1,6 @@
 // FilterComponent Types
+import { formatDateStandard } from "@/app/Utils/FormatUtil";
+
 export interface FilterOption {
     value: string;
     label: string;
@@ -50,17 +52,9 @@ export const FilterPresets = {
         placeholder,
         options: dates.map(date => ({
             value: date,
-            label: new Date(date).toLocaleDateString("es-ES", {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            })
+            label: formatDateStandard(date) || date
         })),
-        formatDisplay: (value: string) => new Date(value).toLocaleDateString("es-ES", {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        })
+        formatDisplay: (value: string) => formatDateStandard(value) || value
     }),
 
     // Status filter configuration

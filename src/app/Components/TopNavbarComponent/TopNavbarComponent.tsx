@@ -11,6 +11,7 @@ import {
 import { TopNavbarProps, TopNavbarItem } from "../../Types/TopNavbarType";
 import styles from "./TopNavbar.module.css";
 import { getCookie, deleteCookie } from "@/app/Utils/CookieUtil";
+import { formatPersonName } from "@/app/Utils/FormatUtil";
 import {
   showConfirmAlert,
   showSuccessAlert,
@@ -46,6 +47,9 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
             userData.email?.split("@")[0] ||
             "Usuario";
 
+          // Apply Camel Case formatting to the name
+          const formattedName = formatPersonName(displayName);
+
           // Map role based on roleId or existing role data
           const getRoleName = (roleId: number) => {
             const roleMap: { [key: number]: string } = {
@@ -64,7 +68,7 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
              userData.roleId ? getRoleName(userData.roleId) : "Usuario");
 
           setUserInfo({
-            name: displayName,
+            name: formattedName,
             role: userRole,
             avatar: userData.picture_url || userData.avatar || null,
             email: userData.email || "",
@@ -74,7 +78,7 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
           });
 
           console.log("User info set in state:", {
-            name: displayName,
+            name: formattedName,
             role: userRole,
             avatar: userData.picture_url || userData.avatar || null,
           });
@@ -119,6 +123,20 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [openDropdown, isUserMenuOpen]);
+
+  // Close user menu when navigating to a new route
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setIsUserMenuOpen(false);
+    };
+
+    // Listen for route changes
+    window.addEventListener('popstate', handleRouteChange);
+    
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+    };
+  }, []);
 
   const getUserInitials = (name: string) => {
     return name

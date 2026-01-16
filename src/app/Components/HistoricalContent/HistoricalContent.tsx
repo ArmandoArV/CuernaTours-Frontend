@@ -4,6 +4,7 @@ import FilterableTableComponent from "../FilterableTable/FilterableTableComponen
 import { FilterConfig, FilterPresets } from "../FilterComponent";
 import { contractsService, ApiError } from "@/services/api";
 import { useUserRole } from "@/app/hooks/useUserRole";
+import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
 import styles from "./HistoricalContent.module.css";
 
 // Status mapping based on provided ids
@@ -37,17 +38,15 @@ function transformHistoricalData(apiData: any[]): any[] {
 
     (contract.trips || []).forEach((trip: any) => {
       rows.push({
-        "Empresa o Cliente": contract.client_name,
+        "Empresa o Cliente": formatPersonName(contract.client_name),
         Origen: trip.origin?.name || "",
         Destino: trip.destination?.name || "",
-        Fecha: trip.service_date
-          ? new Date(trip.service_date).toLocaleDateString()
-          : "",
+        Fecha: formatDateStandard(trip.service_date),
         Unidad: trip.vehicle?.type || trip.unit_type || "",
         Chofer: trip.driver
-          ? `${trip.driver.name} ${trip.driver.lastname}`
+          ? formatPersonName(`${trip.driver.name} ${trip.driver.lastname}`)
           : trip.external_driver
-          ? trip.external_driver.name
+          ? formatPersonName(trip.external_driver.name)
           : "",
         Estatus: contractStatus,
         // Include IDs for functionality
@@ -142,6 +141,21 @@ export default function HistoricalContent() {
         new Set(historicalData.map((item) => item.Origen).filter(Boolean))
       ),
       "Filtrar por Origen"
+    ),
+    FilterPresets.createDateFilter(
+      "Fecha",
+      Array.from(
+        new Set(historicalData.map((item) => item.Fecha).filter(Boolean))
+      ),
+      "Filtrar por Fecha"
+    ),
+    FilterPresets.createSelectFilter(
+      "Unidad",
+      "Unidad",
+      Array.from(
+        new Set(historicalData.map((item) => item.Unidad).filter(Boolean))
+      ),
+      "Filtrar por Unidad"
     ),
   ];
 

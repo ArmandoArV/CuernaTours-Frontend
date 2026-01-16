@@ -13,6 +13,12 @@ export type AlertOptions = {
 const defaultOptions = {
   icon: "info" as SweetAlertIcon,
   confirmButtonText: "OK",
+  confirmButtonColor: "#96781a",
+  cancelButtonColor: "#ffffff",
+  customClass: {
+    confirmButton: "swal-confirm-button",
+    cancelButton: "swal-cancel-button",
+  },
 };
 
 export const showAlert = (options: AlertOptions) => {
@@ -36,8 +42,12 @@ export const showSuccessAlert = (
     text,
     icon: "success",
     confirmButtonText: "OK",
+    confirmButtonColor: "#96781a",
     timer: 2000,
     timerProgressBar: true,
+    customClass: {
+      confirmButton: "swal-confirm-button",
+    },
   }).then((result: any) => {
     if ((result.isConfirmed || result.isDismissed) && func) {
       func();

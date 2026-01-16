@@ -5,6 +5,7 @@ import { FilterConfig, FilterPresets } from "../FilterComponent";
 import { useRouter } from "next/navigation";
 import { contractsService, ApiError } from "@/services/api";
 import { getCookie } from "@/app/Utils/CookieUtil";
+import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
 import LoadingComponent from "../LoadingComponent/LoadingComponent";
 import DetailsPanel from "../DetailsPanel/DetailsPanel";
 import styles from "./DriverDashboardContent.module.css";
@@ -45,10 +46,8 @@ function transformDriverTripsData(apiData: any[], driverId: number): any[] {
           driverTrips.push({
             "ID Viaje": trip.trip_id,
             "ID Contrato": contract.contract_id,
-            Cliente: contract.client_name || "",
-            Fecha: trip.service_date
-              ? new Date(trip.service_date).toLocaleDateString()
-              : "",
+            Cliente: formatPersonName(contract.client_name) || "",
+            Fecha: formatDateStandard(trip.service_date),
             Hora: trip.service_time || "",
             Origen: trip.origin?.name || trip.origin_name || "",
             Destino: trip.destination?.name || trip.destination_name || "",
@@ -199,6 +198,23 @@ export default function DriverDashboardContent() {
         (status) => status !== "Finalizado" && status !== "Cancelado"
       ),
       "Filtrar por Estatus"
+    ),
+    FilterPresets.createDateFilter(
+      "Fecha",
+      Array.from(new Set(tripsData.map((item) => item.Fecha).filter(Boolean))),
+      "Filtrar por Fecha"
+    ),
+    FilterPresets.createSelectFilter(
+      "Hora",
+      "Horario",
+      Array.from(new Set(tripsData.map((item) => item.Hora).filter(Boolean))),
+      "Filtrar por Hora"
+    ),
+    FilterPresets.createSelectFilter(
+      "Unidad",
+      "Unidad",
+      Array.from(new Set(tripsData.map((item) => item.Unidad).filter(Boolean))),
+      "Filtrar por Unidad"
     ),
   ];
 

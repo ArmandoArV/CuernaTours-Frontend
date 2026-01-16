@@ -10,6 +10,7 @@ import { useUserRole } from "@/app/hooks/useUserRole";
 import AssignDriverModal from "../AssignDriverModal/AssignDriverModal";
 import DriverPaymentModal from "../DriverPaymentModal/DriverPaymentModal";
 import LoadingComponent from "../LoadingComponent/LoadingComponent";
+import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
 import styles from "./DashboardContent.module.css";
 
 // Status mapping based on provided ids
@@ -70,10 +71,8 @@ function transformApiData(apiData: any[]): any[] {
     
     return {
       "ID Contrato": contract.contract_id,
-      "Empresa o Cliente": contract.client_name || "",
-      "Fecha": firstTrip.service_date
-        ? new Date(firstTrip.service_date).toLocaleDateString()
-        : "",
+      "Empresa o Cliente": formatPersonName(contract.client_name) || "",
+      "Fecha": formatDateStandard(firstTrip.service_date),
       "Horario": scheduleTime,
       "Viajes": tripCount,
       "Asignados": assignmentStatus,
@@ -186,6 +185,12 @@ export default function DashboardContent() {
       "Fecha",
       Array.from(new Set(sampleData.map((item) => item.Fecha).filter(Boolean))),
       "Filtrar por Fecha"
+    ),
+    FilterPresets.createSelectFilter(
+      "Horario",
+      "Hora",
+      Array.from(new Set(sampleData.map((item) => item.Horario).filter(Boolean))),
+      "Filtrar por Hora"
     ),
   ];
 

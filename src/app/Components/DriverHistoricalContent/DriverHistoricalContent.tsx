@@ -5,6 +5,7 @@ import FilterableTableComponent from "@/app/Components/FilterableTable/Filterabl
 import { FilterConfig, FilterPresets } from "@/app/Components/FilterComponent";
 import { contractsService, ApiError } from "@/services/api";
 import { getCookie } from "@/app/Utils/CookieUtil";
+import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
 import LoadingComponent from "@/app/Components/LoadingComponent/LoadingComponent";
 import styles from "./DriverHistoricalContent.module.css";
 
@@ -39,10 +40,8 @@ function transformDriverHistoricalData(apiData: any[], driverId: number): any[] 
           historicalTrips.push({
             "ID Viaje": trip.trip_id,
             "ID Contrato": contract.contract_id,
-            "Cliente": contract.client_name || "",
-            "Fecha": trip.service_date
-              ? new Date(trip.service_date).toLocaleDateString()
-              : "",
+            "Cliente": formatPersonName(contract.client_name) || "",
+            "Fecha": formatDateStandard(trip.service_date),
             "Hora": trip.service_time || "",
             "Origen": trip.origin?.name || trip.origin_name || "",
             "Destino": trip.destination?.name || trip.destination_name || "",

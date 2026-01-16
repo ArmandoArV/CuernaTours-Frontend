@@ -13,7 +13,14 @@ const DateDisplayComponent: React.FC<DateDisplayComponentProps> = ({
 }) => {
   const dateObj = new Date(date);
   const day = dateObj.getDate();
-  const month = dateObj.toLocaleDateString("es-MX", { month: "short" });
+  
+  // Use short month names in Spanish
+  const monthNames = [
+    "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+    "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
+  ];
+  const month = monthNames[dateObj.getMonth()];
+  
   const time = dateObj.toLocaleTimeString("es-MX", { 
     hour: '2-digit', 
     minute: '2-digit', 
