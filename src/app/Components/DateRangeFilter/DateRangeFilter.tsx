@@ -1,5 +1,7 @@
 "use client";
 import React, { useState } from "react";
+import { DatePicker } from "@fluentui/react-datepicker-compat";
+import { Field } from "@fluentui/react-components";
 import styles from "./DateRangeFilter.module.css";
 import { CalendarRegular } from "@fluentui/react-icons";
 
@@ -14,35 +16,39 @@ export default function DateRangeFilter({
   label = "Rango De Fechas",
   placeholder = "Seleccionar Fechas",
 }: DateRangeFilterProps) {
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setStartDate(value);
-    if (value && endDate) {
-      onDateRangeChange(value, endDate);
+  const formatDateToYYYYMMDD = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleStartDateChange = (date: Date | null | undefined) => {
+    setStartDate(date || null);
+    if (date && endDate) {
+      onDateRangeChange(formatDateToYYYYMMDD(date), formatDateToYYYYMMDD(endDate));
     }
   };
 
-  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setEndDate(value);
-    if (startDate && value) {
-      onDateRangeChange(startDate, value);
+  const handleEndDateChange = (date: Date | null | undefined) => {
+    setEndDate(date || null);
+    if (startDate && date) {
+      onDateRangeChange(formatDateToYYYYMMDD(startDate), formatDateToYYYYMMDD(date));
     }
   };
 
   const handleClear = () => {
-    setStartDate("");
-    setEndDate("");
+    setStartDate(null);
+    setEndDate(null);
     onDateRangeChange("", "");
   };
 
-  const formatDisplayDate = (dateString: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
+  const formatDisplayDate = (date: Date | null) => {
+    if (!date) return "";
     return date.toLocaleDateString("es-MX", {
       day: "2-digit",
       month: "2-digit",
@@ -84,33 +90,25 @@ export default function DateRangeFilter({
           </div>
 
           <div className={styles.dateInputs}>
-            <div className={styles.dateInput}>
-              <label className={styles.label} htmlFor="startDate">
-                Desde
-              </label>
-              <input
-                id="startDate"
-                type="date"
-                className={styles.input}
+            <Field label="Desde" className={styles.dateInput}>
+              <DatePicker
+                placeholder="Seleccionar fecha"
                 value={startDate}
-                onChange={handleStartDateChange}
-                max={endDate || undefined}
+                onSelectDate={handleStartDateChange}
+                maxDate={endDate || undefined}
+                className={styles.datePicker}
               />
-            </div>
+            </Field>
 
-            <div className={styles.dateInput}>
-              <label className={styles.label} htmlFor="endDate">
-                Hasta
-              </label>
-              <input
-                id="endDate"
-                type="date"
-                className={styles.input}
+            <Field label="Hasta" className={styles.dateInput}>
+              <DatePicker
+                placeholder="Seleccionar fecha"
                 value={endDate}
-                onChange={handleEndDateChange}
-                min={startDate || undefined}
+                onSelectDate={handleEndDateChange}
+                minDate={startDate || undefined}
+                className={styles.datePicker}
               />
-            </div>
+            </Field>
           </div>
 
           <div className={styles.actions}>
