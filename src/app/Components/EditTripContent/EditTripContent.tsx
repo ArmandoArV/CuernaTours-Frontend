@@ -45,6 +45,12 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
     numeroPasajeros: tripData.regresoPasajeros || "",
     idaFecha: tripData.idaFecha || "",
     regresoFecha: tripData.regresoFecha || "",
+    unidadAsignada1: "",
+    placa1: "",
+    unidadAsignada2: "",
+    placa2: "",
+    unidadAsignada3: "",
+    placa3: "",
   });
 
   // Dropdown data
@@ -368,14 +374,17 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
     (field: string) => (e: React.ChangeEvent<HTMLSelectElement>) => {
       const value = e.target.value;
 
-      // If selecting a vehicle, auto-fill the license plate
-      if (field === "unidadAsignada" && value) {
+      // If selecting a vehicle, auto-fill the license plate for any unidad field
+      if (field.startsWith("unidadAsignada") && value) {
         const selectedVehicle = unidades.find((u) => u.value === value);
+        const unitNumber = field.replace("unidadAsignada", "") || "";
+        const placaField = `placa${unitNumber}`;
+        
         if (selectedVehicle?.licensePlate) {
           setTripFormData((prev) => ({
             ...prev,
             [field]: value,
-            placa: selectedVehicle.licensePlate || "",
+            [placaField]: selectedVehicle.licensePlate || "",
           }));
           return;
         }
@@ -1007,18 +1016,57 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
                   onChange={handleTripSelectChange("nombreChofer")}
                   className={styles.input}
                 />
+              </div>
+              
+              <h3 className={styles.subsectionTitle}>Unidades Asignadas</h3>
+              
+              <div className={styles.section}>
                 <SelectComponent
-                  label="Unidad"
+                  label="Unidad 1"
                   options={unidades}
-                  value={tripFormData.unidadAsignada || ""}
-                  onChange={handleTripSelectChange("unidadAsignada")}
+                  value={tripFormData.unidadAsignada1 || ""}
+                  onChange={handleTripSelectChange("unidadAsignada1")}
                   className={styles.input}
                 />
                 <InputComponent
                   type="text"
-                  value={tripFormData.placa || ""}
-                  onChange={handleTripInputChange("placa")}
-                  label="Placa"
+                  value={tripFormData.placa1 || ""}
+                  onChange={handleTripInputChange("placa1")}
+                  label="Placa 1"
+                  className={styles.input}
+                />
+              </div>
+              
+              <div className={styles.section}>
+                <SelectComponent
+                  label="Unidad 2"
+                  options={unidades}
+                  value={tripFormData.unidadAsignada2 || ""}
+                  onChange={handleTripSelectChange("unidadAsignada2")}
+                  className={styles.input}
+                />
+                <InputComponent
+                  type="text"
+                  value={tripFormData.placa2 || ""}
+                  onChange={handleTripInputChange("placa2")}
+                  label="Placa 2"
+                  className={styles.input}
+                />
+              </div>
+              
+              <div className={styles.section}>
+                <SelectComponent
+                  label="Unidad 3"
+                  options={unidades}
+                  value={tripFormData.unidadAsignada3 || ""}
+                  onChange={handleTripSelectChange("unidadAsignada3")}
+                  className={styles.input}
+                />
+                <InputComponent
+                  type="text"
+                  value={tripFormData.placa3 || ""}
+                  onChange={handleTripInputChange("placa3")}
+                  label="Placa 3"
                   className={styles.input}
                 />
               </div>
@@ -1027,7 +1075,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
                   type="textarea"
                   value={tripFormData.observacionesChofer || ""}
                   onChange={handleTripInputChange("observacionesChofer")}
-                  label="Notas adicionales"
+                  label="Notas Adicionales"
                   className={styles.textarea}
                 />
               </div>

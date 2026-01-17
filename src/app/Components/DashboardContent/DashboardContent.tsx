@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import FilterableTableComponent from "../FilterableTable/FilterableTableComponent";
 import { FilterConfig, FilterPresets } from "../FilterComponent";
+import DateRangeFilter from "../DateRangeFilter/DateRangeFilter";
 import { AddFilled, DocumentAddRegular, ArrowRepeatAllRegular } from "@fluentui/react-icons";
 import { useRouter } from "next/navigation";
 import { contractsService, ApiError } from "@/services/api";
@@ -71,7 +72,7 @@ function transformApiData(apiData: any[]): any[] {
     
     return {
       "ID Contrato": contract.contract_id,
-      "Empresa o Cliente": formatPersonName(contract.client_name) || "",
+      "Empresa O Cliente": formatPersonName(contract.client_name) || "",
       "Fecha": formatDateStandard(firstTrip.service_date),
       "Horario": scheduleTime,
       "Viajes": tripCount,
@@ -110,6 +111,10 @@ export default function DashboardContent() {
   const [isDriverPaymentModalOpen, setIsDriverPaymentModalOpen] = useState(false);
   const [selectedTripData, setSelectedTripData] = useState<any>(null);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  
+  // Date range filter states
+  const [dateRangeStart, setDateRangeStart] = useState("");
+  const [dateRangeEnd, setDateRangeEnd] = useState("");
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -156,10 +161,33 @@ export default function DashboardContent() {
   }, []);
 
   // Transform API data for the table
-  const sampleData = transformApiData(contractsData);
+  const transformedData = transformApiData(contractsData);
+  
+  // Apply date range filter
+  const sampleData = useMemo(() => {
+    if (!dateRangeStart || !dateRangeEnd) {
+      return transformedData;
+    }
+    
+    const startDate = new Date(dateRangeStart);
+    const endDate = new Date(dateRangeEnd);
+    endDate.setHours(23, 59, 59, 999); // Include the end date entirely
+    
+    return transformedData.filter((item) => {
+      if (!item._sortDate) return false;
+      const itemDate = new Date(item._sortDate);
+      return itemDate >= startDate && itemDate <= endDate;
+    });
+  }, [transformedData, dateRangeStart, dateRangeEnd]);
+  
+  const handleDateRangeChange = (start: string, end: string) => {
+    setDateRangeStart(start);
+    setDateRangeEnd(end);
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
 
   const columns = [
-    "Empresa o Cliente",
+    "Empresa O Cliente",
     "Fecha",
     "Horario",
     "Viajes",
@@ -168,29 +196,24 @@ export default function DashboardContent() {
     "Estatus",
   ];
 
-  // Configure filters for the table
+  // Configure filters for the table (without date filter, using DateRangeFilter instead)
   const filterConfigs: FilterConfig[] = [
     FilterPresets.createSelectFilter(
-      "Empresa o Cliente",
+      "Empresa O Cliente",
       "Cliente",
-      Array.from(new Set(sampleData.map((item) => item["Empresa o Cliente"]).filter(Boolean))),
-      "Filtrar por Cliente"
+      Array.from(new Set(sampleData.map((item) => item["Empresa O Cliente"]).filter(Boolean))),
+      "Filtrar Por Cliente"
     ),
     FilterPresets.createStatusFilter(
       "Estatus",
       Array.from(new Set(sampleData.map((item) => item.Estatus).filter(Boolean))),
-      "Filtrar por Estatus"
-    ),
-    FilterPresets.createDateFilter(
-      "Fecha",
-      Array.from(new Set(sampleData.map((item) => item.Fecha).filter(Boolean))),
-      "Filtrar por Fecha"
+      "Filtrar Por Estatus"
     ),
     FilterPresets.createSelectFilter(
       "Horario",
       "Hora",
       Array.from(new Set(sampleData.map((item) => item.Horario).filter(Boolean))),
-      "Filtrar por Hora"
+      "Filtrar Por Hora"
     ),
   ];
 
@@ -264,7 +287,7 @@ export default function DashboardContent() {
   };
 
   if (loading) {
-    return <LoadingComponent message="Cargando contratos..." />;
+    return <LoadingComponent message="Cargando Contratos..." />;
   }
 
   if (error) {
@@ -278,8 +301,16 @@ export default function DashboardContent() {
 
   return (
     <div>
+      <div style={{ marginBottom: "20px" }}>
+        <DateRangeFilter
+          onDateRangeChange={handleDateRangeChange}
+          label="Rango De Fechas"
+          placeholder="Seleccionar Fechas"
+        />
+      </div>
+      
       <FilterableTableComponent
-        title="Lista de contratos"
+        title="Lista De Contratos"
         originalData={sampleData}
         columns={columns}
         filterConfigs={filterConfigs}
@@ -287,7 +318,7 @@ export default function DashboardContent() {
         enableSearch={true}
         showActions={true}
         onSearch={handleSearch}
-        emptyMessage="No hay contratos disponibles"
+        emptyMessage="No Hay Contratos Disponibles"
         enablePagination={true}
         itemsPerPage={5}
         currentPage={currentPage}

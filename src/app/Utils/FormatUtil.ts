@@ -16,7 +16,7 @@ export const formatDateStandard = (date: string | Date | null | undefined): stri
       return "";
     }
 
-    const day = dateObj.getDate();
+    const day = String(dateObj.getDate()).padStart(2, '0');
     const monthNames = [
       "Ene", "Feb", "Mar", "Abr", "May", "Jun",
       "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"

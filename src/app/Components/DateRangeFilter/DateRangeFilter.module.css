@@ -1,0 +1,241 @@
+.container {
+  position: relative;
+  display: inline-block;
+}
+
+.filterWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 0.25rem;
+  border: 1px solid var(--Text-ADADAD, #adadad);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-width: 200px;
+  height: 40px;
+  box-sizing: border-box;
+}
+
+.filterWrapper:hover {
+  border-color: var(--Main-1A2E47);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--Main-1A2E47);
+  font-size: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.filterButton {
+  width: 100%;
+  height: 100%;
+  padding: 8px 16px 8px 48px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--Text-1A2E47, #1a2e47);
+  cursor: pointer;
+  text-align: left;
+  outline: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.buttonText {
+  display: block;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: white;
+  border: 1px solid var(--Text-ADADAD, #adadad);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  z-index: 1000;
+  min-width: 320px;
+}
+
+.dropdownHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dropdownTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--Main-1A2E47);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.closeButton:hover {
+  color: var(--Main-1A2E47);
+}
+
+.dateInputs {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.dateInput {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--Main-1A2E47);
+}
+
+.input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--Text-ADADAD, #adadad);
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--Text-1A2E47, #1a2e47);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  border-color: var(--Main-1A2E47);
+  box-shadow: 0 0 0 3px rgba(26, 46, 71, 0.1);
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.clearButton,
+.applyButton {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.clearButton {
+  background: transparent;
+  color: var(--Main-1A2E47);
+  border: 1px solid var(--Main-1A2E47);
+}
+
+.clearButton:hover:not(:disabled) {
+  background: rgba(26, 46, 71, 0.05);
+}
+
+.clearButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.applyButton {
+  background: var(--Main-1A2E47);
+  color: white;
+}
+
+.applyButton:hover {
+  background: #152336;
+}
+
+.activeFilter {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.filterTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background-color: rgba(26, 46, 71, 0.1);
+  border: 1px solid rgba(26, 46, 71, 0.2);
+  border-radius: 16px;
+  font-size: 13px;
+  color: var(--Main-1A2E47);
+  max-width: 300px;
+}
+
+.filterTagText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filterTagRemove {
+  background: none;
+  border: none;
+  color: var(--Main-1A2E47);
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.filterTagRemove:hover {
+  background-color: rgba(26, 46, 71, 0.2);
+}
+
+@media (max-width: 768px) {
+  .dropdown {
+    min-width: 280px;
+  }
+
+  .dateInputs {
+    flex-direction: column;
+  }
+}
