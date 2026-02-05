@@ -54,7 +54,7 @@ export default function CreateClientModal({
     country_code: "+52",
     phone: "",
     email: "",
-    is_whatsapp_available: false,
+    is_whatsapp_available: true,
     role: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -146,7 +146,7 @@ export default function CreateClientModal({
         country_code: "+52",
         phone: "",
         email: "",
-        is_whatsapp_available: false,
+        is_whatsapp_available: true,
         role: "",
       });
       setErrors({});
@@ -177,7 +177,7 @@ export default function CreateClientModal({
       country_code: "+52",
       phone: "",
       email: "",
-      is_whatsapp_available: false,
+      is_whatsapp_available: true,
       role: "",
     });
     setErrors({});
@@ -203,7 +203,12 @@ export default function CreateClientModal({
 
             <InputComponent
               type="text"
-              label="Nombre del Cliente / Empresa"
+              label={
+                <>
+                  Nombre del Cliente / Empresa{" "}
+                  <strong style={{ color: "red" }}>*</strong>
+                </>
+              }
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
@@ -217,7 +222,7 @@ export default function CreateClientModal({
             )}
 
             <SelectComponent
-              label="Tipo de Cliente"
+              label="Tipo de Cliente *"
               value={formData.client_type_id}
               onChange={(e) =>
                 setFormData({ ...formData, client_type_id: e.target.value })
@@ -258,7 +263,11 @@ export default function CreateClientModal({
               <div className={styles.field}>
                 <InputComponent
                   type="text"
-                  label="Nombre"
+                  label={
+                    <>
+                      Nombre <strong style={{ color: "red" }}>*</strong>
+                    </>
+                  }
                   value={formData.contactName}
                   onChange={(e) =>
                     setFormData({ ...formData, contactName: e.target.value })
@@ -277,7 +286,11 @@ export default function CreateClientModal({
               <div className={styles.field}>
                 <InputComponent
                   type="text"
-                  label="Apellido Paterno"
+                  label={
+                    <>
+                      Apellido Paterno <strong style={{ color: "red" }}>*</strong>
+                    </>
+                  }
                   value={formData.first_lastname}
                   onChange={(e) =>
                     setFormData({ ...formData, first_lastname: e.target.value })
@@ -324,7 +337,11 @@ export default function CreateClientModal({
               <div className={styles.field}>
                 <InputComponent
                   type="text"
-                  label="Teléfono"
+                  label={
+                    <>
+                      Teléfono <strong style={{ color: "red" }}>*</strong>
+                    </>
+                  }
                   value={formData.phone}
                   onChange={(e) =>
                     setFormData({

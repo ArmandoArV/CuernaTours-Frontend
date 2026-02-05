@@ -3,7 +3,11 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import FilterableTableComponent from "../FilterableTable/FilterableTableComponent";
 import { FilterConfig, FilterPresets } from "../FilterComponent";
 import DateRangeFilter from "../DateRangeFilter/DateRangeFilter";
-import { AddFilled, DocumentAddRegular, ArrowRepeatAllRegular } from "@fluentui/react-icons";
+import {
+  AddFilled,
+  DocumentAddRegular,
+  ArrowRepeatAllRegular,
+} from "@fluentui/react-icons";
 import { useRouter } from "next/navigation";
 import { contractsService, ApiError } from "@/services/api";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
@@ -31,69 +35,83 @@ function transformApiData(apiData: any[]): any[] {
   const activeContracts = apiData.filter((contract) => {
     const statusId = contract.contract_status_id || contract.status?.id;
     const statusName = contract.contract_status_name || contract.status?.name;
-    return statusId !== 6 && statusId !== 7 && 
-           statusName !== "Finalizado" && statusName !== "Cancelado";
+    return (
+      statusId !== 6 &&
+      statusId !== 7 &&
+      statusName !== "Finalizado" &&
+      statusName !== "Cancelado"
+    );
   });
 
-  return activeContracts.map((contract) => {
-    const trips = contract.trips || [];
-    const firstTrip = trips[0] || {};
-    
-    // Get contract status
-    const contractStatusId = contract.contract_status_id || contract.status?.id;
-    const contractStatus = STATUS_MAP[contractStatusId] || contract.contract_status_name || contract.status?.name || "";
-    
-    // Calculate trip count and assignment status
-    const tripCount = trips.length;
-    const assignedTrips = trips.filter((t: any) => {
-      // Check for driver assignment (either nested driver object or direct driver_id)
-      const hasDriver = t.driver?.id || t.driver_id || t.external_driver_id;
-      // Check for vehicle assignment (either nested vehicle object or direct vehicle_id)
-      const hasVehicle = t.vehicle?.id || t.vehicle_id;
-      return hasDriver && hasVehicle;
-    }).length;
+  return activeContracts
+    .map((contract) => {
+      const trips = contract.trips || [];
+      const firstTrip = trips[0] || {};
 
-    const assignmentStatus = tripCount > 0 
-      ? `${assignedTrips}/${tripCount}` 
-      : "0/0";
-    
-    // Extract time from service_date or service_time
-    let scheduleTime = "";
-    if (firstTrip.service_date) {
-      const serviceDate = new Date(firstTrip.service_date);
-      scheduleTime = serviceDate.toLocaleTimeString('es-MX', { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: true 
-      });
-    } else if (firstTrip.service_time) {
-      scheduleTime = firstTrip.service_time;
-    }
-    
-    return {
-      "ID Contrato": contract.contract_id,
-      "Empresa O Cliente": formatPersonName(contract.client_name) || "",
-      "Fecha": formatDateStandard(firstTrip.service_date),
-      "Horario": scheduleTime,
-      "Viajes": tripCount,
-      "Asignados": assignmentStatus,
-      "Monto": contract.amount ? `$${contract.amount.toLocaleString()}` : "",
-      "Estatus": contractStatus,
-      // Include IDs and data for functionality
-      contract_id: contract.contract_id,
-      // Store full contract object for details and modals
-      _contractData: contract,
-      _trips: trips,
-      // Store raw date for sorting
-      _sortDate: firstTrip.service_date ? new Date(firstTrip.service_date) : null,
-    };
-  }).sort((a, b) => {
-    // Sort by date and time (earliest first)
-    if (!a._sortDate && !b._sortDate) return 0;
-    if (!a._sortDate) return 1;
-    if (!b._sortDate) return -1;
-    return a._sortDate.getTime() - b._sortDate.getTime();
-  });
+      // Get contract status
+      const contractStatusId =
+        contract.contract_status_id || contract.status?.id;
+      const contractStatus =
+        STATUS_MAP[contractStatusId] ||
+        contract.contract_status_name ||
+        contract.status?.name ||
+        "";
+
+      // Calculate trip count and assignment status
+      const tripCount = trips.length;
+      const assignedTrips = trips.filter((t: any) => {
+        // Check for driver assignment (either nested driver object or direct driver_id)
+        const hasDriver = t.driver?.id || t.driver_id || t.external_driver_id;
+        // Check for vehicle assignment (either nested vehicle object or direct vehicle_id)
+        const hasVehicle = t.vehicle?.id || t.vehicle_id;
+        return hasDriver && hasVehicle;
+      }).length;
+
+      const assignmentStatus =
+        tripCount > 0 ? `${assignedTrips}/${tripCount}` : "0/0";
+
+      // Extract time from service_date or service_time
+      let scheduleTime = "";
+      if (firstTrip.service_date) {
+        const serviceDate = new Date(firstTrip.service_date);
+        scheduleTime = serviceDate.toLocaleTimeString("es-MX", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+      } else if (firstTrip.service_time) {
+        scheduleTime = firstTrip.service_time;
+      }
+
+      return {
+        "ID Contrato": contract.contract_id,
+        "Empresa O Cliente": formatPersonName(contract.client_name) || "",
+        Fecha: formatDateStandard(firstTrip.service_date),
+        Horario: scheduleTime,
+        Viajes: tripCount,
+        Asignados: assignmentStatus,
+        Monto: contract.amount ? `$${contract.amount.toLocaleString()}` : "",
+        Estatus: contractStatus,
+        "Estado de Pago":
+          contract.payment_status === "paid" ? "Pagado" : "Pendiente",
+        // Include IDs and data for functionality
+        contract_id: contract.contract_id,
+        // Store full contract object for details and modals
+        _contractData: contract,
+        _trips: trips,
+        // Store raw date for sorting
+        _sortDate: firstTrip.service_date
+          ? new Date(firstTrip.service_date)
+          : null,
+      };
+    })
+    .sort((a, b) => {
+      // Sort by date and time (earliest first)
+      if (!a._sortDate && !b._sortDate) return 0;
+      if (!a._sortDate) return 1;
+      if (!b._sortDate) return -1;
+      return a._sortDate.getTime() - b._sortDate.getTime();
+    });
 }
 
 export default function DashboardContent() {
@@ -108,10 +126,11 @@ export default function DashboardContent() {
 
   // Modal states
   const [isAssignDriverModalOpen, setIsAssignDriverModalOpen] = useState(false);
-  const [isDriverPaymentModalOpen, setIsDriverPaymentModalOpen] = useState(false);
+  const [isDriverPaymentModalOpen, setIsDriverPaymentModalOpen] =
+    useState(false);
   const [selectedTripData, setSelectedTripData] = useState<any>(null);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
-  
+
   // Date range filter states
   const [dateRangeStart, setDateRangeStart] = useState("");
   const [dateRangeEnd, setDateRangeEnd] = useState("");
@@ -119,7 +138,10 @@ export default function DashboardContent() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     };
@@ -162,24 +184,24 @@ export default function DashboardContent() {
 
   // Transform API data for the table
   const transformedData = transformApiData(contractsData);
-  
+
   // Apply date range filter
   const sampleData = useMemo(() => {
     if (!dateRangeStart || !dateRangeEnd) {
       return transformedData;
     }
-    
+
     const startDate = new Date(dateRangeStart);
     const endDate = new Date(dateRangeEnd);
     endDate.setHours(23, 59, 59, 999); // Include the end date entirely
-    
+
     return transformedData.filter((item) => {
       if (!item._sortDate) return false;
       const itemDate = new Date(item._sortDate);
       return itemDate >= startDate && itemDate <= endDate;
     });
   }, [transformedData, dateRangeStart, dateRangeEnd]);
-  
+
   const handleDateRangeChange = (start: string, end: string) => {
     setDateRangeStart(start);
     setDateRangeEnd(end);
@@ -194,6 +216,7 @@ export default function DashboardContent() {
     "Asignados",
     "Monto",
     "Estatus",
+    "Estado de Pago",
   ];
 
   // Configure filters for the table (without date filter, using DateRangeFilter instead)
@@ -201,26 +224,26 @@ export default function DashboardContent() {
     FilterPresets.createSelectFilter(
       "Empresa O Cliente",
       "Cliente",
-      Array.from(new Set(sampleData.map((item) => item["Empresa O Cliente"]).filter(Boolean))),
-      "Filtrar Por Cliente"
+      Array.from(
+        new Set(
+          sampleData.map((item) => item["Empresa O Cliente"]).filter(Boolean),
+        ),
+      ),
+      "Filtrar Por Cliente",
     ),
-    FilterPresets.createStatusFilter(
-      "Estatus",
-      Array.from(new Set(sampleData.map((item) => item.Estatus).filter(Boolean))),
-      "Filtrar Por Estatus"
-    ),
+
     FilterPresets.createSelectFilter(
-      "Horario",
-      "Hora",
-      Array.from(new Set(sampleData.map((item) => item.Horario).filter(Boolean))),
-      "Filtrar Por Hora"
+      "Estado de Pago",
+      "Pago",
+      ["Pagado", "Pendiente"],
+      "Filtrar Por Estado de Pago",
     ),
   ];
 
   // Handlers removed: table will show inline details when the eye button is clicked.
 
   const handleFiltersChange = (
-    activeFilters: Record<string, string | string[]>
+    activeFilters: Record<string, string | string[]>,
   ) => {
     console.log("Filtros aplicados:", activeFilters);
   };
@@ -248,16 +271,16 @@ export default function DashboardContent() {
   const handleAssignDriver = (row: any) => {
     // Get the first unassigned trip from the contract
     const trips = row._trips || [];
-    const unassignedTrip = trips.find((t: any) => 
-      !t.driver_id && !t.external_driver_id
+    const unassignedTrip = trips.find(
+      (t: any) => !t.driver_id && !t.external_driver_id,
     );
     const tripToAssign = unassignedTrip || trips[0];
-    
+
     if (tripToAssign) {
       setSelectedTripData(tripToAssign);
       setIsAssignDriverModalOpen(true);
     } else {
-      console.warn('No trips found in contract');
+      console.warn("No trips found in contract");
     }
   };
 
@@ -269,7 +292,7 @@ export default function DashboardContent() {
       setSelectedTripId(tripId ? String(tripId) : null);
       setIsDriverPaymentModalOpen(true);
     } else {
-      console.warn('No trips found in contract');
+      console.warn("No trips found in contract");
     }
   };
 
@@ -308,7 +331,7 @@ export default function DashboardContent() {
           placeholder="Seleccionar Fechas"
         />
       </div>
-      
+
       <FilterableTableComponent
         title="Lista De Contratos"
         originalData={sampleData}
@@ -349,7 +372,9 @@ export default function DashboardContent() {
                     text="Nuevo Viaje"
                     icon={<DocumentAddRegular width={16} height={16} />}
                     className={styles.dropdownItem}
-                    onClick={() => handleMenuItemClick("/dashboard/createOrder")}
+                    onClick={() =>
+                      handleMenuItemClick("/dashboard/createOrder")
+                    }
                   />
                   <ButtonComponent
                     text="Viaje frecuente"

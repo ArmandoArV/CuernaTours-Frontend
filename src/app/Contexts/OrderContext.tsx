@@ -7,6 +7,7 @@ interface OrderFormData {
   nombreContacto: string;
   primerApellido: string;
   segundoApellido: string;
+  codigoPais: string;
   telefono: string;
   tieneWhatsapp: string;
   correoElectronico: string;
@@ -94,6 +95,7 @@ const defaultOrderData: OrderFormData = {
   nombreContacto: "",
   primerApellido: "",
   segundoApellido: "",
+  codigoPais: "+52",
   telefono: "",
   tieneWhatsapp: "",
   correoElectronico: "",

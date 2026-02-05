@@ -586,17 +586,34 @@ export default function CreateOrderContent() {
 
           <div className={styles.row}>
             <div className={styles.col}>
-              <InputComponent
-                type="text"
-                value={formData.telefono}
-                onChange={handleInputChange("telefono")}
-                label="Teléfono"
-                placeholder=""
-                disabled={!isEditingContact}
-                className={`${styles.input} ${
-                  showErrors && errors.telefono ? styles.inputError : ""
-                }`}
-              />
+              <div className={styles.phoneInputGroup}>
+                <SelectComponent
+                  label="Código"
+                  options={[
+                    { value: "+52", label: "+52 (MX)" },
+                    { value: "+1", label: "+1 (US/CA)" },
+                    { value: "+34", label: "+34 (ES)" },
+                    { value: "+44", label: "+44 (UK)" },
+                    { value: "+49", label: "+49 (DE)" },
+                    { value: "+33", label: "+33 (FR)" },
+                  ]}
+                  value={formData.codigoPais || "+52"}
+                  onChange={(e) => setFormData({ ...formData, codigoPais: e.target.value })}
+                  disabled={!isEditingContact}
+                  className={styles.countryCodeSelect}
+                />
+                <InputComponent
+                  type="text"
+                  value={formData.telefono}
+                  onChange={handleInputChange("telefono")}
+                  label="Teléfono"
+                  placeholder=""
+                  disabled={!isEditingContact}
+                  className={`${styles.input} ${
+                    showErrors && errors.telefono ? styles.inputError : ""
+                  }`}
+                />
+              </div>
               {showErrors && errors.telefono && (
                 <p className={styles.errorMessage}>{errors.telefono}</p>
               )}

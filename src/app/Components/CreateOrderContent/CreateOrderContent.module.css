@@ -132,6 +132,23 @@
   box-sizing: border-box;
 }
 
+.phoneInputGroup {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.countryCodeSelect {
+  flex: 0 0 130px;
+  min-width: 130px;
+}
+
+.phoneInputGroup .input {
+  flex: 1;
+  min-width: 0;
+}
+
 .radioGroup {
   display: flex;
   flex-direction: column;

@@ -3,6 +3,7 @@ export interface OrderFormData {
   nombreContacto: string;
   primerApellido: string;
   segundoApellido: string;
+  codigoPais: string;
   telefono: string;
   tieneWhatsapp: string;
   correoElectronico: string;

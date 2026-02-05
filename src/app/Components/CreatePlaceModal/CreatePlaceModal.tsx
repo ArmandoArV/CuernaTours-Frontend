@@ -23,6 +23,7 @@ interface PlaceFormData {
   state: string;
   zip_code: string;
   annotations: string;
+  should_save: boolean;
 }
 
 export default function CreatePlaceModal({
@@ -39,6 +40,7 @@ export default function CreatePlaceModal({
     state: '',
     zip_code: '',
     annotations: '',
+    should_save: true,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -104,6 +106,7 @@ export default function CreatePlaceModal({
         city: '',
         state: '',
         zip_code: '',
+        should_save: true,
         annotations: '',
       });
       setErrors({});
@@ -129,6 +132,7 @@ export default function CreatePlaceModal({
       city: '',
       state: '',
       zip_code: '',
+      should_save: true,
       annotations: '',
     });
     setErrors({});
@@ -150,7 +154,7 @@ export default function CreatePlaceModal({
             
             <InputComponent
               type="text"
-              label="Nombre del Lugar"
+              label="Nombre del Lugar *"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Ej: Hotel Marriott, Aeropuerto Internacional, etc."
@@ -167,7 +171,7 @@ export default function CreatePlaceModal({
               <div className={styles.fieldLarge}>
                 <InputComponent
                   type="text"
-                  label="Calle"
+                  label="Calle *"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   placeholder="Nombre de la calle"
@@ -202,7 +206,7 @@ export default function CreatePlaceModal({
               <div className={styles.field}>
                 <InputComponent
                   type="text"
-                  label="Ciudad"
+                  label="Ciudad *"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                   placeholder="Ciudad"
@@ -215,7 +219,7 @@ export default function CreatePlaceModal({
               <div className={styles.field}>
                 <InputComponent
                   type="text"
-                  label="Estado"
+                  label="Estado *"
                   value={formData.state}
                   onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                   placeholder="Estado"
@@ -234,6 +238,25 @@ export default function CreatePlaceModal({
               placeholder="00000"
               disabled={isSubmitting}
             />
+          </div>
+
+          <div className={styles.section}>
+            <div className={styles.checkboxGroup}>
+              <label className={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={formData.should_save}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      should_save: e.target.checked,
+                    })
+                  }
+                  disabled={isSubmitting}
+                />
+                <span>Guardar este lugar para uso futuro</span>
+              </label>
+            </div>
           </div>
 
           <div className={styles.section}>

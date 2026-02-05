@@ -543,7 +543,30 @@ export default function CreateTripContent() {
       console.log("Contract created:", result);
 
       showSuccessAlert("Éxito", "Contrato y viaje creados correctamente");
+      
+      // Clear all form data
       clearData();
+      
+      // Clear local trip form data
+      setTripFormData({
+        ...tripData,
+        numeroPasajeros: "",
+        idaFecha: "",
+        regresoFecha: "",
+        unidadAsignada1: "",
+        placa1: "",
+        unidadAsignada2: "",
+        placa2: "",
+        unidadAsignada3: "",
+        placa3: "",
+      });
+      
+      // Clear paradas
+      setParadas([]);
+      
+      // Clear field errors
+      setFieldErrors({});
+      
       router.push("/dashboard");
     } catch (error) {
       console.error("Error creating contract and trip:", error);
@@ -579,6 +602,65 @@ export default function CreateTripContent() {
           </div>
         </div>
         <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+          <div className={styles.divider}>
+            <h2 className={styles.subsectionTitle}>Ida</h2>
+          </div>
+          <div className={styles.section}>
+            <DatePickerComponent
+              id="idaFecha"
+              label="Fecha"
+              value={tripFormData.idaFecha || ""}
+              onChange={(value) => {
+                console.log("Date changed:", value);
+                setTripFormData((prev) => ({
+                  ...prev,
+                  idaFecha: value,
+                }));
+              }}
+              placeholder="dd/mm/yyyy"
+              required
+              hasError={fieldErrors.idaFecha}
+              errorMessage={fieldErrors.idaFecha ? "Este campo es obligatorio" : ""}
+            />
+            <InputComponent
+              type="number"
+              value={String(tripFormData.idaHora ?? "")}
+              onChange={handleTripInputChange("idaHora")}
+              label="Hora"
+              className={styles.input}
+            />
+            <InputComponent
+              type="number"
+              value={String(tripFormData.idaMinutos ?? "")}
+              onChange={handleTripInputChange("idaMinutos")}
+              label="Minutos"
+              className={styles.input}
+            />
+            <SelectComponent
+              label="AM/PM"
+              options={[
+                { value: "AM", label: "AM" },
+                { value: "PM", label: "PM" },
+              ]}
+              value={tripFormData.idaAmPm || "AM"}
+              onChange={handleTripSelectChange("idaAmPm")}
+              className={styles.input}
+            />
+            <InputComponent
+              type="number"
+              value={String(tripFormData.idaPasajeros ?? "")}
+              onChange={handleTripInputChange("idaPasajeros")}
+              label={
+                <p>
+                  Pasajeros <strong style={{ color: "red" }}>*</strong>
+                </p>
+              }
+              className={styles.input}
+              hasError={fieldErrors.idaPasajeros}
+              errorMessage={fieldErrors.idaPasajeros ? "Este campo es obligatorio" : ""}
+            />
+          </div>
+
           <h2 className={styles.sectionTitle}>Dirección De Origen</h2>
           <div className={styles.section}>
             <SearchableSelectComponent
@@ -917,51 +999,6 @@ export default function CreateTripContent() {
             </div>
           </div>
 
-          <div className={styles.divider}>
-            <h2 className={styles.subsectionTitle}>Ida</h2>
-          </div>
-          <div className={styles.section}>
-            <DatePickerComponent
-              id="idaFecha"
-              label="Fecha"
-              value={tripFormData.idaFecha || ""}
-              onChange={(value) => {
-                console.log("Date changed:", value);
-                setTripFormData((prev) => ({
-                  ...prev,
-                  idaFecha: value,
-                }));
-              }}
-              placeholder="dd/mm/yyyy"
-              required
-              hasError={fieldErrors.idaFecha}
-              errorMessage={fieldErrors.idaFecha ? "Este campo es obligatorio" : ""}
-            />
-            <InputComponent
-              type="number"
-              value={String(tripFormData.idaHora ?? "")}
-              onChange={handleTripInputChange("idaHora")}
-              label="Hora"
-              className={styles.input}
-            />
-            <InputComponent
-              type="number"
-              value={String(tripFormData.idaMinutos ?? "")}
-              onChange={handleTripInputChange("idaMinutos")}
-              label="Minutos"
-              className={styles.input}
-            />
-            <SelectComponent
-              label="AM/PM"
-              options={[
-                { value: "AM", label: "AM" },
-                { value: "PM", label: "PM" },
-              ]}
-              value={tripFormData.idaAmPm || "AM"}
-              onChange={handleTripSelectChange("idaAmPm")}
-              className={styles.input}
-            />
-          </div>
           {tripFormData.tipoViaje === "roundTrip" && (
             <>
               <div className={styles.divider}>

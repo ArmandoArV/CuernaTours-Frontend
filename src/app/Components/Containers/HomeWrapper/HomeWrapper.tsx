@@ -72,6 +72,7 @@ export default function HomeWrapper() {
       const welcomeName = data.user.display_name || data.user.name || "Usuario";
       showSuccessAlert(
         "Inicio de sesión exitoso",
+        `Bienvenido, ${welcomeName}!`
       );
       
       // Redirect to dashboard immediately without waiting for alert

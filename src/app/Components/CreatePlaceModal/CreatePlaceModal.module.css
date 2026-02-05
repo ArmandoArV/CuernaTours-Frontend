@@ -133,13 +133,13 @@
 }
 
 .submitButton {
-  background-color: var(--Main-1A2E47);
+  background-color: var(--Main-96781A);
   color: white;
   border: none;
 }
 
 .submitButton:hover {
-  background-color: var(--Shadows-1A2E47-80);
+  background-color: #7c5f14;
   transform: scale(1.02);
 }
 
