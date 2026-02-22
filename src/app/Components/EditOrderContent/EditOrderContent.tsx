@@ -7,7 +7,7 @@ import SearchableSelectComponent, {
   SearchableSelectOption,
 } from "../SearchableSelectComponent/SearchableSelectComponent";
 import CreateClientModal from "../CreateClientModal/CreateClientModal";
-import { ArrowHookUpLeftRegular } from "@fluentui/react-icons";
+import { ArrowHookUpLeftRegular, Edit24Regular, Save24Regular } from "@fluentui/react-icons";
 import Link from "next/link";
 import { showErrorAlert, showSuccessAlert } from "../../Utils/AlertUtil";
 import { OrderFormData } from "@/app/Types/OrderTripTypes";
@@ -44,6 +44,8 @@ export default function EditOrderContent({
     useState<PrefillableData | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+  const [isEditingContact, setIsEditingContact] = useState(false);
+  const [originalContactData, setOriginalContactData] = useState<any>(null);
 
   // Fetch contract data on mount using /contracts/details/[id] endpoint
   useEffect(() => {
@@ -383,26 +385,117 @@ export default function EditOrderContent({
         console.log("Primary contact:", primaryContact);
 
         if (primaryContact) {
-          setFormData((prev) => ({
-            ...prev,
-            empresa: clientId,
+          const contactData = {
             nombreContacto: primaryContact.name || "",
             primerApellido: primaryContact.first_lastname || "",
             segundoApellido: primaryContact.second_lastname || "",
             telefono: primaryContact.phone || "",
             correoElectronico: primaryContact.email || "",
             tieneWhatsapp: primaryContact.is_whatsapp_available ? "Si" : "No",
+          };
+          setFormData((prev) => ({
+            ...prev,
+            empresa: clientId,
+            empresaNombre: clientDetails.name || option.label,
+            empresaTipo: clientDetails.client_type_name || "",
+            ...contactData,
           }));
+          setOriginalContactData(contactData);
+          setIsEditingContact(false);
         } else {
-          setFormData((prev) => ({ ...prev, empresa: clientId }));
+          setFormData((prev) => ({
+            ...prev,
+            empresa: clientId,
+            empresaNombre: clientDetails.name || option.label,
+            empresaTipo: clientDetails.client_type_name || "",
+          }));
+          setOriginalContactData(null);
+          setIsEditingContact(false);
         }
       } catch (error) {
         console.error("Error fetching client details:", error);
-        setFormData((prev) => ({ ...prev, empresa: clientId }));
+        setFormData((prev) => ({
+          ...prev,
+          empresa: clientId,
+          empresaNombre: option.label,
+          empresaTipo: "",
+        }));
+        setOriginalContactData(null);
+        setIsEditingContact(false);
       }
     } else {
-      setFormData((prev) => ({ ...prev, empresa: clientId }));
+      setFormData((prev) => ({
+        ...prev,
+        empresa: clientId,
+        empresaNombre: option?.label || "",
+        empresaTipo: "",
+      }));
+      setOriginalContactData(null);
+      setIsEditingContact(false);
     }
+  };
+
+  const handleEditContact = () => {
+    setIsEditingContact(true);
+  };
+
+  const handleSaveContact = async () => {
+    try {
+      // Validate contact data
+      const contactErrors: { [key: string]: string } = {};
+      if (!formData.nombreContacto.trim()) {
+        contactErrors.nombreContacto = "El nombre del contacto es obligatorio";
+      }
+      if (!formData.primerApellido.trim()) {
+        contactErrors.primerApellido = "El primer apellido es obligatorio";
+      }
+      if (formData.telefono.trim() && !isValidPhone(formData.telefono)) {
+        contactErrors.telefono = "El teléfono solo debe contener números";
+      }
+      if (formData.correoElectronico.trim() && !isValidEmail(formData.correoElectronico)) {
+        contactErrors.correoElectronico = "El correo electrónico no es válido";
+      }
+
+      if (Object.keys(contactErrors).length > 0) {
+        setErrors(contactErrors);
+        setShowErrors(true);
+        showErrorAlert(
+          "Errores en datos de contacto",
+          "Por favor corrija los errores antes de guardar."
+        );
+        return;
+      }
+
+      // Update original data
+      setOriginalContactData({
+        nombreContacto: formData.nombreContacto,
+        primerApellido: formData.primerApellido,
+        segundoApellido: formData.segundoApellido,
+        telefono: formData.telefono,
+        correoElectronico: formData.correoElectronico,
+        tieneWhatsapp: formData.tieneWhatsapp,
+        codigoPais: formData.codigoPais,
+      });
+      
+      setIsEditingContact(false);
+      showSuccessAlert(
+        "Cambios guardados",
+        "Los cambios en los datos del contacto se han guardado localmente. Se actualizarán al guardar el contrato."
+      );
+    } catch (error) {
+      console.error("Error saving contact:", error);
+      showErrorAlert("Error", "No se pudieron guardar los cambios. Intente nuevamente.");
+    }
+  };
+
+  const handleCancelEditContact = () => {
+    if (originalContactData) {
+      setFormData(prev => ({
+        ...prev,
+        ...originalContactData,
+      }));
+    }
+    setIsEditingContact(false);
   };
 
   const handleCreateClient = () => {
@@ -415,16 +508,22 @@ export default function EditOrderContent({
     contactData?: any
   ) => {
     // Auto-fill form with newly created client
-    setFormData((prev) => ({
-      ...prev,
-      empresa: clientId.toString(),
+    const contact = {
       nombreContacto: contactData?.name || "",
       primerApellido: contactData?.first_lastname || "",
       segundoApellido: contactData?.second_lastname || "",
       telefono: contactData?.phone || "",
       correoElectronico: contactData?.email || "",
       tieneWhatsapp: contactData?.is_whatsapp_available ? "Si" : "No",
+    };
+    setFormData((prev) => ({
+      ...prev,
+      empresa: clientId.toString(),
+      empresaNombre: clientName,
+      ...contact,
     }));
+    setOriginalContactData(contact);
+    setIsEditingContact(false);
     setIsClientModalOpen(false);
   };
 
@@ -521,6 +620,41 @@ export default function EditOrderContent({
             )}
           </div>
 
+          <div className={styles.contactSection}>
+            <div className={styles.contactHeader}>
+              <h3 className={styles.contactTitle}>Datos del contacto</h3>
+              {formData.empresa && !isEditingContact && (
+                <button
+                  type="button"
+                  onClick={handleEditContact}
+                  className={styles.editButton}
+                  title="Editar datos de contacto"
+                >
+                  <Edit24Regular />
+                </button>
+              )}
+              {formData.empresa && isEditingContact && (
+                <div className={styles.contactActions}>
+                  <button
+                    type="button"
+                    onClick={handleCancelEditContact}
+                    className={styles.cancelEditButton}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveContact}
+                    className={styles.saveButton}
+                    title="Guardar cambios"
+                  >
+                    <Save24Regular /> Guardar cambios
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className={styles.row}>
             <div className={styles.col}>
               <InputComponent
@@ -534,6 +668,7 @@ export default function EditOrderContent({
                   </p>
                 }
                 placeholder=""
+                disabled={!isEditingContact}
                 className={`${styles.input} ${
                   showErrors && errors.nombreContacto ? styles.inputError : ""
                 }`}
@@ -553,6 +688,7 @@ export default function EditOrderContent({
                   </p>
                 }
                 placeholder=""
+                disabled={!isEditingContact}
                 className={`${styles.input} ${
                   showErrors && errors.primerApellido ? styles.inputError : ""
                 }`}
@@ -568,6 +704,7 @@ export default function EditOrderContent({
                 onChange={handleInputChange("segundoApellido")}
                 label="Segundo apellido"
                 placeholder=""
+                disabled={!isEditingContact}
                 className={styles.input}
               />
             </div>
@@ -575,20 +712,34 @@ export default function EditOrderContent({
 
           <div className={styles.row}>
             <div className={styles.col}>
-              <InputComponent
-                type="text"
-                value={formData.telefono}
-                onChange={handleInputChange("telefono")}
-                label={
-                  <p>
-                    Teléfono <strong style={{ color: "red" }}>*</strong>
-                  </p>
-                }
-                placeholder=""
-                className={`${styles.input} ${
-                  showErrors && errors.telefono ? styles.inputError : ""
-                }`}
-              />
+              <div className={styles.phoneInputGroup}>
+                <SelectComponent
+                  label="Código"
+                  options={[
+                    { value: "+52", label: "+52 (MX)" },
+                    { value: "+1", label: "+1 (US/CA)" },
+                    { value: "+34", label: "+34 (ES)" },
+                    { value: "+44", label: "+44 (UK)" },
+                    { value: "+49", label: "+49 (DE)" },
+                    { value: "+33", label: "+33 (FR)" },
+                  ]}
+                  value={formData.codigoPais || "+52"}
+                  onChange={(e) => setFormData({ ...formData, codigoPais: e.target.value })}
+                  disabled={!isEditingContact}
+                  className={styles.countryCodeSelect}
+                />
+                <InputComponent
+                  type="text"
+                  value={formData.telefono}
+                  onChange={handleInputChange("telefono")}
+                  label="Teléfono"
+                  placeholder=""
+                  disabled={!isEditingContact}
+                  className={`${styles.input} ${
+                    showErrors && errors.telefono ? styles.inputError : ""
+                  }`}
+                />
+              </div>
               {showErrors && errors.telefono && (
                 <p className={styles.errorMessage}>{errors.telefono}</p>
               )}
@@ -607,6 +758,7 @@ export default function EditOrderContent({
                       value="Si"
                       checked={formData.tieneWhatsapp === "Si"}
                       onChange={() => handleRadioChange("tieneWhatsapp", "Si")}
+                      disabled={!isEditingContact}
                       className={styles.radioInput}
                     />
                     Sí
@@ -618,6 +770,7 @@ export default function EditOrderContent({
                       value="No"
                       checked={formData.tieneWhatsapp === "No"}
                       onChange={() => handleRadioChange("tieneWhatsapp", "No")}
+                      disabled={!isEditingContact}
                       className={styles.radioInput}
                     />
                     No
@@ -632,6 +785,7 @@ export default function EditOrderContent({
                 onChange={handleInputChange("correoElectronico")}
                 label="Correo electrónico"
                 placeholder=""
+                disabled={!isEditingContact}
                 className={`${styles.input} ${
                   showErrors && errors.correoElectronico
                     ? styles.inputError

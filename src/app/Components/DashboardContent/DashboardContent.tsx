@@ -30,6 +30,7 @@ const STATUS_MAP: Record<number, string> = {
 };
 
 // Function to transform API data to table format (contract-based)
+// Function to transform API data to table format (contract-based)
 function transformApiData(apiData: any[]): any[] {
   // Filter out "Finalizado" (6) and "Cancelado" (7) contracts
   const activeContracts = apiData.filter((contract) => {
@@ -42,6 +43,9 @@ function transformApiData(apiData: any[]): any[] {
       statusName !== "Cancelado"
     );
   });
+
+  const now = new Date();
+  const nowTime = now.getTime();
 
   return activeContracts
     .map((contract) => {
@@ -83,12 +87,17 @@ function transformApiData(apiData: any[]): any[] {
         scheduleTime = firstTrip.service_time;
       }
 
+      // Parse the service date
+      let serviceDateObj = null;
+      if (firstTrip.service_date) {
+        serviceDateObj = new Date(firstTrip.service_date);
+      }
+
       return {
         "ID Contrato": contract.contract_id,
         "Empresa O Cliente": formatPersonName(contract.client_name) || "",
         Fecha: formatDateStandard(firstTrip.service_date),
         Horario: scheduleTime,
-        Viajes: tripCount,
         Asignados: assignmentStatus,
         Monto: contract.amount ? `$${contract.amount.toLocaleString()}` : "",
         Estatus: contractStatus,
@@ -99,21 +108,31 @@ function transformApiData(apiData: any[]): any[] {
         // Store full contract object for details and modals
         _contractData: contract,
         _trips: trips,
-        // Store raw date for sorting
-        _sortDate: firstTrip.service_date
-          ? new Date(firstTrip.service_date)
-          : null,
+        // Store raw date and timestamp for sorting
+        _sortDate: serviceDateObj,
+        _sortTimestamp: serviceDateObj ? serviceDateObj.getTime() : null,
+        // Store absolute difference from current date for proximity sorting
+        _proximity: serviceDateObj
+          ? Math.abs(serviceDateObj.getTime() - nowTime)
+          : Number.MAX_SAFE_INTEGER,
       };
     })
     .sort((a, b) => {
-      // Sort by date and time (earliest first)
+      // Sort by proximity to current date (closest first)
+
+      // Handle cases where dates are missing
       if (!a._sortDate && !b._sortDate) return 0;
-      if (!a._sortDate) return 1;
+      if (!a._sortDate) return 1; // Items without dates go to the end
       if (!b._sortDate) return -1;
-      return a._sortDate.getTime() - b._sortDate.getTime();
+
+      // Calculate absolute difference from current date
+      const diffA = Math.abs(a._sortDate.getTime() - nowTime);
+      const diffB = Math.abs(b._sortDate.getTime() - nowTime);
+
+      // Sort by closest date first (smallest difference)
+      return diffA - diffB;
     });
 }
-
 export default function DashboardContent() {
   const router = useRouter();
   const { hasFullAccess, canCreateOrders, canAssignResources } = useUserRole();
@@ -212,7 +231,6 @@ export default function DashboardContent() {
     "Empresa O Cliente",
     "Fecha",
     "Horario",
-    "Viajes",
     "Asignados",
     "Monto",
     "Estatus",
@@ -352,7 +370,7 @@ export default function DashboardContent() {
         onPayDriver={canAssignResources ? handlePayDriver : undefined}
         actionButtons={
           canCreateOrders ? (
-            <div ref={dropdownRef} style={{ position: "relative" }}>
+            <div ref={dropdownRef} className={styles.buttonContainer}>
               <ButtonComponent
                 text="Crear Orden"
                 icon={

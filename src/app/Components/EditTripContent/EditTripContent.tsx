@@ -1100,12 +1100,6 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
               />
               <ButtonComponent
                 type="button"
-                onClick={handleSaveDraft}
-                text="Guardar borrador"
-                className={`${styles.button} ${styles.cancelButton}`}
-              />
-              <ButtonComponent
-                type="button"
                 onClick={handleUpdateTrip}
                 text="Guardar cambios"
                 className={`${styles.button} ${styles.createButton}`}

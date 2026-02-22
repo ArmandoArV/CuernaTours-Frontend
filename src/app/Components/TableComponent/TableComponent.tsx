@@ -21,6 +21,7 @@ import { TripCollection, TripData } from "@/app/Types/TripTypes";
 import DriverPaymentModal from "@/app/Components/DriverPaymentModal/DriverPaymentModal";
 import { useUserRole } from "@/app/hooks/useUserRole";
 import { contractsService } from "@/services/api/contracts.service";
+
 export type TableComponentProps = {
   data: Array<{ [key: string]: any }>;
   columns: string[];
@@ -52,6 +53,11 @@ export type TableComponentProps = {
   detailsFields?: string[];
   /** Optional custom fetch function: (id) => Promise<any> */
   fetchDetails?: (id: any) => Promise<any>;
+  // Sorting props
+  /** Field to sort by date proximity. If not provided, will auto-detect date fields */
+  sortByDateField?: string;
+  /** Sort direction for date proximity */
+  sortDirection?: "asc" | "desc";
 };
 
 const TableComponent: React.FC<TableComponentProps> = ({
@@ -81,6 +87,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
   prefetchDetails = false,
   detailsFields,
   fetchDetails,
+  // Sorting props
+  sortByDateField,
+  sortDirection = "asc",
 }) => {
   const router = useRouter();
   const { isChofer, isOficina, roleId, roleName } = useUserRole();
@@ -88,13 +97,13 @@ const TableComponent: React.FC<TableComponentProps> = ({
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [internalCurrentPage, setInternalCurrentPage] = useState(
-    currentPage || 1
+    currentPage || 1,
   );
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   // Selected row to show details for (shown below the table)
   const [selectedRow, setSelectedRow] = useState<{ [key: string]: any } | null>(
-    null
+    null,
   );
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
   const [selectedRowLoading, setSelectedRowLoading] = useState<boolean>(false);
@@ -136,6 +145,51 @@ const TableComponent: React.FC<TableComponentProps> = ({
         row[k] !== ""
       ) {
         return row[k];
+      }
+    }
+    return null;
+  };
+
+  // Helper function to parse travel date from a row
+  const parseTravelDate = (row: { [key: string]: any }): Date | null => {
+    // Common date field names in your data
+    const dateKeys = [
+      "travel_date",
+      "travelDate",
+      "fecha_viaje",
+      "fechaViaje",
+      "date",
+      "fecha",
+      "start_date",
+      "startDate",
+      "fecha_inicio",
+      "fechaInicio",
+      "departure_date",
+      "departureDate",
+      "fecha_salida",
+      "fechaSalida",
+      "trip_date",
+      "tripDate",
+      "fecha_viaje_programada",
+      "viaje_fecha",
+    ];
+
+    // If a specific sort field is provided, use that
+    if (sortByDateField && row[sortByDateField] !== undefined) {
+      const date = new Date(row[sortByDateField]);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    }
+
+    // Otherwise try to auto-detect date fields
+    for (const key of dateKeys) {
+      if (row[key] !== undefined && row[key] !== null && row[key] !== "") {
+        const date = new Date(row[key]);
+        // Check if date is valid
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
       }
     }
     return null;
@@ -195,19 +249,56 @@ const TableComponent: React.FC<TableComponentProps> = ({
     }
   }, [openDropdown]);
 
-  // Calculate pagination data
+  // Sort data by proximity to current date
+  // Sort data by proximity to current date with future dates prioritized
+  const sortedData = useMemo(() => {
+    if (!data || data.length === 0) return [];
+
+    const now = new Date();
+    const nowTime = now.getTime();
+
+    return [...data].sort((a, b) => {
+      const dateA = parseTravelDate(a);
+      const dateB = parseTravelDate(b);
+
+      // Handle cases where dates are missing
+      if (!dateA && !dateB) return 0;
+      if (!dateA) return 1;
+      if (!dateB) return -1;
+
+      const timeA = dateA.getTime();
+      const timeB = dateB.getTime();
+
+      const isFutureA = timeA >= nowTime;
+      const isFutureB = timeB >= nowTime;
+
+      // If one is future and one is past, future comes first
+      if (isFutureA && !isFutureB) return -1;
+      if (!isFutureA && isFutureB) return 1;
+
+      // If both are future, sort by closest first
+      if (isFutureA && isFutureB) {
+        return timeA - timeB;
+      }
+
+      // If both are past, sort by most recent first
+      return timeB - timeA;
+    });
+  }, [data, sortByDateField]);
+
+  // Calculate pagination data using sortedData
   const { paginatedData, totalPages } = useMemo(() => {
     if (!enablePagination) {
-      return { paginatedData: data, totalPages: 1 };
+      return { paginatedData: sortedData, totalPages: 1 };
     }
 
     const startIndex = (activePage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const paginatedData = data.slice(startIndex, endIndex);
-    const totalPages = Math.ceil(data.length / itemsPerPage);
+    const paginatedData = sortedData.slice(startIndex, endIndex);
+    const totalPages = Math.ceil(sortedData.length / itemsPerPage);
 
     return { paginatedData, totalPages };
-  }, [data, activePage, itemsPerPage, enablePagination]);
+  }, [sortedData, activePage, itemsPerPage, enablePagination]);
 
   // Prefetch details for visible rows when enabled
   useEffect(() => {
@@ -298,7 +389,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
   const handleRowClick = async (
     row: { [key: string]: any },
-    rowIndex: number
+    rowIndex: number,
   ) => {
     // Close dropdown on row click
     setOpenDropdown(null);
@@ -353,9 +444,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
           throw new Error("Invalid contract ID");
         }
 
-        const contractData = await contractsService.getContractDetails(
-          contractId
-        );
+        const contractData =
+          await contractsService.getContractDetails(contractId);
         setSelectedRow(contractData);
         onViewDetails && onViewDetails(contractData);
       } catch (err: any) {
@@ -636,4 +726,5 @@ const TableComponent: React.FC<TableComponentProps> = ({
     </div>
   );
 };
+
 export default TableComponent;

@@ -9,7 +9,6 @@
   border-collapse: collapse;
   margin: 16px 0;
   font-size: 14px;
-  background-color: white;
   border-radius: 8px;
   overflow: visible;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -20,6 +19,7 @@
   padding: 12px 16px;
   text-align: left;
   vertical-align: middle;
+  background-color: white;
 }
 
 .table tbody tr td:first-child {
@@ -77,6 +77,10 @@
 .table tbody tr {
   transition: background-color 0.2s ease;
   border-bottom: 8px solid #f8f9fa;
+}
+
+.table tbody tr:first-child {
+  border-top: 16px solid transparent;
 }
 
 .table tbody tr:hover {

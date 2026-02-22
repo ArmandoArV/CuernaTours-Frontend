@@ -1,5 +1,7 @@
 export interface OrderFormData {
   empresa: string;
+  empresaNombre?: string; // Nombre del cliente para mostrar
+  empresaTipo?: string; // Tipo de cliente (Corporativo, Individual, etc.)
   nombreContacto: string;
   primerApellido: string;
   segundoApellido: string;

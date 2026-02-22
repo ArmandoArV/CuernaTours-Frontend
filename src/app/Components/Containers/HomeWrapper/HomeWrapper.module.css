@@ -102,6 +102,7 @@
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
+  width: 104px;
   gap: 8px;
   transition: background-color 0.3s ease;
   font-family: var(--fontFamilyBase)

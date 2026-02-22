@@ -302,23 +302,40 @@ export default function CreateOrderContent() {
           setFormData(prev => ({
             ...prev,
             empresa: clientId,
+            empresaNombre: clientDetails.name || option.label,
+            empresaTipo: clientDetails.client_type_id?.toString() || '',
             ...contactData,
           }));
           setOriginalContactData(contactData);
           setIsEditingContact(false);
         } else {
-          setFormData(prev => ({ ...prev, empresa: clientId }));
+          setFormData(prev => ({ 
+            ...prev, 
+            empresa: clientId,
+            empresaNombre: clientDetails.name || option.label,
+            empresaTipo: clientDetails.client_type_id?.toString() || '',
+          }));
           setOriginalContactData(null);
           setIsEditingContact(false);
         }
       } catch (error) {
         console.error("Error fetching client details:", error);
-        setFormData(prev => ({ ...prev, empresa: clientId }));
+        setFormData(prev => ({ 
+          ...prev, 
+          empresa: clientId,
+          empresaNombre: option.label,
+          empresaTipo: '',
+        }));
         setOriginalContactData(null);
         setIsEditingContact(false);
       }
     } else {
-      setFormData(prev => ({ ...prev, empresa: clientId }));
+      setFormData(prev => ({ 
+        ...prev, 
+        empresa: clientId,
+        empresaNombre: option?.label || '',
+        empresaTipo: '',
+      }));
       setOriginalContactData(null);
       setIsEditingContact(false);
     }

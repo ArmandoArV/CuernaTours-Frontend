@@ -53,14 +53,14 @@ export default function ConfirmationModal({
               <div className={styles.infoItem}>
                 <div className={styles.summaryLabel}>Empresa/Cliente</div>
                 <div className={styles.summaryValue}>
-                  {orderData?.nombreContacto || "Nombre del contacto"}
+                  {orderData?.empresaTipo || "Tipo de cliente"}
                 </div>
               </div>
 
               <div className={styles.infoItem}>
                 <div className={styles.summaryLabel}>Nombre del contacto</div>
                 <div className={styles.summaryValue}>
-                  {orderData?.nombreContacto || "000 000 0000"}
+                  {orderData?.nombreContacto || "Nombre del contacto"}
                 </div>
               </div>
             </div>
