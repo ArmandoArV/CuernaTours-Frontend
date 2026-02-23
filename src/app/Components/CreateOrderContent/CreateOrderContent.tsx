@@ -3,17 +3,31 @@ import { useState, useCallback, useEffect } from "react";
 import styles from "./CreateOrderContent.module.css";
 import InputComponent from "../InputComponent/InputComponent";
 import SelectComponent from "../SelectComponent/SelectComponent";
-import SearchableSelectComponent, { SearchableSelectOption } from "../SearchableSelectComponent/SearchableSelectComponent";
+import SearchableSelectComponent, {
+  SearchableSelectOption,
+} from "../SearchableSelectComponent/SearchableSelectComponent";
 import CreateClientModal from "../CreateClientModal/CreateClientModal";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
-import { ArrowLeftFilled, Edit24Regular, Save24Regular } from "@fluentui/react-icons";
+import {
+  ArrowLeftFilled,
+  Edit24Regular,
+  Save24Regular,
+} from "@fluentui/react-icons";
 import Link from "next/link";
 import { showErrorAlert, showSuccessAlert } from "../../Utils/AlertUtil";
-import { OrderFormData, mapOrderFormToPayload } from "@/app/Types/OrderTripTypes";
+import {
+  OrderFormData,
+  mapOrderFormToPayload,
+} from "@/app/Types/OrderTripTypes";
 import { useOrderContext } from "@/app/Contexts/OrderContext";
 import { useRouter } from "next/navigation";
 import { referenceService, ApiError } from "@/services/api";
-import type { PrefillableData, ClientTypeReference, PaymentTypeReference } from "@/services/api/reference.service";
+import type {
+  PrefillableData,
+  ClientTypeReference,
+  PaymentTypeReference,
+} from "@/services/api/reference.service";
+import CountrySelect from "@/app/Components/CountrySelect/CountrySelect";
 export default function CreateOrderContent() {
   const { orderData, setOrderData, clearData } = useOrderContext();
   const router = useRouter();
@@ -23,7 +37,8 @@ export default function CreateOrderContent() {
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showErrors, setShowErrors] = useState(false);
-  const [prefillableData, setPrefillableData] = useState<PrefillableData | null>(null);
+  const [prefillableData, setPrefillableData] =
+    useState<PrefillableData | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isEditingContact, setIsEditingContact] = useState(false);
@@ -105,10 +120,7 @@ export default function CreateOrderContent() {
       !isValidEmail(formData.correoElectronico)
     ) {
       newErrors.correoElectronico = "El correo electrónico no es válido";
-      showErrorAlert(
-        "Email inválido",
-        "Ingrese un correo electrónico válido."
-      );
+      showErrorAlert("Email inválido", "Ingrese un correo electrónico válido.");
       setErrors(newErrors);
       setShowErrors(true);
       return false;
@@ -122,13 +134,13 @@ export default function CreateOrderContent() {
     const formatErrors = Object.keys(newErrors).filter(
       (key) =>
         newErrors[key].includes("número válido") ||
-        newErrors[key].includes("solo debe contener números")
+        newErrors[key].includes("solo debe contener números"),
     );
 
     if (formatErrors.length > 0) {
       showErrorAlert(
         "Formato incorrecto",
-        "Corrija los campos que contienen formato incorrecto."
+        "Corrija los campos que contienen formato incorrecto.",
       );
       return false;
     }
@@ -138,7 +150,7 @@ export default function CreateOrderContent() {
       const fieldsList = missingFields.join(", ");
       showErrorAlert(
         "Campos obligatorios faltantes",
-        `Complete los siguientes campos obligatorios: ${fieldsList}`
+        `Complete los siguientes campos obligatorios: ${fieldsList}`,
       );
       return false;
     }
@@ -233,7 +245,7 @@ export default function CreateOrderContent() {
       console.log("Saving form data to context:", formData);
       // Update context with current form data
       setOrderData(formData);
-      
+
       // Give a small delay to ensure context is updated
       setTimeout(() => {
         // Proceed to next step
@@ -255,7 +267,10 @@ export default function CreateOrderContent() {
     } catch (error) {
       console.error("Error fetching prefillable data:", error);
       if (error instanceof ApiError) {
-        showErrorAlert("Error", `No se pudieron cargar los datos: ${error.message}`);
+        showErrorAlert(
+          "Error",
+          `No se pudieron cargar los datos: ${error.message}`,
+        );
       }
       setPrefillableData(null);
     } finally {
@@ -263,10 +278,12 @@ export default function CreateOrderContent() {
     }
   }, []);
 
-  const handleClientSearch = async (query: string): Promise<SearchableSelectOption[]> => {
+  const handleClientSearch = async (
+    query: string,
+  ): Promise<SearchableSelectOption[]> => {
     try {
       const results = await referenceService.searchClients(query);
-      return results.map(client => ({
+      return results.map((client) => ({
         value: client.client_id.toString(),
         label: client.name,
         data: client,
@@ -277,64 +294,70 @@ export default function CreateOrderContent() {
     }
   };
 
-  const handleClientSelect = async (clientId: string, option?: SearchableSelectOption) => {
+  const handleClientSelect = async (
+    clientId: string,
+    option?: SearchableSelectOption,
+  ) => {
     console.log("handleClientSelect called with:", { clientId, option });
-    
+
     // Auto-fill contact information if available
     if (option?.data) {
       try {
         console.log("Fetching client details for ID:", clientId);
-        const clientDetails = await referenceService.getClientById(parseInt(clientId));
+        const clientDetails = await referenceService.getClientById(
+          parseInt(clientId),
+        );
         console.log("Client details received:", clientDetails);
-        
-        const primaryContact = clientDetails.primary_contact || clientDetails.contacts?.[0];
+
+        const primaryContact =
+          clientDetails.primary_contact || clientDetails.contacts?.[0];
         console.log("Primary contact:", primaryContact);
-        
+
         if (primaryContact) {
           const contactData = {
-            nombreContacto: primaryContact.name || '',
-            primerApellido: primaryContact.first_lastname || '',
-            segundoApellido: primaryContact.second_lastname || '',
-            telefono: primaryContact.phone || '',
-            correoElectronico: primaryContact.email || '',
-            tieneWhatsapp: primaryContact.is_whatsapp_available ? 'Si' : 'No',
+            nombreContacto: primaryContact.name || "",
+            primerApellido: primaryContact.first_lastname || "",
+            segundoApellido: primaryContact.second_lastname || "",
+            telefono: primaryContact.phone || "",
+            correoElectronico: primaryContact.email || "",
+            tieneWhatsapp: primaryContact.is_whatsapp_available ? "Si" : "No",
           };
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             empresa: clientId,
             empresaNombre: clientDetails.name || option.label,
-            empresaTipo: clientDetails.client_type_id?.toString() || '',
+            empresaTipo: clientDetails.client_type_id?.toString() || "",
             ...contactData,
           }));
           setOriginalContactData(contactData);
           setIsEditingContact(false);
         } else {
-          setFormData(prev => ({ 
-            ...prev, 
+          setFormData((prev) => ({
+            ...prev,
             empresa: clientId,
             empresaNombre: clientDetails.name || option.label,
-            empresaTipo: clientDetails.client_type_id?.toString() || '',
+            empresaTipo: clientDetails.client_type_id?.toString() || "",
           }));
           setOriginalContactData(null);
           setIsEditingContact(false);
         }
       } catch (error) {
         console.error("Error fetching client details:", error);
-        setFormData(prev => ({ 
-          ...prev, 
+        setFormData((prev) => ({
+          ...prev,
           empresa: clientId,
           empresaNombre: option.label,
-          empresaTipo: '',
+          empresaTipo: "",
         }));
         setOriginalContactData(null);
         setIsEditingContact(false);
       }
     } else {
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData((prev) => ({
+        ...prev,
         empresa: clientId,
-        empresaNombre: option?.label || '',
-        empresaTipo: '',
+        empresaNombre: option?.label || "",
+        empresaTipo: "",
       }));
       setOriginalContactData(null);
       setIsEditingContact(false);
@@ -355,7 +378,7 @@ export default function CreateOrderContent() {
     try {
       // Validate contact fields
       const contactErrors: { [key: string]: string } = {};
-      
+
       if (!formData.nombreContacto.trim()) {
         contactErrors.nombreContacto = "El nombre del contacto es obligatorio";
       }
@@ -365,7 +388,10 @@ export default function CreateOrderContent() {
       if (formData.telefono.trim() && !isValidPhone(formData.telefono)) {
         contactErrors.telefono = "El teléfono solo debe contener números";
       }
-      if (formData.correoElectronico.trim() && !isValidEmail(formData.correoElectronico)) {
+      if (
+        formData.correoElectronico.trim() &&
+        !isValidEmail(formData.correoElectronico)
+      ) {
         contactErrors.correoElectronico = "El correo electrónico no es válido";
       }
 
@@ -374,14 +400,14 @@ export default function CreateOrderContent() {
         setShowErrors(true);
         showErrorAlert(
           "Errores en datos de contacto",
-          "Por favor corrija los errores antes de guardar."
+          "Por favor corrija los errores antes de guardar.",
         );
         return;
       }
 
       // TODO: Implement backend endpoint to update contact
       // For now, just update the local state
-      
+
       // Update original data
       setOriginalContactData({
         nombreContacto: formData.nombreContacto,
@@ -391,21 +417,24 @@ export default function CreateOrderContent() {
         correoElectronico: formData.correoElectronico,
         tieneWhatsapp: formData.tieneWhatsapp,
       });
-      
+
       setIsEditingContact(false);
       showSuccessAlert(
         "Cambios guardados",
-        "Los cambios en los datos del contacto se han guardado localmente. Se actualizarán al crear el contrato."
+        "Los cambios en los datos del contacto se han guardado localmente. Se actualizarán al crear el contrato.",
       );
     } catch (error) {
       console.error("Error saving contact:", error);
-      showErrorAlert("Error", "No se pudieron guardar los cambios. Intente nuevamente.");
+      showErrorAlert(
+        "Error",
+        "No se pudieron guardar los cambios. Intente nuevamente.",
+      );
     }
   };
 
   const handleCancelEditContact = () => {
     if (originalContactData) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         ...originalContactData,
       }));
@@ -413,17 +442,21 @@ export default function CreateOrderContent() {
     setIsEditingContact(false);
   };
 
-  const handleClientCreated = (clientId: number, clientName: string, contactData?: any) => {
+  const handleClientCreated = (
+    clientId: number,
+    clientName: string,
+    contactData?: any,
+  ) => {
     // Auto-fill form with newly created client
     const contact = {
-      nombreContacto: contactData?.name || '',
-      primerApellido: contactData?.first_lastname || '',
-      segundoApellido: contactData?.second_lastname || '',
-      telefono: contactData?.phone || '',
-      correoElectronico: contactData?.email || '',
-      tieneWhatsapp: contactData?.is_whatsapp_available ? 'Si' : 'No',
+      nombreContacto: contactData?.name || "",
+      primerApellido: contactData?.first_lastname || "",
+      segundoApellido: contactData?.second_lastname || "",
+      telefono: contactData?.phone || "",
+      correoElectronico: contactData?.email || "",
+      tieneWhatsapp: contactData?.is_whatsapp_available ? "Si" : "No",
     };
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       empresa: clientId.toString(),
       ...contact,
@@ -437,11 +470,11 @@ export default function CreateOrderContent() {
     const initializeForm = async () => {
       // Clear any persisted data on initial mount
       clearData();
-      
+
       // Fetch prefillable data
       await fetchPrefillableData();
     };
-    
+
     initializeForm();
   }, []); // Empty dependency array - only run on mount
 
@@ -449,20 +482,24 @@ export default function CreateOrderContent() {
   useEffect(() => {
     if (prefillableData && !orderData.empresa) {
       // Only set defaults if form is empty (no empresa selected)
-      const porAsignarPaymentType = prefillableData.payment_types.find(
-        type => type.name.toLowerCase().includes('por asignar')
+      const porAsignarPaymentType = prefillableData.payment_types.find((type) =>
+        type.name.toLowerCase().includes("por asignar"),
       );
       const porAsignarCoordinator = prefillableData.coordinators?.find(
-        coord => coord.display_name?.toLowerCase().includes('por asignar')
+        (coord) => coord.display_name?.toLowerCase().includes("por asignar"),
       );
 
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        tieneWhatsapp: 'Si',
-        aplicaIva: 'Si',
-        llevaComision: 'No',
-        tipoPago: porAsignarPaymentType ? porAsignarPaymentType.payment_type_id.toString() : '',
-        coordinadorViaje: porAsignarCoordinator ? porAsignarCoordinator.user_id.toString() : '',
+        tieneWhatsapp: "Si",
+        aplicaIva: "Si",
+        llevaComision: "No",
+        tipoPago: porAsignarPaymentType
+          ? porAsignarPaymentType.payment_type_id.toString()
+          : "",
+        coordinadorViaje: porAsignarCoordinator
+          ? porAsignarCoordinator.user_id.toString()
+          : "",
       }));
     }
   }, [prefillableData, orderData.empresa]);
@@ -483,9 +520,8 @@ export default function CreateOrderContent() {
           </Link>
           <div>
             <h1 className={styles.title}>Crear contrato de orden</h1>
-            <p className={styles.subtitle} style={{color: "red"}}>
-              Campos obligatorios{" "}
-              <strong style={{ color: "red" }}>* </strong>
+            <p className={styles.subtitle} style={{ color: "red" }}>
+              Campos obligatorios <strong style={{ color: "red" }}>* </strong>
             </p>
           </div>
         </div>
@@ -604,18 +640,11 @@ export default function CreateOrderContent() {
           <div className={styles.row}>
             <div className={styles.col}>
               <div className={styles.phoneInputGroup}>
-                <SelectComponent
-                  label="Código"
-                  options={[
-                    { value: "+52", label: "+52 (MX)" },
-                    { value: "+1", label: "+1 (US/CA)" },
-                    { value: "+34", label: "+34 (ES)" },
-                    { value: "+44", label: "+44 (UK)" },
-                    { value: "+49", label: "+49 (DE)" },
-                    { value: "+33", label: "+33 (FR)" },
-                  ]}
+                <CountrySelect
                   value={formData.codigoPais || "+52"}
-                  onChange={(e) => setFormData({ ...formData, codigoPais: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, codigoPais: e.target.value })
+                  }
                   disabled={!isEditingContact}
                   className={styles.countryCodeSelect}
                 />
@@ -710,8 +739,10 @@ export default function CreateOrderContent() {
               onChange={handleSelectChange("tipoPago")}
               options={[
                 ...(prefillableData?.payment_types
-                  ? referenceService.transformPaymentTypesForSelect(prefillableData.payment_types)
-                  : [])
+                  ? referenceService.transformPaymentTypesForSelect(
+                      prefillableData.payment_types,
+                    )
+                  : []),
               ]}
               label="Tipo de pago"
               placeholder="Seleccione..."
@@ -873,12 +904,16 @@ export default function CreateOrderContent() {
                         onChange={(e) => {
                           const percentage = e.target.value;
                           const tripCost = parseFloat(formData.costoViaje) || 0;
-                          const calculatedAmount = tripCost * (parseFloat(percentage) / 100);
-                          
+                          const calculatedAmount =
+                            tripCost * (parseFloat(percentage) / 100);
+
                           setFormData((prev) => ({
                             ...prev,
                             porcentaje: percentage,
-                            montoArreglado: calculatedAmount > 0 ? calculatedAmount.toFixed(2) : "",
+                            montoArreglado:
+                              calculatedAmount > 0
+                                ? calculatedAmount.toFixed(2)
+                                : "",
                           }));
                         }}
                         options={[
@@ -890,11 +925,15 @@ export default function CreateOrderContent() {
                         label="Porcentaje (%)"
                         placeholder="Seleccione..."
                         className={`${styles.select} ${
-                          showErrors && errors.porcentaje ? styles.selectError : ""
+                          showErrors && errors.porcentaje
+                            ? styles.selectError
+                            : ""
                         }`}
                       />
                       {showErrors && errors.porcentaje && (
-                        <p className={styles.errorMessage}>{errors.porcentaje}</p>
+                        <p className={styles.errorMessage}>
+                          {errors.porcentaje}
+                        </p>
                       )}
                     </div>
                     <div className={styles.col}>
@@ -950,11 +989,11 @@ export default function CreateOrderContent() {
               options={[
                 { value: "POR_ASIGNAR", label: "Por asignar" },
                 ...(prefillableData?.coordinators
-                  ? prefillableData.coordinators.map(coord => ({
+                  ? prefillableData.coordinators.map((coord) => ({
                       value: coord.user_id.toString(),
                       label: coord.display_name,
                     }))
-                  : [])
+                  : []),
               ]}
               label="Chofer programado"
               placeholder="Seleccione..."
@@ -964,9 +1003,7 @@ export default function CreateOrderContent() {
 
           <div className={styles.section}>
             <div className={styles.textareaContainer}>
-              <label className={styles.textareaLabel}>
-                Observaciones
-              </label>
+              <label className={styles.textareaLabel}>Observaciones</label>
               <textarea
                 value={formData.observacionesInternas}
                 onChange={(e) =>

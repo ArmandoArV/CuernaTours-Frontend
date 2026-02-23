@@ -7,7 +7,11 @@ import SearchableSelectComponent, {
   SearchableSelectOption,
 } from "../SearchableSelectComponent/SearchableSelectComponent";
 import CreateClientModal from "../CreateClientModal/CreateClientModal";
-import { ArrowHookUpLeftRegular, Edit24Regular, Save24Regular } from "@fluentui/react-icons";
+import {
+  ArrowHookUpLeftRegular,
+  Edit24Regular,
+  Save24Regular,
+} from "@fluentui/react-icons";
 import Link from "next/link";
 import { showErrorAlert, showSuccessAlert } from "../../Utils/AlertUtil";
 import { OrderFormData } from "@/app/Types/OrderTripTypes";
@@ -19,6 +23,7 @@ import {
   ContractWithDetails,
 } from "@/services/api/contracts.service";
 import type { PrefillableData } from "@/services/api/reference.service";
+import CountrySelect from "@/app/Components/CountrySelect/CountrySelect";
 
 interface EditOrderContentProps {
   contractId: string;
@@ -59,7 +64,7 @@ export default function EditOrderContent({
       try {
         setIsLoadingContract(true);
         const contractData = await contractsService.getContractDetails(
-          parseInt(contractId)
+          parseInt(contractId),
         );
         setContract(contractData);
 
@@ -78,7 +83,7 @@ export default function EditOrderContent({
         if (contractData.client_id) {
           try {
             const clientDetails = await referenceService.getClientById(
-              contractData.client_id
+              contractData.client_id,
             );
             const primaryContact =
               clientDetails.primary_contact || clientDetails.contacts?.[0];
@@ -112,11 +117,11 @@ export default function EditOrderContent({
       } catch (err: any) {
         console.error("Error fetching contract:", err);
         setContractError(
-          err?.message || "Error al cargar los datos del contrato"
+          err?.message || "Error al cargar los datos del contrato",
         );
         showErrorAlert(
           "Error",
-          "No se pudo cargar la información del contrato"
+          "No se pudo cargar la información del contrato",
         );
       } finally {
         setIsLoadingContract(false);
@@ -189,10 +194,7 @@ export default function EditOrderContent({
       !isValidEmail(formData.correoElectronico)
     ) {
       newErrors.correoElectronico = "El correo electrónico no es válido";
-      showErrorAlert(
-        "Email inválido",
-        "Ingrese un correo electrónico válido."
-      );
+      showErrorAlert("Email inválido", "Ingrese un correo electrónico válido.");
       setErrors(newErrors);
       setShowErrors(true);
       return false;
@@ -206,13 +208,13 @@ export default function EditOrderContent({
     const formatErrors = Object.keys(newErrors).filter(
       (key) =>
         newErrors[key].includes("número válido") ||
-        newErrors[key].includes("solo debe contener números")
+        newErrors[key].includes("solo debe contener números"),
     );
 
     if (formatErrors.length > 0) {
       showErrorAlert(
         "Formato incorrecto",
-        "Corrija los campos que contienen formato incorrecto."
+        "Corrija los campos que contienen formato incorrecto.",
       );
       return false;
     }
@@ -222,7 +224,7 @@ export default function EditOrderContent({
       const fieldsList = missingFields.join(", ");
       showErrorAlert(
         "Campos obligatorios faltantes",
-        `Complete los siguientes campos obligatorios: ${fieldsList}`
+        `Complete los siguientes campos obligatorios: ${fieldsList}`,
       );
       return false;
     }
@@ -340,7 +342,7 @@ export default function EditOrderContent({
       if (error instanceof ApiError) {
         showErrorAlert(
           "Error",
-          `No se pudieron cargar los datos: ${error.message}`
+          `No se pudieron cargar los datos: ${error.message}`,
         );
       }
       setPrefillableData(null);
@@ -350,7 +352,7 @@ export default function EditOrderContent({
   }, []);
 
   const handleClientSearch = async (
-    query: string
+    query: string,
   ): Promise<SearchableSelectOption[]> => {
     try {
       const results = await referenceService.searchClients(query);
@@ -367,7 +369,7 @@ export default function EditOrderContent({
 
   const handleClientSelect = async (
     clientId: string,
-    option?: SearchableSelectOption
+    option?: SearchableSelectOption,
   ) => {
     console.log("handleClientSelect called with:", { clientId, option });
 
@@ -376,7 +378,7 @@ export default function EditOrderContent({
       try {
         console.log("Fetching client details for ID:", clientId);
         const clientDetails = await referenceService.getClientById(
-          parseInt(clientId)
+          parseInt(clientId),
         );
         console.log("Client details received:", clientDetails);
 
@@ -397,7 +399,10 @@ export default function EditOrderContent({
             ...prev,
             empresa: clientId,
             empresaNombre: clientDetails.name || option.label,
-            empresaTipo: clientDetails.client_type_name || "",
+            empresaTipo:
+              prefillableData?.client_types?.find(
+                (type) => type.client_type_id === clientDetails.client_type_id,
+              )?.name || "",
             ...contactData,
           }));
           setOriginalContactData(contactData);
@@ -407,7 +412,10 @@ export default function EditOrderContent({
             ...prev,
             empresa: clientId,
             empresaNombre: clientDetails.name || option.label,
-            empresaTipo: clientDetails.client_type_name || "",
+            empresaTipo:
+              prefillableData?.client_types?.find(
+                (type) => type.client_type_id === clientDetails.client_type_id,
+              )?.name || "",
           }));
           setOriginalContactData(null);
           setIsEditingContact(false);
@@ -452,7 +460,10 @@ export default function EditOrderContent({
       if (formData.telefono.trim() && !isValidPhone(formData.telefono)) {
         contactErrors.telefono = "El teléfono solo debe contener números";
       }
-      if (formData.correoElectronico.trim() && !isValidEmail(formData.correoElectronico)) {
+      if (
+        formData.correoElectronico.trim() &&
+        !isValidEmail(formData.correoElectronico)
+      ) {
         contactErrors.correoElectronico = "El correo electrónico no es válido";
       }
 
@@ -461,7 +472,7 @@ export default function EditOrderContent({
         setShowErrors(true);
         showErrorAlert(
           "Errores en datos de contacto",
-          "Por favor corrija los errores antes de guardar."
+          "Por favor corrija los errores antes de guardar.",
         );
         return;
       }
@@ -476,21 +487,24 @@ export default function EditOrderContent({
         tieneWhatsapp: formData.tieneWhatsapp,
         codigoPais: formData.codigoPais,
       });
-      
+
       setIsEditingContact(false);
       showSuccessAlert(
         "Cambios guardados",
-        "Los cambios en los datos del contacto se han guardado localmente. Se actualizarán al guardar el contrato."
+        "Los cambios en los datos del contacto se han guardado localmente. Se actualizarán al guardar el contrato.",
       );
     } catch (error) {
       console.error("Error saving contact:", error);
-      showErrorAlert("Error", "No se pudieron guardar los cambios. Intente nuevamente.");
+      showErrorAlert(
+        "Error",
+        "No se pudieron guardar los cambios. Intente nuevamente.",
+      );
     }
   };
 
   const handleCancelEditContact = () => {
     if (originalContactData) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         ...originalContactData,
       }));
@@ -505,7 +519,7 @@ export default function EditOrderContent({
   const handleClientCreated = (
     clientId: number,
     clientName: string,
-    contactData?: any
+    contactData?: any,
   ) => {
     // Auto-fill form with newly created client
     const contact = {
@@ -593,8 +607,7 @@ export default function EditOrderContent({
               Editar contrato de orden #{contractId}
             </h1>
             <p className={styles.subtitle} style={{ color: "red" }}>
-              Campos obligatorios{" "}
-              <strong style={{ color: "red" }}>* </strong>
+              Campos obligatorios <strong style={{ color: "red" }}>* </strong>
             </p>
           </div>
         </div>
@@ -713,18 +726,11 @@ export default function EditOrderContent({
           <div className={styles.row}>
             <div className={styles.col}>
               <div className={styles.phoneInputGroup}>
-                <SelectComponent
-                  label="Código"
-                  options={[
-                    { value: "+52", label: "+52 (MX)" },
-                    { value: "+1", label: "+1 (US/CA)" },
-                    { value: "+34", label: "+34 (ES)" },
-                    { value: "+44", label: "+44 (UK)" },
-                    { value: "+49", label: "+49 (DE)" },
-                    { value: "+33", label: "+33 (FR)" },
-                  ]}
+                <CountrySelect
                   value={formData.codigoPais || "+52"}
-                  onChange={(e) => setFormData({ ...formData, codigoPais: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                    setFormData({ ...formData, codigoPais: e.target.value })
+                  }
                   disabled={!isEditingContact}
                   className={styles.countryCodeSelect}
                 />
@@ -820,9 +826,9 @@ export default function EditOrderContent({
               options={[
                 ...(prefillableData?.payment_types
                   ? referenceService.transformPaymentTypesForSelect(
-                      prefillableData.payment_types
+                      prefillableData.payment_types,
                     )
-                  : [])
+                  : []),
               ]}
               label="Tipo de pago"
               placeholder="Seleccione..."
@@ -1031,7 +1037,7 @@ export default function EditOrderContent({
                       value: coord.user_id.toString(),
                       label: coord.display_name,
                     }))
-                  : [])
+                  : []),
               ]}
               label="Coordinador del viaje"
               placeholder="Seleccione..."
@@ -1041,9 +1047,7 @@ export default function EditOrderContent({
 
           <div className={styles.section}>
             <div className={styles.textareaContainer}>
-              <label className={styles.textareaLabel}>
-                Observaciones
-              </label>
+              <label className={styles.textareaLabel}>Observaciones</label>
               <textarea
                 value={formData.observacionesInternas}
                 onChange={(e) =>

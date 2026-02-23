@@ -1,0 +1,290 @@
+[
+  {
+    "value": "+52",
+    "code": "MX",
+    "flag": "🇲🇽",
+    "name": "Mexico"
+  },
+  {
+    "value": "+1",
+    "code": "US",
+    "flag": "🇺🇸",
+    "name": "United States"
+  },
+  {
+    "value": "+1",
+    "code": "CA",
+    "flag": "🇨🇦",
+    "name": "Canada"
+  },
+  {
+    "value": "+34",
+    "code": "ES",
+    "flag": "🇪🇸",
+    "name": "Spain"
+  },
+  {
+    "value": "+44",
+    "code": "GB",
+    "flag": "🇬🇧",
+    "name": "United Kingdom"
+  },
+  {
+    "value": "+49",
+    "code": "DE",
+    "flag": "🇩🇪",
+    "name": "Germany"
+  },
+  {
+    "value": "+33",
+    "code": "FR",
+    "flag": "🇫🇷",
+    "name": "France"
+  },
+  {
+    "value": "+39",
+    "code": "IT",
+    "flag": "🇮🇹",
+    "name": "Italy"
+  },
+  {
+    "value": "+55",
+    "code": "BR",
+    "flag": "🇧🇷",
+    "name": "Brazil"
+  },
+  {
+    "value": "+54",
+    "code": "AR",
+    "flag": "🇦🇷",
+    "name": "Argentina"
+  },
+  {
+    "value": "+56",
+    "code": "CL",
+    "flag": "🇨🇱",
+    "name": "Chile"
+  },
+  {
+    "value": "+57",
+    "code": "CO",
+    "flag": "🇨🇴",
+    "name": "Colombia"
+  },
+  {
+    "value": "+51",
+    "code": "PE",
+    "flag": "🇵🇪",
+    "name": "Peru"
+  },
+  {
+    "value": "+593",
+    "code": "EC",
+    "flag": "🇪🇨",
+    "name": "Ecuador"
+  },
+  {
+    "value": "+58",
+    "code": "VE",
+    "flag": "🇻🇪",
+    "name": "Venezuela"
+  },
+  {
+    "value": "+598",
+    "code": "UY",
+    "flag": "🇺🇾",
+    "name": "Uruguay"
+  },
+  {
+    "value": "+595",
+    "code": "PY",
+    "flag": "🇵🇾",
+    "name": "Paraguay"
+  },
+  {
+    "value": "+591",
+    "code": "BO",
+    "flag": "🇧🇴",
+    "name": "Bolivia"
+  },
+  {
+    "value": "+507",
+    "code": "PA",
+    "flag": "🇵🇦",
+    "name": "Panama"
+  },
+  {
+    "value": "+506",
+    "code": "CR",
+    "flag": "🇨🇷",
+    "name": "Costa Rica"
+  },
+  {
+    "value": "+505",
+    "code": "NI",
+    "flag": "🇳🇮",
+    "name": "Nicaragua"
+  },
+  {
+    "value": "+504",
+    "code": "HN",
+    "flag": "🇭🇳",
+    "name": "Honduras"
+  },
+  {
+    "value": "+503",
+    "code": "SV",
+    "flag": "🇸🇻",
+    "name": "El Salvador"
+  },
+  {
+    "value": "+502",
+    "code": "GT",
+    "flag": "🇬🇹",
+    "name": "Guatemala"
+  },
+  {
+    "value": "+501",
+    "code": "BZ",
+    "flag": "🇧🇿",
+    "name": "Belize"
+  },
+  {
+    "value": "+509",
+    "code": "HT",
+    "flag": "🇭🇹",
+    "name": "Haiti"
+  },
+  {
+    "value": "+1",
+    "code": "DO",
+    "flag": "🇩🇴",
+    "name": "Dominican Republic"
+  },
+  {
+    "value": "+53",
+    "code": "CU",
+    "flag": "🇨🇺",
+    "name": "Cuba"
+  },
+  {
+    "value": "+86",
+    "code": "CN",
+    "flag": "🇨🇳",
+    "name": "China"
+  },
+  {
+    "value": "+91",
+    "code": "IN",
+    "flag": "🇮🇳",
+    "name": "India"
+  },
+  {
+    "value": "+81",
+    "code": "JP",
+    "flag": "🇯🇵",
+    "name": "Japan"
+  },
+  {
+    "value": "+82",
+    "code": "KR",
+    "flag": "🇰🇷",
+    "name": "South Korea"
+  },
+  {
+    "value": "+65",
+    "code": "SG",
+    "flag": "🇸🇬",
+    "name": "Singapore"
+  },
+  {
+    "value": "+61",
+    "code": "AU",
+    "flag": "🇦🇺",
+    "name": "Australia"
+  },
+  {
+    "value": "+64",
+    "code": "NZ",
+    "flag": "🇳🇿",
+    "name": "New Zealand"
+  },
+  {
+    "value": "+7",
+    "code": "RU",
+    "flag": "🇷🇺",
+    "name": "Russia"
+  },
+  {
+    "value": "+48",
+    "code": "PL",
+    "flag": "🇵🇱",
+    "name": "Poland"
+  },
+  {
+    "value": "+420",
+    "code": "CZ",
+    "flag": "🇨🇿",
+    "name": "Czech Republic"
+  },
+  {
+    "value": "+36",
+    "code": "HU",
+    "flag": "🇭🇺",
+    "name": "Hungary"
+  },
+  {
+    "value": "+30",
+    "code": "GR",
+    "flag": "🇬🇷",
+    "name": "Greece"
+  },
+  {
+    "value": "+90",
+    "code": "TR",
+    "flag": "🇹🇷",
+    "name": "Turkey"
+  },
+  {
+    "value": "+972",
+    "code": "IL",
+    "flag": "🇮🇱",
+    "name": "Israel"
+  },
+  {
+    "value": "+966",
+    "code": "SA",
+    "flag": "🇸🇦",
+    "name": "Saudi Arabia"
+  },
+  {
+    "value": "+971",
+    "code": "AE",
+    "flag": "🇦🇪",
+    "name": "UAE"
+  },
+  {
+    "value": "+20",
+    "code": "EG",
+    "flag": "🇪🇬",
+    "name": "Egypt"
+  },
+  {
+    "value": "+27",
+    "code": "ZA",
+    "flag": "🇿🇦",
+    "name": "South Africa"
+  },
+  {
+    "value": "+234",
+    "code": "NG",
+    "flag": "🇳🇬",
+    "name": "Nigeria"
+  },
+  {
+    "value": "+254",
+    "code": "KE",
+    "flag": "🇰🇪",
+    "name": "Kenya"
+  }
+]

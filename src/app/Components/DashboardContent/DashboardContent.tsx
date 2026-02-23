@@ -370,7 +370,7 @@ export default function DashboardContent() {
         onPayDriver={canAssignResources ? handlePayDriver : undefined}
         actionButtons={
           canCreateOrders ? (
-            <div ref={dropdownRef} className={styles.buttonContainer}>
+            <div ref={dropdownRef} style={{ position: "relative" }}>
               <ButtonComponent
                 text="Crear Orden"
                 icon={
