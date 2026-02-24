@@ -1,5 +1,5 @@
 // Contract-related interfaces and classes
-import { TripData, Trip, TripCollection } from './TripTypes';
+import { TripData, Trip, TripCollection } from "./TripTypes";
 
 export interface ContractStatus {
   id: number;
@@ -96,11 +96,11 @@ export class Contract {
   }
 
   get observations(): string {
-    return this._data.observations || '';
+    return this._data.observations || "";
   }
 
   get internalObservations(): string {
-    return this._data.internal_observations || '';
+    return this._data.internal_observations || "";
   }
 
   get coordinatorId(): number {
@@ -132,7 +132,7 @@ export class Contract {
     return {
       id: this._data.client_id,
       name: this._data.client_name,
-      type_name: this._data.client_type_name
+      type_name: this._data.client_type_name,
     };
   }
 
@@ -148,14 +148,14 @@ export class Contract {
   get contractStatus(): ContractStatus {
     return {
       id: this._data.contract_status_id,
-      name: this._data.contract_status_name
+      name: this._data.contract_status_name,
     };
   }
 
   get paymentType(): PaymentType {
     return {
       id: this._data.payment_type_id,
-      name: this._data.payment_type_name
+      name: this._data.payment_type_name,
     };
   }
 
@@ -176,7 +176,7 @@ export class Contract {
     return {
       id: this._data.coordinator_id,
       name: this._data.coordinator_name,
-      lastname: this._data.coordinator_lastname
+      lastname: this._data.coordinator_lastname,
     };
   }
 
@@ -197,7 +197,7 @@ export class Contract {
     return {
       id: this._data.creator_id,
       name: this._data.creator_name,
-      lastname: this._data.creator_lastname
+      lastname: this._data.creator_lastname,
     };
   }
 
@@ -242,11 +242,11 @@ export class Contract {
 
   // Status checks
   get isPaid(): boolean {
-    return this._data.payment_status.toLowerCase() === 'paid';
+    return (this._data.payment_status ?? "").toLowerCase() === "paid";
   }
 
   get isFinished(): boolean {
-    return this._data.contract_status_name.toLowerCase() === 'finalizado';
+    return this._data.contract_status_name.toLowerCase() === "finalizado";
   }
 
   get isActive(): boolean {
@@ -294,23 +294,23 @@ export class Contract {
 
   // Utility methods
   get formattedAmount(): string {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN'
+    return new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: "MXN",
     }).format(this._data.amount);
   }
 
   get formattedTotalWithIVA(): string {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN'
+    return new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: "MXN",
     }).format(this.totalWithIVA);
   }
 
   get formattedIVA(): string {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN'
+    return new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: "MXN",
     }).format(this._data.IVA);
   }
 
@@ -376,19 +376,23 @@ export class Contract {
 export class ContractService {
   static fromApiResponse(response: ContractResponse): Contract {
     if (!response.success) {
-      throw new Error('Invalid contract response');
+      throw new Error("Invalid contract response");
     }
     return new Contract(response.data);
   }
 
-  static async fetchContract(contractId: number, baseUrl: string, token: string): Promise<Contract> {
+  static async fetchContract(
+    contractId: number,
+    baseUrl: string,
+    token: string,
+  ): Promise<Contract> {
     try {
       const response = await fetch(`${baseUrl}/contracts/${contractId}`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
@@ -398,7 +402,7 @@ export class ContractService {
       const data: ContractResponse = await response.json();
       return ContractService.fromApiResponse(data);
     } catch (error) {
-      console.error('Error fetching contract:', error);
+      console.error("Error fetching contract:", error);
       throw error;
     }
   }
@@ -406,10 +410,10 @@ export class ContractService {
 
 // Payment status constants
 export const PAYMENT_STATUS = {
-  PAID: 'paid',
-  PENDING: 'pending',
-  CANCELLED: 'cancelled',
-  REFUNDED: 'refunded'
+  PAID: "paid",
+  PENDING: "pending",
+  CANCELLED: "cancelled",
+  REFUNDED: "refunded",
 } as const;
 
 // Contract status constants (you may need to adjust these based on your actual status IDs)
@@ -419,8 +423,10 @@ export const CONTRACT_STATUS = {
   IN_PROGRESS: 3,
   COMPLETED: 4,
   CANCELLED: 5,
-  FINISHED: 6
+  FINISHED: 6,
 } as const;
 
-export type PaymentStatusType = typeof PAYMENT_STATUS[keyof typeof PAYMENT_STATUS];
-export type ContractStatusType = typeof CONTRACT_STATUS[keyof typeof CONTRACT_STATUS];
+export type PaymentStatusType =
+  (typeof PAYMENT_STATUS)[keyof typeof PAYMENT_STATUS];
+export type ContractStatusType =
+  (typeof CONTRACT_STATUS)[keyof typeof CONTRACT_STATUS];

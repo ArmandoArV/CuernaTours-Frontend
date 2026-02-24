@@ -7,7 +7,7 @@ import ButtonComponent from "@/app/Components/ButtonComponent/ButtonComponent";
 import { useUserRole } from "@/app/hooks/useUserRole";
 import AssignDriverModal from "@/app/Components/AssignDriverModal/AssignDriverModal";
 import DriverPaymentModal from "@/app/Components/DriverPaymentModal/DriverPaymentModal";
-import DetailsPanel from "@/app/Components/DetailsPanel/DetailsPanel";
+import ContractDetailsPanel from "@/app/Components/ContractDetailsPanel/ContractDetailsPanel";
 import {
   ArrowLeftRegular,
   Edit24Regular,
@@ -17,6 +17,7 @@ import {
   MoreVerticalFilled,
 } from "@fluentui/react-icons";
 import styles from "./TripsContent.module.css";
+import { Contract } from "@/app/Types/ContractTypes";
 
 // Status mapping
 const STATUS_MAP: Record<number, string> = {
@@ -92,14 +93,15 @@ export default function TripsContent({ contractId }: TripsContentProps) {
       try {
         setLoading(true);
         const data = await contractsService.getContractDetails(
-          Number(contractId)
+          Number(contractId),
         );
         setContractData(data);
         setError(null);
+        console.log("Fetched contract data:", data);
       } catch (err) {
         console.error("Error fetching contract data:", err);
         setError(
-          err instanceof Error ? err.message : "Error al cargar los datos"
+          err instanceof Error ? err.message : "Error al cargar los datos",
         );
       } finally {
         setLoading(false);
@@ -129,7 +131,7 @@ export default function TripsContent({ contractId }: TripsContentProps) {
     // Refresh contract data
     try {
       const data = await contractsService.getContractDetails(
-        Number(contractId)
+        Number(contractId),
       );
       setContractData(data);
     } catch (err) {
@@ -141,7 +143,7 @@ export default function TripsContent({ contractId }: TripsContentProps) {
 
   const toggleTripDetails = (tripId: number) => {
     setShowDetailsPanelForTrip(
-      showDetailsPanelForTrip === tripId ? null : tripId
+      showDetailsPanelForTrip === tripId ? null : tripId,
     );
   };
 
@@ -210,184 +212,7 @@ export default function TripsContent({ contractId }: TripsContentProps) {
         />
         <h1 className={styles.title}>Orden #{contractId}</h1>
       </div>
-
-      {/* Contract Summary */}
-      <div className={styles.contractSummary}>
-        <div className={styles.summaryRow}>
-          <div className={styles.summaryItem}>
-            <span className={styles.summaryLabel}>Cliente:</span>
-            <span className={styles.summaryValue}>
-              {contractData?.client_name}
-            </span>
-          </div>
-          <div className={styles.summaryItem}>
-            <span className={styles.summaryLabel}>Estatus:</span>
-            <span
-              className={styles.statusPill}
-              style={{
-                backgroundColor: `${STATUS_COLORS[contractStatus]}20`,
-                color: STATUS_COLORS[contractStatus],
-              }}
-            >
-              {contractStatus}
-            </span>
-          </div>
-          <div className={styles.summaryItem}>
-            <span className={styles.summaryLabel}>Estado de Pago:</span>
-            <span
-              className={styles.statusPill}
-              style={{
-                backgroundColor: contractData?.payment_status === 'paid' ? '#107C1020' : '#D1343820',
-                color: contractData?.payment_status === 'paid' ? '#107C10' : '#D13438',
-              }}
-            >
-              {contractData?.payment_status === 'paid' ? 'Pagado' : 'Pendiente de pago'}
-            </span>
-          </div>
-          <div className={styles.summaryItem}>
-            <span className={styles.summaryLabel}>Monto:</span>
-            <span className={styles.summaryValue}>
-              ${contractData?.amount?.toLocaleString()}
-            </span>
-          </div>
-          <div className={styles.summaryItem}>
-            <span className={styles.summaryLabel}>Total de Viajes:</span>
-            <span className={styles.summaryValue}>{trips.length}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Trips List */}
-      <div className={styles.tripsContainer}>
-        {trips.length === 0 ? (
-          <div className={styles.emptyMessage}>
-            No hay viajes registrados para este contrato
-          </div>
-        ) : (
-          trips.map((trip: any, index: number) => {
-            const tripId = trip.trip_id || trip.contract_trip_id;
-            const isExpanded = expandedTrip === tripId;
-            const tripStatus =
-              STATUS_MAP[trip.contract_trip_status_id] ||
-              trip.status?.name ||
-              "";
-
-            return (
-              <div key={tripId} className={styles.tripCard}>
-                <div className={styles.tripHeader}>
-                  <div className={styles.tripInfo}>
-                    <h3 className={styles.tripTitle}>Viaje #{index + 1}</h3>
-                    <div className={styles.tripMeta}>
-                      <span className={styles.tripDate}>
-                        {trip.service_date
-                          ? new Date(trip.service_date).toLocaleDateString(
-                              "es-MX",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              }
-                            )
-                          : "Fecha no disponible"}
-                      </span>
-                      {trip.unit_type && (
-                        <span className={styles.vehicleType}>
-                          🚐 {trip.unit_type}
-                        </span>
-                      )}
-                      {tripStatus && (
-                        <span
-                          className={styles.statusPill}
-                          style={{
-                            backgroundColor: `${STATUS_COLORS[tripStatus]}20`,
-                            color: STATUS_COLORS[tripStatus],
-                          }}
-                        >
-                          {tripStatus}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className={styles.tripActions}>
-                    <ButtonComponent
-                      text=""
-                      icon={<EyeFilled />}
-                      onClick={() => toggleTripDetails(tripId)}
-                      className={styles.actionButton}
-                    />
-                    <div className={styles.dropdownContainer}>
-                      <ButtonComponent
-                        icon={<MoreVerticalFilled />}
-                        text=""
-                        onClick={(e) => e && handleDropdownClick(e, index)}
-                        className={styles.moreActionsButton}
-                      />
-                      {openDropdown === index && (
-                        <div
-                          className={styles.dropdownMenu}
-                          style={{
-                            position: "fixed",
-                            top: dropdownPosition.top,
-                            left: dropdownPosition.left,
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <ButtonComponent
-                            text="Editar Orden"
-                            icon={<Edit24Regular />}
-                            onClick={(e) => {
-                              e?.stopPropagation();
-                              handleEditTrip(tripId);
-                              setOpenDropdown(null);
-                            }}
-                            className={styles.dropdownItem}
-                          />
-                          {canAssignResources && (
-                            <ButtonComponent
-                              text="Asignar Chofer"
-                              icon={<PersonSettingsRegular />}
-                              onClick={(e) => {
-                                e?.stopPropagation();
-                                handleAssignDriver(trip);
-                                setOpenDropdown(null);
-                              }}
-                              className={styles.dropdownItem}
-                            />
-                          )}
-                          {isChofer && (
-                            <ButtonComponent
-                              text="Pagar a Chofer"
-                              icon={<MoneyHandRegular />}
-                              onClick={(e) => {
-                                e?.stopPropagation();
-                                handlePayDriver(trip);
-                                setOpenDropdown(null);
-                              }}
-                              className={styles.dropdownItem}
-                            />
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {showDetailsPanelForTrip === tripId && (
-                  <div className={styles.detailsPanelContainer}>
-                    <DetailsPanel
-                      data={contractData}
-                      onClose={() => setShowDetailsPanelForTrip(null)}
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })
-        )}
-      </div>
-
-      {/* Modals */}
+      <ContractDetailsPanel contract={new Contract(contractData)} />
       <AssignDriverModal
         isOpen={isAssignDriverModalOpen}
         onClose={() => {

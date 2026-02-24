@@ -329,6 +329,119 @@
   padding: 20px;
 }
 
+.detailsWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* MAIN CARD */
+
+.contractCard {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.contractGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem 2rem;
+}
+
+.label {
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.value {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+  margin-top: 0.25rem;
+}
+
+/* SERVICES SECTION */
+
+.servicesSection {
+  display: grid;
+  grid-template-columns: 200px 1fr 1.5fr;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.servicesLeft {
+  background: #f4f4f4;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.serviceTab {
+  background: transparent;
+  border: none;
+  padding: 0.75rem;
+  text-align: left;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.activeTab {
+  background: #1a2e47;
+  color: white;
+}
+
+.servicesMiddle {
+  padding: 1.5rem;
+  border-left: 1px solid #eee;
+  border-right: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.placeItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.placeNumber {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #1a2e47;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.placeName {
+  font-weight: 500;
+}
+
+.servicesRight {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.servicesRight p {
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 0.5rem;
+}
+
 .modalContent {
   background: white;
   border-radius: 12px;

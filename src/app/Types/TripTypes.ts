@@ -43,7 +43,7 @@ export interface TripData {
   origin: Location;
   destination: Location;
   vehicle: Vehicle;
-  driver: Driver;
+  driver: Driver | null;
   flight?: Flight;
   driver_accepted?: boolean | null;
   notes?: string;
@@ -52,11 +52,17 @@ export interface TripData {
 
 export class Trip {
   private _data: TripData;
-
   constructor(tripData: TripData) {
-    this._data = tripData;
+    this._data = {
+      ...tripData,
+      vehicle: tripData.vehicle ?? null,
+      driver: tripData.driver ?? null,
+      origin: tripData.origin ?? null,
+      destination: tripData.destination ?? null,
+      notes: tripData.notes ?? "",
+      internal_notes: tripData.internal_notes ?? "",
+    };
   }
-
   // Basic trip information getters
   get tripId(): number {
     return this._data.trip_id;
@@ -79,11 +85,11 @@ export class Trip {
   }
 
   get notes(): string {
-    return this._data.notes || '';
+    return this._data.notes || "";
   }
 
   get internalNotes(): string {
-    return this._data.internal_notes || '';
+    return this._data.internal_notes || "";
   }
 
   get driverAccepted(): boolean | null {
@@ -129,41 +135,41 @@ export class Trip {
   }
 
   // Vehicle getters
-  get vehicle(): Vehicle {
+  get vehicle(): Vehicle | null {
     return this._data.vehicle;
   }
 
   get vehicleAlias(): string {
-    return this._data.vehicle.alias;
+    return this._data.vehicle?.alias ?? "";
   }
 
   get vehicleType(): string {
-    return this._data.vehicle.type;
+    return this._data.vehicle?.type ?? "—";
   }
 
   get licensePlate(): string {
-    return this._data.vehicle.license_plate;
+    return this._data.vehicle?.license_plate ?? "";
   }
 
   // Driver getters
-  get driver(): Driver {
+  get driver(): Driver | null {
     return this._data.driver;
   }
 
   get driverName(): string {
-    return `${this._data.driver.name} ${this._data.driver.lastname}`;
+    return this._data.driver ? `${this._data.driver.name} ${this._data.driver.lastname}` : "";
   }
 
   get driverFirstName(): string {
-    return this._data.driver.name;
+    return this._data.driver?.name ?? "";
   }
 
   get driverLastName(): string {
-    return this._data.driver.lastname;
+    return this._data.driver?.lastname ?? "";
   }
 
   get driverPhone(): string {
-    return this._data.driver.phone;
+    return this._data.driver?.phone ?? "";
   }
 
   // Flight getters
@@ -176,23 +182,23 @@ export class Trip {
   }
 
   get flightNumber(): string {
-    return this._data.flight?.flight_number || '';
+    return this._data.flight?.flight_number || "";
   }
 
   get airline(): string {
-    return this._data.flight?.airline || '';
+    return this._data.flight?.airline || "";
   }
 
   get flightArrivalTime(): string {
-    return this._data.flight?.arrival_time || '';
+    return this._data.flight?.arrival_time || "";
   }
 
   get flightOrigin(): string {
-    return this._data.flight?.flight_origin || '';
+    return this._data.flight?.flight_origin || "";
   }
 
   get flightNotes(): string {
-    return this._data.flight?.notes || '';
+    return this._data.flight?.notes || "";
   }
 
   // Utility methods
@@ -201,7 +207,9 @@ export class Trip {
   }
 
   get formattedFlightArrivalTime(): Date | null {
-    return this._data.flight?.arrival_time ? new Date(this._data.flight.arrival_time) : null;
+    return this._data.flight?.arrival_time
+      ? new Date(this._data.flight.arrival_time)
+      : null;
   }
 
   get routeSummary(): string {
@@ -213,7 +221,7 @@ export class Trip {
   }
 
   get flightInfo(): string {
-    if (!this.hasFlightInfo) return '';
+    if (!this.hasFlightInfo) return "";
     return `${this.flightNumber} - ${this.airline}`;
   }
 
@@ -268,7 +276,7 @@ export class TripCollection {
   private _trips: Trip[];
 
   constructor(tripsData: TripData[]) {
-    this._trips = tripsData.map(tripData => new Trip(tripData));
+    this._trips = (tripsData ?? []).map((tripData) => new Trip(tripData));
   }
 
   get trips(): Trip[] {
@@ -283,38 +291,33 @@ export class TripCollection {
     return this._trips.length === 0;
   }
 
-  // Get trip by ID
   getTripById(id: number): Trip | undefined {
-    return this._trips.find(trip => trip.tripId === id);
+    return this._trips.find((trip) => trip.tripId === id);
   }
 
-  // Get trips sorted by service date
   get sortedByDate(): Trip[] {
-    return [...this._trips].sort((a, b) => 
-      a.formattedServiceDate.getTime() - b.formattedServiceDate.getTime()
-    );
+    return [...this._trips].sort((a, b) => {
+      const aTime = a.formattedServiceDate?.getTime?.() ?? 0;
+      const bTime = b.formattedServiceDate?.getTime?.() ?? 0;
+      return aTime - bTime;
+    });
   }
 
-  // Get the first trip (by date)
   get firstTrip(): Trip | undefined {
-    const sorted = this.sortedByDate;
-    return sorted.length > 0 ? sorted[0] : undefined;
+    return this.sortedByDate[0];
   }
 
-  // Get the last trip (by date)
   get lastTrip(): Trip | undefined {
     const sorted = this.sortedByDate;
-    return sorted.length > 0 ? sorted[sorted.length - 1] : undefined;
+    return sorted[sorted.length - 1];
   }
 
-  // Check if this is a round trip
   get isRoundTrip(): boolean {
     if (this._trips.length !== 2) return false;
     const [trip1, trip2] = this._trips;
     return trip1.isReturnTripOf(trip2) || trip2.isReturnTripOf(trip1);
   }
 
-  // Get trip type
   get tripType(): string {
     if (this.isEmpty) return "N/A";
     if (this.count === 1) return "Sencillo";
@@ -322,15 +325,14 @@ export class TripCollection {
     return `${this.count} viajes`;
   }
 
-  // Get total passengers across all trips
   get totalPassengers(): number {
-    return Math.max(...this._trips.map(trip => trip.passengers));
+    if (this.isEmpty) return 0;
+    return Math.max(...this._trips.map((trip) => trip.passengers));
   }
 
-  // Get unique drivers
   get drivers(): Driver[] {
     const uniqueDrivers = new Map<number, Driver>();
-    this._trips.forEach(trip => {
+    this._trips.forEach((trip) => {
       if (trip.driver?.id) {
         uniqueDrivers.set(trip.driver.id, trip.driver);
       }
@@ -338,10 +340,9 @@ export class TripCollection {
     return Array.from(uniqueDrivers.values());
   }
 
-  // Get unique vehicles
   get vehicles(): Vehicle[] {
     const uniqueVehicles = new Map<number, Vehicle>();
-    this._trips.forEach(trip => {
+    this._trips.forEach((trip) => {
       if (trip.vehicle?.id) {
         uniqueVehicles.set(trip.vehicle.id, trip.vehicle);
       }
@@ -349,13 +350,16 @@ export class TripCollection {
     return Array.from(uniqueVehicles.values());
   }
 
-  // Get date range
   get dateRange(): { start: Date | null; end: Date | null } {
     if (this.isEmpty) return { start: null, end: null };
     const sorted = this.sortedByDate;
     return {
-      start: sorted[0].formattedServiceDate,
-      end: sorted[sorted.length - 1].formattedServiceDate
+      start: sorted[0]?.formattedServiceDate ?? null,
+      end: sorted[sorted.length - 1]?.formattedServiceDate ?? null,
     };
+  }
+
+  toArray(): Trip[] {
+    return this._trips;
   }
 }
