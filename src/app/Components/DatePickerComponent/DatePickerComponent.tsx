@@ -14,6 +14,8 @@ type Props = {
   required?: boolean;
   hasError?: boolean;
   errorMessage?: string;
+  disabled?: boolean;
+  className?: string;
 };
 
 const formatDateToDDMMYYYY = (date: Date): string => {
@@ -50,6 +52,7 @@ export default function DatePickerComponent({
   required = false,
   hasError = false,
   errorMessage = "",
+  disabled = false,
 }: Props) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -84,6 +87,7 @@ export default function DatePickerComponent({
           value={selectedDate}
           minDate={today}
           placeholder={placeholder}
+          disabled={disabled}
           // Restricted dates are passed to the calendar slot so the internal Calendar marks them disabled
           calendar={{ restrictedDates }}
           onSelectDate={(date: Date | null | undefined) => {

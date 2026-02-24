@@ -1,5 +1,11 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 // Types
 interface OrderFormData {
@@ -25,58 +31,67 @@ interface OrderFormData {
 }
 
 interface TripFormData {
-  // Lugar de Origen
-  origenNombreLugar: string;
-  origenCalle: string;
-  origenNumero: string;
-  origenColonia: string;
-  origenCodigoPostal: string;
-  origenCiudad: string;
-  origenEstado: string;
-  origenEsVuelo: boolean;
-  origenNumeroVuelo: string;
-  origenAerolinea: string;
-  origenLugarVuelo: string;
-  origenNotas: string;
+  // ===== ORIGEN =====
+  origenNombreLugar?: string;
+  origenCalle?: string;
+  origenNumero?: string;
+  origenColonia?: string;
+  origenCodigoPostal?: string;
+  origenCiudad?: string;
+  origenEstado?: string;
+  origenEsVuelo?: boolean;
+  origenNumeroVuelo?: string;
+  origenAerolinea?: string;
+  origenLugarVuelo?: string;
+  origenNotas?: string;
 
-  // Lugar de Destino
-  destinoNombreLugar: string;
-  destinoCalle: string;
-  destinoNumero: string;
-  destinoColonia: string;
-  destinoCodigoPostal: string;
-  destinoCiudad: string;
-  destinoEstado: string;
-  destinoEsVuelo: boolean;
-  destinoNumeroVuelo: string;
-  destinoAerolinea: string;
-  destinoLugarVuelo: string;
-  destinoNotas: string;
+  // ===== DESTINO =====
+  destinoNombreLugar?: string;
+  destinoCalle?: string;
+  destinoNumero?: string;
+  destinoColonia?: string;
+  destinoCodigoPostal?: string;
+  destinoCiudad?: string;
+  destinoEstado?: string;
+  destinoEsVuelo?: boolean;
+  destinoNumeroVuelo?: string;
+  destinoAerolinea?: string;
+  destinoLugarVuelo?: string;
+  destinoNotas?: string;
 
-  // Viaje
-  tipoViaje: string;
+  // ===== VIAJE =====
+  tipoViaje?: "sencillo" | "redondo";
 
-  // Ida
-  idaFecha: string;
-  idaHora: number;
-  idaMinutos: number;
-  idaAmPm: string;
-  idaPasajeros: string;
+  idaFecha?: string;
+  idaHora?: string; // STRING
+  idaMinutos?: string; // STRING
+  idaAmPm?: "AM" | "PM";
+  idaPasajeros?: string; // STRING
 
-  // Regreso
-  regresoFecha: string;
-  regresoHora: number;
-  regresoMinutos: number;
-  regresoAmPm: string;
-  regresoPasajeros: string;
+  regresoFecha?: string;
+  regresoHora?: string; // STRING
+  regresoMinutos?: string; // STRING
+  regresoAmPm?: "AM" | "PM";
+  regresoPasajeros?: string; // STRING
 
-  // Chofer y unidad
-  tipoUnidad: string;
-  nombreChofer: string;
-  unidadAsignada: string;
-  placa: string;
-  observacionesChofer: string;
-  observacionesCliente: string;
+  // ===== ASIGNACIÓN =====
+  tipoUnidad?: string;
+  nombreChofer?: string;
+
+  unidadAsignada?: string;
+  placa?: string;
+
+  unidadAsignada1?: string;
+  placa1?: string;
+
+  unidadAsignada2?: string;
+  placa2?: string;
+
+  unidadAsignada3?: string;
+  placa3?: string;
+
+  observacionesChofer?: string;
+  observacionesCliente?: string;
 }
 
 interface OrderContextType {
@@ -113,7 +128,6 @@ const defaultOrderData: OrderFormData = {
 };
 
 const defaultTripData: TripFormData = {
-  // Lugar de Origen
   origenNombreLugar: "",
   origenCalle: "",
   origenNumero: "",
@@ -127,7 +141,6 @@ const defaultTripData: TripFormData = {
   origenLugarVuelo: "",
   origenNotas: "",
 
-  // Lugar de Destino
   destinoNombreLugar: "",
   destinoCalle: "",
   destinoNumero: "",
@@ -141,24 +154,20 @@ const defaultTripData: TripFormData = {
   destinoLugarVuelo: "",
   destinoNotas: "",
 
-  // Viaje
   tipoViaje: "sencillo",
 
-  // Ida
   idaFecha: "",
-  idaHora: 8,
-  idaMinutos: 0,
+  idaHora: "8",
+  idaMinutos: "0",
   idaAmPm: "AM",
   idaPasajeros: "",
 
-  // Regreso
   regresoFecha: "",
-  regresoHora: 8,
-  regresoMinutos: 0,
+  regresoHora: "8",
+  regresoMinutos: "0",
   regresoAmPm: "AM",
   regresoPasajeros: "",
 
-  // Chofer y unidad
   tipoUnidad: "",
   nombreChofer: "",
   unidadAsignada: "",
@@ -166,7 +175,6 @@ const defaultTripData: TripFormData = {
   observacionesChofer: "",
   observacionesCliente: "",
 };
-
 // Create context
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
@@ -244,9 +252,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <OrderContext.Provider value={value}>
-      {children}
-    </OrderContext.Provider>
+    <OrderContext.Provider value={value}>{children}</OrderContext.Provider>
   );
 }
 

@@ -21,25 +21,69 @@ export interface OrderFormData {
   coordinadorViaje: string;
   observacionesInternas: string;
 }
-
 export interface TripFormData {
-  fechaInicio: string;
-  fechaFin: string;
-  horaInicio: string;
-  horaFin: string;
-  lugarSalida: string;
-  lugarDestino: string;
-  numeroPersonas: string;
-  tipoTransporte: string;
-  descripcionViaje: string;
-  requisitosPasajeros: string;
-  incluye: string;
-  noIncluye: string;
-  observacionesViaje: string;
-  conductor: string;
-  vehiculo: string;
-}
+  // ===== ORIGEN =====
+  origenNombreLugar?: string;
+  origenCalle?: string;
+  origenNumero?: string;
+  origenColonia?: string;
+  origenCodigoPostal?: string;
+  origenCiudad?: string;
+  origenEstado?: string;
+  origenEsVuelo?: boolean;
+  origenNumeroVuelo?: string;
+  origenAerolinea?: string;
+  origenLugarVuelo?: string;
+  origenNotas?: string;
 
+  // ===== DESTINO =====
+  destinoNombreLugar?: string;
+  destinoCalle?: string;
+  destinoNumero?: string;
+  destinoColonia?: string;
+  destinoCodigoPostal?: string;
+  destinoCiudad?: string;
+  destinoEstado?: string;
+  destinoEsVuelo?: boolean;
+  destinoNumeroVuelo?: string;
+  destinoAerolinea?: string;
+  destinoLugarVuelo?: string;
+  destinoNotas?: string;
+
+  // ===== VIAJE =====
+  tipoViaje?: "sencillo" | "redondo";
+
+  idaFecha?: string;
+  idaHora?: string; // STRING
+  idaMinutos?: string; // STRING
+  idaAmPm?: "AM" | "PM";
+  idaPasajeros?: string; // STRING
+
+  regresoFecha?: string;
+  regresoHora?: string; // STRING
+  regresoMinutos?: string; // STRING
+  regresoAmPm?: "AM" | "PM";
+  regresoPasajeros?: string; // STRING
+
+  // ===== ASIGNACIÓN =====
+  tipoUnidad?: string;
+  nombreChofer?: string;
+
+  unidadAsignada?: string;
+  placa?: string;
+
+  unidadAsignada1?: string;
+  placa1?: string;
+
+  unidadAsignada2?: string;
+  placa2?: string;
+
+  unidadAsignada3?: string;
+  placa3?: string;
+
+  observacionesChofer?: string;
+  observacionesCliente?: string;
+}
 export interface CompleteOrderTripData {
   order: OrderFormData;
   trip: TripFormData;
@@ -72,11 +116,11 @@ export interface ContractStatus {
 
 export interface Commission {
   commission_id: number;
-  type: 'percentage' | 'arranged';
+  type: "percentage" | "arranged";
   amount?: number;
   arranged_deal?: string;
   establishment?: string;
-  status: 'paid' | 'pending';
+  status: "paid" | "pending";
 }
 
 /**
@@ -107,26 +151,26 @@ export interface TripPayload {
   service_date: string; // YYYY-MM-DD
   origin_time: string; // HH:MM
   passengers: number;
-  
+
   origin: PlacePayload;
   destination: PlacePayload;
-  
+
   unit_type?: string;
   driver_id?: number;
   external_driver_id?: number;
   vehicle_id?: number;
   observations?: string;
   internal_observations?: string;
-  
+
   flight?: FlightPayload;
-  
+
   is_round_trip?: boolean;
   return_date?: string; // YYYY-MM-DD
   return_time?: string; // HH:MM
 }
 
 export interface CommissionPayload {
-  type: 'percentage' | 'arranged';
+  type: "percentage" | "arranged";
   amount?: number; // REQUIRED if type='percentage'
   arranged_deal?: string; // REQUIRED if type='arranged'
   establishment?: string;
@@ -137,13 +181,13 @@ export interface CreateContractPayload {
   payment_type_id: number;
   IVA: boolean;
   amount: number;
-  
+
   coordinator_id?: number;
   observations?: string;
   internal_observations?: string;
   send_notification?: boolean;
   has_received_money?: boolean;
-  
+
   commission?: CommissionPayload;
   trip: TripPayload;
 }
@@ -218,7 +262,7 @@ export interface CreateOrderPayload {
 // Helper function to map complete order + trip form data to CreateContractPayload
 export const mapCompleteOrderToPayload = (
   orderData: OrderFormData,
-  tripData: any
+  tripData: TripFormData,
 ): CreateContractPayload => {
   // Convert DD/MM/YYYY to YYYY-MM-DD
   const convertDateFormat = (ddmmyyyy: string): string => {
@@ -229,10 +273,14 @@ export const mapCompleteOrderToPayload = (
   };
 
   // Convert time to HH:MM format
-  const convertTimeFormat = (hour: number | string, minutes: number | string, ampm: string): string => {
-    let h = typeof hour === 'string' ? parseInt(hour) : hour;
-    const m = typeof minutes === 'string' ? parseInt(minutes) : minutes;
-    
+  const convertTimeFormat = (
+    hour: string,
+    minutes: string,
+    ampm: "AM" | "PM",
+  ): string => {
+    let h = typeof hour === "string" ? parseInt(hour) : hour;
+    const m = typeof minutes === "string" ? parseInt(minutes) : minutes;
+
     if (ampm === "PM" && h !== 12) h += 12;
     if (ampm === "AM" && h === 12) h = 0;
     return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
@@ -245,73 +293,83 @@ export const mapCompleteOrderToPayload = (
     amount: parseFloat(orderData.costoViaje),
     observations: orderData.comentarios || undefined,
     internal_observations: orderData.observacionesInternas || undefined,
-    coordinator_id: orderData.coordinadorViaje ? parseInt(orderData.coordinadorViaje) : undefined,
+    coordinator_id: orderData.coordinadorViaje
+      ? parseInt(orderData.coordinadorViaje)
+      : undefined,
     send_notification: false,
     has_received_money: false,
-    
+
     trip: {
-      service_date: convertDateFormat(tripData.idaFecha),
+      service_date: convertDateFormat(tripData.idaFecha || ""),
       origin_time: convertTimeFormat(
-        tripData.idaHora || 8,
-        tripData.idaMinutos || 0,
-        tripData.idaAmPm || "AM"
+        tripData.idaHora || "8",
+        tripData.idaMinutos || "0",
+        tripData.idaAmPm || "AM",
       ),
-      passengers: parseInt(tripData.numeroPasajeros || tripData.idaPasajeros) || 1,
-      
+      passengers: parseInt(tripData.idaPasajeros || "1", 10),
+
       // Origin place
       origin: tripData.origenNombreLugar
-        ? { place_id: parseInt(tripData.origenNombreLugar) }
+        ? { place_id: parseInt(tripData.origenNombreLugar, 10) }
         : {
-            name: tripData.origenNombre || "Origen",
+            name: "Origen",
             address: tripData.origenCalle,
             number: tripData.origenNumero,
             colonia: tripData.origenColonia,
             city: tripData.origenCiudad,
             state: tripData.origenEstado,
             zip_code: tripData.origenCodigoPostal,
-            annotations: tripData.origenNotasAdicionales,
+            annotations: tripData.origenNotas,
           },
-      
       // Destination place
       destination: tripData.destinoNombreLugar
-        ? { place_id: parseInt(tripData.destinoNombreLugar) }
+        ? { place_id: parseInt(tripData.destinoNombreLugar, 10) }
         : {
-            name: tripData.destinoNombre || "Destino",
+            name: "Destino",
             address: tripData.destinoCalle,
             number: tripData.destinoNumero,
             colonia: tripData.destinoColonia,
             city: tripData.destinoCiudad,
             state: tripData.destinoEstado,
             zip_code: tripData.destinoCodigoPostal,
-            annotations: tripData.destinoNotasAdicionales,
+            annotations: tripData.destinoNotas,
           },
-      
+
       unit_type: tripData.tipoUnidad || undefined,
-      driver_id: tripData.nombreChofer ? parseInt(tripData.nombreChofer) : undefined,
-      vehicle_id: tripData.unidadAsignada ? parseInt(tripData.unidadAsignada) : undefined,
+      driver_id: tripData.nombreChofer
+        ? parseInt(tripData.nombreChofer)
+        : undefined,
+      vehicle_id: tripData.unidadAsignada
+        ? parseInt(tripData.unidadAsignada)
+        : undefined,
       observations: tripData.observacionesCliente || undefined,
       internal_observations: tripData.observacionesChofer || undefined,
-      
+
       // Flight info (if origin is a flight)
-      flight: tripData.origenEsVuelo && tripData.origenNumeroVuelo
-        ? {
-            flight_number: tripData.origenNumeroVuelo,
-            airline: tripData.origenAerolinea,
-            flight_origin: tripData.origenLugarVuelo,
-            notes: tripData.origenNotasAdicionales,
-          }
-        : undefined,
-      
+      flight:
+        tripData.origenEsVuelo && tripData.origenNumeroVuelo
+          ? {
+              flight_number: tripData.origenNumeroVuelo,
+              airline: tripData.origenAerolinea,
+              flight_origin: tripData.origenLugarVuelo,
+              notes: tripData.origenNotas,
+            }
+          : undefined,
+
       // Round trip
-      is_round_trip: tripData.tipoViaje === "roundTrip",
-      return_date: tripData.tipoViaje === "roundTrip" ? convertDateFormat(tripData.regresoFecha) : undefined,
-      return_time: tripData.tipoViaje === "roundTrip" 
-        ? convertTimeFormat(
-            tripData.regresoHora || 8,
-            tripData.regresoMinutos || 0,
-            tripData.regresoAmPm || "AM"
-          )
-        : undefined,
+      is_round_trip: tripData.tipoViaje === "redondo",
+      return_date:
+        tripData.tipoViaje === "redondo"
+          ? convertDateFormat(tripData.regresoFecha || "")
+          : undefined,
+      return_time:
+        tripData.tipoViaje === "redondo"
+          ? convertTimeFormat(
+              tripData.regresoHora || "8",
+              tripData.regresoMinutos || "0",
+              tripData.regresoAmPm || "AM",
+            )
+          : undefined,
     },
   };
 
@@ -334,7 +392,9 @@ export const mapCompleteOrderToPayload = (
 };
 
 // Helper function to map form data to CreateOrderPayload (legacy - for backward compatibility)
-export const mapOrderFormToPayload = (formData: OrderFormData): CreateOrderPayload => {
+export const mapOrderFormToPayload = (
+  formData: OrderFormData,
+): CreateOrderPayload => {
   const payload: CreateOrderPayload = {
     client_id: parseInt(formData.empresa),
     payment_type_id: parseInt(formData.tipoPago) || 1,
@@ -342,7 +402,9 @@ export const mapOrderFormToPayload = (formData: OrderFormData): CreateOrderPaylo
     amount: parseFloat(formData.costoViaje),
     observations: formData.comentarios || undefined,
     internal_observations: formData.observacionesInternas || undefined,
-    coordinator_id: formData.coordinadorViaje ? parseInt(formData.coordinadorViaje) : undefined,
+    coordinator_id: formData.coordinadorViaje
+      ? parseInt(formData.coordinadorViaje)
+      : undefined,
     send_notification: false,
     has_received_money: false,
   };
@@ -366,7 +428,10 @@ export const mapOrderFormToPayload = (formData: OrderFormData): CreateOrderPaylo
 };
 
 // Helper function to map trip form data to CreateTripPayload (legacy - for separate trip creation)
-export const mapTripFormToPayload = (tripFormData: any, contractId: number): CreateTripPayload => {
+export const mapTripFormToPayload = (
+  tripFormData: any,
+  contractId: number,
+): CreateTripPayload => {
   // Convert DD/MM/YYYY to YYYY-MM-DD
   const convertDateFormat = (ddmmyyyy: string): string => {
     if (!ddmmyyyy) return "";
@@ -375,14 +440,18 @@ export const mapTripFormToPayload = (tripFormData: any, contractId: number): Cre
     return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
   };
 
-  // Convert time to HH:mm:ss format
-  const convertTimeFormat = (hour: number | string, minutes: number | string, ampm: string): string => {
-    let h = typeof hour === 'string' ? parseInt(hour) : hour;
-    const m = typeof minutes === 'string' ? parseInt(minutes) : minutes;
-    
+  const convertTimeFormat = (
+    hour: string,
+    minutes: string,
+    ampm: "AM" | "PM",
+  ): string => {
+    let h = parseInt(hour, 10);
+    const m = parseInt(minutes, 10);
+
     if (ampm === "PM" && h !== 12) h += 12;
     if (ampm === "AM" && h === 12) h = 0;
-    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:00`;
+
+    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
   };
 
   const payload: CreateTripPayload = {
@@ -390,15 +459,20 @@ export const mapTripFormToPayload = (tripFormData: any, contractId: number): Cre
     service_date: convertDateFormat(tripFormData.idaFecha),
     origin_id: parseInt(tripFormData.origenNombreLugar) || 0,
     origin_time: convertTimeFormat(
-      tripFormData.idaHora || 8,
-      tripFormData.idaMinutos || 0,
-      tripFormData.idaAmPm || "AM"
+      tripFormData.idaHora || "8",
+      tripFormData.idaMinutos || "0",
+      tripFormData.idaAmPm || "AM",
     ),
     destination_id: parseInt(tripFormData.destinoNombreLugar) || 0,
-    passengers: parseInt(tripFormData.numeroPasajeros || tripFormData.idaPasajeros) || 1,
+    passengers:
+      parseInt(tripFormData.numeroPasajeros || tripFormData.idaPasajeros) || 1,
     unit_type: tripFormData.tipoUnidad || undefined,
-    vehicle_id: tripFormData.unidadAsignada ? parseInt(tripFormData.unidadAsignada) : undefined,
-    driver_id: tripFormData.nombreChofer ? parseInt(tripFormData.nombreChofer) : undefined,
+    vehicle_id: tripFormData.unidadAsignada
+      ? parseInt(tripFormData.unidadAsignada)
+      : undefined,
+    driver_id: tripFormData.nombreChofer
+      ? parseInt(tripFormData.nombreChofer)
+      : undefined,
     contract_trip_status_id: 1,
   };
 

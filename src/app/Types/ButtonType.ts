@@ -5,4 +5,5 @@ export type IButtonProps = {
   disabled?: boolean;
   type?: "button" | "submit" | "reset" | "cancel";
   icon?: React.ReactNode;
+  title?: string;
 }
