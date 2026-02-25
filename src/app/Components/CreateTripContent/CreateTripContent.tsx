@@ -31,7 +31,7 @@ import {
   tripsService,
   ApiError,
 } from "@/services/api";
-
+import { useOrderForm } from "@/app/hooks/useOrderForm";
 interface Parada {
   id: string;
   nombreLugar: string;
@@ -47,20 +47,6 @@ export default function CreateTripContent() {
   const { orderData, tripData, setTripData, clearData } = useOrderContext();
   const router = useRouter();
   const { canAssignResources } = useUserRole();
-
-  // Trip-specific form data
-  const [tripFormData, setTripFormData] = useState({
-    ...tripData,
-    numeroPasajeros: tripData.regresoPasajeros || "",
-    idaFecha: tripData.idaFecha || "",
-    regresoFecha: tripData.regresoFecha || "",
-    unidadAsignada1: "",
-    placa1: "",
-    unidadAsignada2: "",
-    placa2: "",
-    unidadAsignada3: "",
-    placa3: "",
-  });
 
   // Dropdown data
   const [lugares, setLugares] = useState<
@@ -86,8 +72,80 @@ export default function CreateTripContent() {
   const [paradas, setParadas] = useState<Parada[]>([]);
 
   // Field validation errors state
-  const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({});
+  const tripForm = useOrderForm({
+    ...tripData,
+    numeroPasajeros: tripData.regresoPasajeros || "",
+    idaFecha: tripData.idaFecha || "",
+    regresoFecha: tripData.regresoFecha || "",
+    unidadAsignada1: "",
+    placa1: "",
+    unidadAsignada2: "",
+    placa2: "",
+    unidadAsignada3: "",
+    placa3: "",
+  });
 
+  const {
+    formData: tripFormData,
+    setFormData: setTripFormData,
+    errors,
+    setErrors,
+    showErrors,
+    setShowErrors,
+    input,
+    select,
+    updateField,
+  } = tripForm;
+
+  /* =============================
+   COMPATIBILITY (DO NOT REMOVE)
+   Keeps existing JSX working
+============================= */
+
+  const fieldErrors: Record<string, boolean> = Object.keys(errors).reduce(
+    (acc, key) => {
+      acc[key] = true;
+      return acc;
+    },
+    {} as Record<string, boolean>,
+  );
+
+  const setFieldErrors = (
+    errs:
+      | Record<string, boolean>
+      | ((prev: Record<string, boolean>) => Record<string, boolean>),
+  ) => {
+    const current: Record<string, boolean> = Object.keys(errors).reduce(
+      (acc, key) => {
+        acc[key] = true;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+
+    const resolved = typeof errs === "function" ? errs(current) : errs;
+
+    const formatted: Record<string, string> = {};
+
+    Object.entries(resolved).forEach(([key, value]) => {
+      if (value) formatted[key] = "Este campo es obligatorio";
+    });
+
+    setErrors(formatted);
+  };
+  const handleTripInputChange =
+    (field: keyof typeof tripFormData) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      updateField(field, e.target.value);
+
+  const handleTripSelectChange =
+    (field: keyof typeof tripFormData) =>
+    (e: React.ChangeEvent<HTMLSelectElement>) =>
+      updateField(field, e.target.value);
+
+  const handleRadioChange = (field: keyof typeof tripFormData, value: any) => {
+    updateField(field, value);
+  };
   // Place search and selection handlers
   const handlePlaceSearch = async (
     query: string,
@@ -358,58 +416,6 @@ export default function CreateTripContent() {
   useEffect(() => {
     console.log("Current tripFormData:", tripFormData);
   }, [tripFormData]);
-
-  const handleTripInputChange =
-    (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      console.log(`Field ${field} changed to:`, value);
-      setTripFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-      // Clear error when field is filled
-      if (value && fieldErrors[field]) {
-        setFieldErrors((prev) => ({ ...prev, [field]: false }));
-      }
-    };
-
-  const handleTripSelectChange =
-    (field: string) => (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const value = e.target.value;
-
-      // Clear error when field is filled
-      if (value && fieldErrors[field]) {
-        setFieldErrors((prev) => ({ ...prev, [field]: false }));
-      }
-
-      // If selecting a vehicle, auto-fill the license plate for any unidad field
-      if (field.startsWith("unidadAsignada") && value) {
-        const selectedVehicle = unidades.find((u) => u.value === value);
-        const unitNumber = field.replace("unidadAsignada", "") || "";
-        const placaField = `placa${unitNumber}`;
-
-        if (selectedVehicle?.licensePlate) {
-          setTripFormData((prev) => ({
-            ...prev,
-            [field]: value,
-            [placaField]: selectedVehicle.licensePlate || "",
-          }));
-          return;
-        }
-      }
-
-      setTripFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    };
-
-  const handleRadioChange = (field: string, value: boolean) => {
-    setTripFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
 
   const handleCancel = () => {
     setTripData(tripFormData);
@@ -800,7 +806,7 @@ export default function CreateTripContent() {
               <InputComponent
                 type="textarea"
                 value={tripFormData.origenNotas || ""}
-                onChange={handleTripInputChange("origenNotasAdicionales")}
+                {...handleTripInputChange("origenNotas")}
                 label="Notas adicionales"
                 className={styles.textarea}
               />

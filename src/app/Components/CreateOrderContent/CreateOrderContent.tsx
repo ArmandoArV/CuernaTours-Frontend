@@ -28,48 +28,38 @@ import type {
   PaymentTypeReference,
 } from "@/services/api/reference.service";
 import CountrySelect from "@/app/Components/CountrySelect/CountrySelect";
+import FormField from "@/app/Components/FormField/FormField";
+import { useOrderForm } from "@/app/hooks/useOrderForm";
+import { useOrderValidation } from "@/app/hooks/useOrderValidation";
 
 export default function CreateOrderContent() {
   const { orderData, setOrderData, clearData } = useOrderContext();
   const router = useRouter();
 
   // Use context data as form data
-  const [formData, setFormData] = useState(orderData);
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [showErrors, setShowErrors] = useState(false);
   const [prefillableData, setPrefillableData] =
     useState<PrefillableData | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [originalContactData, setOriginalContactData] = useState<any>(null);
-  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  const orderForm = useOrderForm<OrderFormData>(orderData);
 
-  // Function to check if all required fields are filled
-  const areAllRequiredFieldsFilled = useCallback(() => {
-    // Check basic required fields
-    if (!formData.empresa?.toString().trim()) return false;
-    if (!formData.nombreContacto?.trim()) return false;
-    if (!formData.primerApellido?.trim()) return false;
-    if (formData.tieneWhatsapp !== "Si" && formData.tieneWhatsapp !== "No")
-      return false;
-    if (!formData.costoViaje?.trim()) return false;
-    if (formData.aplicaIva !== "Si" && formData.aplicaIva !== "No")
-      return false;
-    if (formData.llevaComision !== "Si" && formData.llevaComision !== "No")
-      return false;
-    if (!formData.tipoPago) return false;
-
-    // Check commission fields when "Lleva comisión" is "Si"
-    if (formData.llevaComision === "Si") {
-      if (!formData.nombreRecibeComision?.trim()) return false;
-      if (!formData.tipoComision) return false;
-    }
-
-    return true;
-  }, [formData]);
-
+  const {
+    formData,
+    setFormData,
+    errors,
+    setErrors,
+    showErrors,
+    setShowErrors,
+    touchedFields,
+    input,
+    select,
+    radio,
+    updateField,
+  } = orderForm;
+  const { requiredErrors, isValid } = useOrderValidation(formData, showErrors);
   // Function to get required field status
   const getFieldRequiredStatus = useCallback(
     (fieldName: string): boolean => {
@@ -93,122 +83,39 @@ export default function CreateOrderContent() {
     [formData.llevaComision],
   );
 
-  const validateForm = () => {
-    const missingFields: string[] = [];
-    const newErrors: { [key: string]: string } = {};
+  const getMissingRequiredFields = useCallback(() => {
+    const missing: Record<string, string> = {};
 
-    // Required fields validation
-    if (!formData.empresa.trim()) {
-      missingFields.push("Empresa o cliente");
-      newErrors.empresa = "La empresa o cliente es obligatorio";
-    }
-    if (!formData.nombreContacto.trim()) {
-      missingFields.push("Nombre del contacto");
-      newErrors.nombreContacto = "El nombre del contacto es obligatorio";
-    }
-    if (!formData.primerApellido.trim()) {
-      missingFields.push("Primer apellido");
-      newErrors.primerApellido = "El primer apellido es obligatorio";
-    }
-    if (formData.telefono.trim() && !isValidPhone(formData.telefono)) {
-      newErrors.telefono = "El teléfono solo debe contener números";
-    }
+    const check = (field: string, label: string) => {
+      if (!getFieldRequiredStatus(field)) return;
 
-    if (!formData.tieneWhatsapp) {
-      missingFields.push("¿Tiene WhatsApp?");
-      newErrors.tieneWhatsapp = "Este campo es obligatorio";
-    }
+      const value = formData[field as keyof typeof formData];
 
-    if (!formData.costoViaje.trim()) {
-      missingFields.push("Costo del viaje");
-      newErrors.costoViaje = "El costo del viaje es obligatorio";
-    } else if (!isValidNumber(formData.costoViaje)) {
-      newErrors.costoViaje = "El costo del viaje debe ser un número válido";
-    }
+      if (!value || value.toString().trim() === "") {
+        missing[field] = `${label} es obligatorio`;
+      }
+    };
 
-    if (!formData.aplicaIva) {
-      missingFields.push("¿Aplica IVA?");
-      newErrors.aplicaIva = "Este campo es obligatorio";
-    }
+    check("empresa", "Empresa o cliente");
+    check("nombreContacto", "Nombre del contacto");
+    check("primerApellido", "Primer apellido");
+    check("tieneWhatsapp", "WhatsApp");
+    check("costoViaje", "Costo del viaje");
+    check("aplicaIva", "Aplica IVA");
+    check("llevaComision", "Lleva comisión");
+    check("tipoPago", "Tipo de pago");
 
-    if (!formData.llevaComision) {
-      missingFields.push("¿Lleva comisión?");
-      newErrors.llevaComision = "Este campo es obligatorio";
-    }
-
-    // Conditional validations when llevaComision is "Si"
     if (formData.llevaComision === "Si") {
-      if (!formData.nombreRecibeComision.trim()) {
-        missingFields.push("Nombre de quien recibe la comisión");
-        newErrors.nombreRecibeComision =
-          "El nombre de quien recibe la comisión es obligatorio";
-      }
-
-      if (!formData.tipoComision) {
-        missingFields.push("Tipo de comisión");
-        newErrors.tipoComision = "El tipo de comisión es obligatorio";
-      }
-
-      // Validate percentage if tipo comision is percentage
-      if (
-        formData.tipoComision === "Porcentaje" &&
-        formData.porcentaje.trim() &&
-        !isValidNumber(formData.porcentaje)
-      ) {
-        newErrors.porcentaje = "El porcentaje debe ser un número válido";
-      }
-
-      // Validate amount if provided
-      if (
-        formData.montoArreglado.trim() &&
-        !isValidNumber(formData.montoArreglado)
-      ) {
-        newErrors.montoArreglado = "El monto debe ser un número válido";
-      }
+      check("nombreRecibeComision", "Nombre de quien recibe comisión");
+      check("tipoComision", "Tipo de comisión");
     }
 
-    // Email validation (if provided)
-    if (
-      formData.correoElectronico.trim() &&
-      !isValidEmail(formData.correoElectronico)
-    ) {
-      newErrors.correoElectronico = "El correo electrónico no es válido";
-      showErrorAlert("Email inválido", "Ingrese un correo electrónico válido.");
-      setErrors(newErrors);
-      setShowErrors(true);
-      return false;
-    }
+    return missing;
+  }, [formData, getFieldRequiredStatus]);
 
-    // Set errors for inline display
-    setErrors(newErrors);
-    setShowErrors(true);
-
-    // Check for format errors first
-    const formatErrors = Object.keys(newErrors).filter(
-      (key) =>
-        newErrors[key].includes("número válido") ||
-        newErrors[key].includes("solo debe contener números"),
-    );
-
-    if (formatErrors.length > 0) {
-      showErrorAlert(
-        "Formato incorrecto",
-        "Corrija los campos que contienen formato incorrecto.",
-      );
-      return false;
-    }
-
-    // Show missing fields alert if any
-    if (missingFields.length > 0) {
-      const fieldsList = missingFields.join(", ");
-      showErrorAlert(
-        "Campos obligatorios faltantes",
-        `Complete los siguientes campos obligatorios: ${fieldsList}`,
-      );
-      return false;
-    }
-
-    return true;
+  const mergedErrors = {
+    ...requiredErrors,
+    ...errors,
   };
 
   const isValidEmail = (email: string) => {
@@ -216,82 +123,16 @@ export default function CreateOrderContent() {
     return emailRegex.test(email);
   };
 
-  const isValidNumber = (value: string) => {
-    const numberRegex = /^\d*\.?\d*$/;
-    return numberRegex.test(value);
-  };
-
   const isValidPhone = (phone: string) => {
     const phoneRegex = /^\d*$/;
     return phoneRegex.test(phone);
   };
-
-  const handleInputChange =
-    (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-
-      // Apply numeric validation for specific fields
-      if (field === "telefono" && !isValidPhone(value) && value !== "") {
-        return; // Don't update if not valid phone number
-      }
-
-      if (
-        (field === "costoViaje" ||
-          field === "porcentaje" ||
-          field === "montoArreglado") &&
-        !isValidNumber(value) &&
-        value !== ""
-      ) {
-        return; // Don't update if not valid number
-      }
-
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-
-      // Mark field as touched
-      setTouchedFields((prev) => new Set(prev).add(field));
-
-      // Clear error for this field when user starts typing
-      if (errors[field]) {
-        setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[field];
-          return newErrors;
-        });
-      }
-    };
-
-  const handleSelectChange =
-    (field: string) => (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const value = e.target.value;
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-
-      // Mark field as touched
-      setTouchedFields((prev) => new Set(prev).add(field));
-
-      // Clear error for this field when user makes a selection
-      if (errors[field]) {
-        setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[field];
-          return newErrors;
-        });
-      }
-    };
 
   const handleRadioChange = (field: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
-
-    // Mark field as touched
-    setTouchedFields((prev) => new Set(prev).add(field));
 
     // Clear error for this field when user makes a selection
     if (errors[field]) {
@@ -304,19 +145,19 @@ export default function CreateOrderContent() {
   };
 
   const handleNext = () => {
-    if (validateForm()) {
-      console.log("Saving form data to context:", formData);
-      // Update context with current form data
-      setOrderData(formData);
+    setShowErrors(true);
 
-      // Give a small delay to ensure context is updated
-      setTimeout(() => {
-        // Proceed to next step
-        router.push("/dashboard/createOrder/createTrip");
-      }, 100);
+    const missing = getMissingRequiredFields();
+
+    if (Object.keys(missing).length > 0) {
+      showErrorAlert("Campos obligatorios", "Complete los campos requeridos.");
+      return;
     }
-  };
 
+    setOrderData(formData);
+
+    router.push("/dashboard/createOrder/createTrip");
+  };
   const handleCancel = () => {
     // Handle cancel logic
     console.log("Cancel clicked");
@@ -425,9 +266,6 @@ export default function CreateOrderContent() {
       setOriginalContactData(null);
       setIsEditingContact(false);
     }
-
-    // Mark empresa as touched
-    setTouchedFields((prev) => new Set(prev).add("empresa"));
   };
 
   const handleCreateClient = () => {
@@ -575,6 +413,11 @@ export default function CreateOrderContent() {
     console.log("CreateOrderContent - FormData changed:", formData);
   }, [formData]);
 
+  // Function to check if all required fields are filled
+  const areAllRequiredFieldsFilled = useCallback(() => {
+    return Object.keys(getMissingRequiredFields()).length === 0;
+  }, [getMissingRequiredFields]);
+
   return (
     <main className={styles.main}>
       <div className={styles.container}>
@@ -605,13 +448,11 @@ export default function CreateOrderContent() {
               noResultsText="No se encontraron clientes"
               loadingText="Buscando..."
               className={`${styles.select} ${
-                touchedFields.has("empresa") && !formData.empresa
-                  ? styles.fieldError
-                  : ""
+                mergedErrors.empresa ? styles.fieldError : ""
               }`}
             />
-            {touchedFields.has("empresa") && !formData.empresa && (
-              <p className={styles.requiredLabel}>Este campo es obligatorio</p>
+            {mergedErrors.empresa && (
+              <p className={styles.requiredLabel}>{mergedErrors.empresa}</p>
             )}
           </div>
 
@@ -652,63 +493,37 @@ export default function CreateOrderContent() {
 
           <div className={styles.row}>
             <div className={styles.col}>
-              <InputComponent
-                type="text"
-                value={formData.nombreContacto}
-                onChange={handleInputChange("nombreContacto")}
-                label={
-                  <p>
-                    Nombre del contacto{" "}
-                    <strong style={{ color: "red" }}>*</strong>
-                  </p>
-                }
-                placeholder=""
-                disabled={!isEditingContact}
-                className={`${styles.input} ${
-                  touchedFields.has("nombreContacto") &&
-                  !formData.nombreContacto
-                    ? styles.fieldError
-                    : ""
-                }`}
-              />
-              {touchedFields.has("nombreContacto") &&
-                !formData.nombreContacto && (
-                  <p className={styles.requiredLabel}>
-                    Este campo es obligatorio
-                  </p>
-                )}
+              <FormField
+                label="Nombre del contacto"
+                required
+                error={mergedErrors.nombreContacto}
+              >
+                <InputComponent
+                  type="text"
+                  {...input("nombreContacto")}
+                  disabled={!isEditingContact}
+                  className={styles.input}
+                />
+              </FormField>
+            </div>
+            <div className={styles.col}>
+              <FormField
+                label="Primer apellido"
+                required
+                error={mergedErrors.primerApellido}
+              >
+                <InputComponent
+                  type="text"
+                  {...input("primerApellido")}
+                  disabled={!isEditingContact}
+                  className={styles.input}
+                />
+              </FormField>
             </div>
             <div className={styles.col}>
               <InputComponent
                 type="text"
-                value={formData.primerApellido}
-                onChange={handleInputChange("primerApellido")}
-                label={
-                  <p>
-                    Primer apellido <strong style={{ color: "red" }}>*</strong>
-                  </p>
-                }
-                placeholder=""
-                disabled={!isEditingContact}
-                className={`${styles.input} ${
-                  touchedFields.has("primerApellido") &&
-                  !formData.primerApellido
-                    ? styles.fieldError
-                    : ""
-                }`}
-              />
-              {touchedFields.has("primerApellido") &&
-                !formData.primerApellido && (
-                  <p className={styles.requiredLabel}>
-                    Este campo es obligatorio
-                  </p>
-                )}
-            </div>
-            <div className={styles.col}>
-              <InputComponent
-                type="text"
-                value={formData.segundoApellido}
-                onChange={handleInputChange("segundoApellido")}
+                {...input("segundoApellido")}
                 label="Segundo apellido"
                 placeholder=""
                 disabled={!isEditingContact}
@@ -730,18 +545,17 @@ export default function CreateOrderContent() {
                 />
                 <InputComponent
                   type="text"
-                  value={formData.telefono}
-                  onChange={handleInputChange("telefono")}
+                  {...input("telefono")}
                   label="Teléfono"
                   placeholder=""
                   disabled={!isEditingContact}
                   className={`${styles.input} ${
-                    showErrors && errors.telefono ? styles.inputError : ""
+                    showErrors && mergedErrors.telefono ? styles.inputError : ""
                   }`}
                 />
               </div>
-              {showErrors && errors.telefono && (
-                <p className={styles.errorMessage}>{errors.telefono}</p>
+              {showErrors && mergedErrors.telefono && (
+                <p className={styles.errorMessage}>{mergedErrors.telefono}</p>
               )}
             </div>
             <div className={styles.col}>
@@ -776,31 +590,29 @@ export default function CreateOrderContent() {
                     No
                   </label>
                 </div>
-                {touchedFields.has("tieneWhatsapp") &&
-                  !formData.tieneWhatsapp && (
-                    <p className={styles.requiredLabel}>
-                      Este campo es obligatorio
-                    </p>
-                  )}
+                {mergedErrors.tieneWhatsapp && (
+                  <p className={styles.requiredLabel}>
+                    {mergedErrors.tieneWhatsapp}
+                  </p>
+                )}
               </div>
             </div>
             <div className={styles.col}>
               <InputComponent
                 type="email"
-                value={formData.correoElectronico}
-                onChange={handleInputChange("correoElectronico")}
+                {...input("correoElectronico")}
                 label="Correo electrónico"
                 placeholder=""
                 disabled={!isEditingContact}
                 className={`${styles.input} ${
-                  showErrors && errors.correoElectronico
+                  showErrors && mergedErrors.correoElectronico
                     ? styles.inputError
                     : ""
                 }`}
               />
-              {showErrors && errors.correoElectronico && (
+              {showErrors && mergedErrors.correoElectronico && (
                 <p className={styles.errorMessage}>
-                  {errors.correoElectronico}
+                  {mergedErrors.correoElectronico}
                 </p>
               )}
             </div>
@@ -810,8 +622,7 @@ export default function CreateOrderContent() {
             <div className={styles.textareaContainer}>
               <InputComponent
                 type="text"
-                value={formData.comentarios}
-                onChange={handleInputChange("comentarios")}
+                {...input("comentarios")}
                 label="Comentarios del contacto"
                 placeholder=""
                 className={styles.input}
@@ -821,8 +632,7 @@ export default function CreateOrderContent() {
 
           <div className={styles.section}>
             <SelectComponent
-              value={formData.tipoPago}
-              onChange={handleSelectChange("tipoPago")}
+              {...select("tipoPago")}
               options={[
                 ...(prefillableData?.payment_types
                   ? referenceService.transformPaymentTypesForSelect(
@@ -832,15 +642,11 @@ export default function CreateOrderContent() {
               ]}
               label="Tipo de pago"
               placeholder="Seleccione..."
-              required={true}
-              className={`${styles.select} ${
-                touchedFields.has("tipoPago") && !formData.tipoPago
-                  ? styles.fieldError
-                  : ""
-              }`}
+              required
+              className={styles.select}
             />
-            {touchedFields.has("tipoPago") && !formData.tipoPago && (
-              <p className={styles.requiredLabel}>Este campo es obligatorio</p>
+            {mergedErrors.tipoPago && (
+              <p className={styles.requiredLabel}>{mergedErrors.tipoPago}</p>
             )}
           </div>
 
@@ -856,9 +662,7 @@ export default function CreateOrderContent() {
                       type="radio"
                       name="iva"
                       value="Si"
-                      checked={formData.aplicaIva === "Si"}
-                      onChange={() => handleRadioChange("aplicaIva", "Si")}
-                      className={styles.radioInput}
+                      {...radio("aplicaIva", "Si")}
                     />
                     Sí
                   </label>
@@ -867,44 +671,32 @@ export default function CreateOrderContent() {
                       type="radio"
                       name="iva"
                       value="No"
-                      checked={formData.aplicaIva === "No"}
-                      onChange={() => handleRadioChange("aplicaIva", "No")}
-                      className={styles.radioInput}
+                      {...radio("aplicaIva", "No")}
                     />
                     No
                   </label>
                 </div>
-                {touchedFields.has("aplicaIva") && !formData.aplicaIva && (
+                {mergedErrors.aplicaIva && (
                   <p className={styles.requiredLabel}>
-                    Este campo es obligatorio
+                    {mergedErrors.aplicaIva}
                   </p>
                 )}
               </div>
             </div>
             <div className={styles.col}>
-              <InputComponent
-                type="text"
-                value={formData.costoViaje}
-                onChange={handleInputChange("costoViaje")}
-                label={
-                  <p>
-                    Costo del viaje <strong style={{ color: "red" }}>*</strong>
-                  </p>
-                }
-                placeholder=""
-                className={`${styles.input} ${
-                  touchedFields.has("costoViaje") && !formData.costoViaje
-                    ? styles.fieldError
-                    : ""
-                } ${showErrors && errors.costoViaje ? styles.inputError : ""}`}
-              />
-              {touchedFields.has("costoViaje") && !formData.costoViaje && (
-                <p className={styles.requiredLabel}>
-                  Este campo es obligatorio
-                </p>
-              )}
-              {showErrors && errors.costoViaje && (
-                <p className={styles.errorMessage}>{errors.costoViaje}</p>
+              <FormField
+                label="Costo del viaje"
+                required
+                error={mergedErrors.costoViaje}
+              >
+                <InputComponent
+                  type="text"
+                  {...input("costoViaje")}
+                  className={styles.input}
+                />
+              </FormField>
+              {showErrors && mergedErrors.costoViaje && (
+                <p className={styles.errorMessage}>{mergedErrors.costoViaje}</p>
               )}
             </div>
           </div>
@@ -938,12 +730,11 @@ export default function CreateOrderContent() {
                   No
                 </label>
               </div>
-              {touchedFields.has("llevaComision") &&
-                !formData.llevaComision && (
-                  <p className={styles.requiredLabel}>
-                    Este campo es obligatorio
-                  </p>
-                )}
+              {mergedErrors.llevaComision && (
+                <p className={styles.requiredLabel}>
+                  {mergedErrors.llevaComision}
+                </p>
+              )}
             </div>
           </div>
 
@@ -951,32 +742,20 @@ export default function CreateOrderContent() {
           {formData.llevaComision === "Si" && (
             <>
               <div className={styles.section}>
-                <InputComponent
-                  type="text"
-                  value={formData.nombreRecibeComision}
-                  onChange={handleInputChange("nombreRecibeComision")}
-                  label="Nombre de quien recibe la comisión *"
-                  placeholder=""
-                  className={`${styles.input} ${
-                    touchedFields.has("nombreRecibeComision") &&
-                    !formData.nombreRecibeComision
-                      ? styles.fieldError
-                      : ""
-                  } ${
-                    showErrors && errors.nombreRecibeComision
-                      ? styles.inputError
-                      : ""
-                  }`}
-                />
-                {touchedFields.has("nombreRecibeComision") &&
-                  !formData.nombreRecibeComision && (
-                    <p className={styles.requiredLabel}>
-                      Este campo es obligatorio
-                    </p>
-                  )}
-                {showErrors && errors.nombreRecibeComision && (
+                <FormField
+                  label="Nombre de quien recibe la comisión"
+                  required
+                  error={mergedErrors.nombreRecibeComision}
+                >
+                  <InputComponent
+                    type="text"
+                    {...input("nombreRecibeComision")}
+                    className={styles.input}
+                  />
+                </FormField>
+                {showErrors && mergedErrors.nombreRecibeComision && (
                   <p className={styles.errorMessage}>
-                    {errors.nombreRecibeComision}
+                    {mergedErrors.nombreRecibeComision}
                   </p>
                 )}
               </div>
@@ -993,10 +772,7 @@ export default function CreateOrderContent() {
                         name="tipoComision"
                         value="Porcentaje"
                         className={styles.radioInput}
-                        checked={formData.tipoComision === "Porcentaje"}
-                        onChange={() =>
-                          handleRadioChange("tipoComision", "Porcentaje")
-                        }
+                        {...radio("tipoComision", "Porcentaje")}
                       />
                       Porcentaje
                     </label>
@@ -1006,10 +782,7 @@ export default function CreateOrderContent() {
                         name="tipoComision"
                         value="Arreglada"
                         className={styles.radioInput}
-                        checked={formData.tipoComision === "Arreglada"}
-                        onChange={() =>
-                          handleRadioChange("tipoComision", "Arreglada")
-                        }
+                        {...radio("tipoComision", "Arreglada")}
                       />
                       Arreglada
                     </label>
@@ -1020,8 +793,10 @@ export default function CreateOrderContent() {
                         Este campo es obligatorio
                       </p>
                     )}
-                  {showErrors && errors.tipoComision && (
-                    <p className={styles.errorMessage}>{errors.tipoComision}</p>
+                  {showErrors && mergedErrors.tipoComision && (
+                    <p className={styles.errorMessage}>
+                      {mergedErrors.tipoComision}
+                    </p>
                   )}
                 </div>
               </div>
@@ -1037,7 +812,6 @@ export default function CreateOrderContent() {
                           const tripCost = parseFloat(formData.costoViaje) || 0;
                           const calculatedAmount =
                             tripCost * (parseFloat(percentage) / 100);
-
                           setFormData((prev) => ({
                             ...prev,
                             porcentaje: percentage,
@@ -1055,34 +829,23 @@ export default function CreateOrderContent() {
                         ]}
                         label="Porcentaje (%)"
                         placeholder="Seleccione..."
-                        className={`${styles.select} ${
-                          showErrors && errors.porcentaje
-                            ? styles.selectError
-                            : ""
-                        }`}
+                        className={styles.input}
                       />
-                      {showErrors && errors.porcentaje && (
-                        <p className={styles.errorMessage}>
-                          {errors.porcentaje}
-                        </p>
-                      )}
                     </div>
                     <div className={styles.col}>
-                      <InputComponent
-                        type="text"
-                        value={formData.montoArreglado}
-                        onChange={handleInputChange("montoArreglado")}
-                        label="Monto del porcentaje ($)"
-                        placeholder=""
-                        className={`${styles.input} ${
-                          showErrors && errors.montoArreglado
-                            ? styles.inputError
-                            : ""
-                        }`}
-                      />
-                      {showErrors && errors.montoArreglado && (
+                      <FormField
+                        label="Nombre de quien recibe la comisión"
+                        required
+                        error={mergedErrors.nombreRecibeComision}
+                      >
+                        <InputComponent
+                          {...input("nombreRecibeComision")}
+                          className={styles.input}
+                        />
+                      </FormField>
+                      {showErrors && mergedErrors.nombreRecibeComision && (
                         <p className={styles.errorMessage}>
-                          {errors.montoArreglado}
+                          {mergedErrors.nombreRecibeComision}
                         </p>
                       )}
                     </div>
@@ -1091,20 +854,18 @@ export default function CreateOrderContent() {
                 {formData.tipoComision === "Arreglada" && (
                   <div className={styles.col}>
                     <InputComponent
-                      type="text"
-                      value={formData.montoArreglado}
-                      onChange={handleInputChange("montoArreglado")}
+                      {...input("montoArreglado")}
                       label="Monto de la comisión ($)"
                       placeholder=""
                       className={`${styles.input} ${
-                        showErrors && errors.montoArreglado
+                        showErrors && mergedErrors.montoArreglado
                           ? styles.inputError
                           : ""
                       }`}
                     />
-                    {showErrors && errors.montoArreglado && (
+                    {showErrors && mergedErrors.montoArreglado && (
                       <p className={styles.errorMessage}>
-                        {errors.montoArreglado}
+                        {mergedErrors.montoArreglado}
                       </p>
                     )}
                   </div>
@@ -1115,8 +876,7 @@ export default function CreateOrderContent() {
 
           <div className={styles.section}>
             <SelectComponent
-              value={formData.coordinadorViaje}
-              onChange={handleSelectChange("coordinadorViaje")}
+              {...select("coordinadorViaje")}
               options={[
                 { value: "POR_ASIGNAR", label: "Por asignar" },
                 ...(prefillableData?.coordinators
@@ -1161,7 +921,6 @@ export default function CreateOrderContent() {
               onClick={handleNext}
               type="button"
               className={styles.nextButton}
-              disabled={!areAllRequiredFieldsFilled()}
               title={
                 !areAllRequiredFieldsFilled()
                   ? "Complete los campos obligatorios antes de continuar"

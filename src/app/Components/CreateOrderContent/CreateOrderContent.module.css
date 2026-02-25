@@ -20,7 +20,9 @@
   margin: 0 auto;
   box-sizing: border-box;
 }
-
+.labelError {
+  color: #dc2626 !important;
+}
 /* Ensure inputs and selects are responsive */
 .input,
 .select {
@@ -199,7 +201,7 @@
 }
 
 .radioOption input[type="radio"]:checked::before {
-  content: '';
+  content: "";
   display: block;
   width: 8px;
   height: 8px;
@@ -302,7 +304,7 @@
 }
 
 .radioInput:checked::before {
-  content: '';
+  content: "";
   display: block;
   width: 8px;
   height: 8px;
