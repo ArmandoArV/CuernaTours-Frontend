@@ -361,7 +361,7 @@ export default function DashboardContent() {
         onSearch={handleSearch}
         emptyMessage="No Hay Contratos Disponibles"
         enablePagination={true}
-        itemsPerPage={5}
+        itemsPerPage={10}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         onFiltersChange={handleFiltersChange}

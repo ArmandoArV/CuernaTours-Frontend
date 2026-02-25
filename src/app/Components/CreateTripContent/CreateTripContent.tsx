@@ -90,7 +90,7 @@ export default function CreateTripContent() {
 
   // Place search and selection handlers
   const handlePlaceSearch = async (
-    query: string
+    query: string,
   ): Promise<SearchableSelectOption[]> => {
     try {
       const results = await referenceService.searchPlaces(query);
@@ -108,7 +108,7 @@ export default function CreateTripContent() {
   const handlePlaceSelect = async (
     field: string,
     placeId: string,
-    option?: SearchableSelectOption
+    option?: SearchableSelectOption,
   ) => {
     setTripFormData((prev) => ({ ...prev, [field]: placeId }));
 
@@ -121,7 +121,7 @@ export default function CreateTripContent() {
     if (option?.data) {
       try {
         const placeDetails = await referenceService.getPlaceById(
-          parseInt(placeId)
+          parseInt(placeId),
         );
         const prefix = field.replace("NombreLugar", "");
 
@@ -130,7 +130,8 @@ export default function CreateTripContent() {
         if (placeDetails.address) updatedErrors[`${prefix}Calle`] = false;
         if (placeDetails.number) updatedErrors[`${prefix}Numero`] = false;
         if (placeDetails.colonia) updatedErrors[`${prefix}Colonia`] = false;
-        if (placeDetails.zip_code) updatedErrors[`${prefix}CodigoPostal`] = false;
+        if (placeDetails.zip_code)
+          updatedErrors[`${prefix}CodigoPostal`] = false;
         if (placeDetails.city) updatedErrors[`${prefix}Ciudad`] = false;
         if (placeDetails.state) updatedErrors[`${prefix}Estado`] = false;
         setFieldErrors(updatedErrors);
@@ -158,7 +159,7 @@ export default function CreateTripContent() {
   const handlePlaceCreated = (
     placeId: number,
     placeName: string,
-    placeData?: any
+    placeData?: any,
   ) => {
     if (placeModalContext === "origen") {
       // Clear errors for autofilled origen fields
@@ -229,16 +230,20 @@ export default function CreateTripContent() {
     setParadas(paradas.filter((p) => p.id !== id));
   };
 
-  const handleParadaChange = (id: string, field: keyof Parada, value: string) => {
+  const handleParadaChange = (
+    id: string,
+    field: keyof Parada,
+    value: string,
+  ) => {
     setParadas(
-      paradas.map((p) => (p.id === id ? { ...p, [field]: value } : p))
+      paradas.map((p) => (p.id === id ? { ...p, [field]: value } : p)),
     );
   };
 
   const handleParadaPlaceSelect = async (
     id: string,
     placeId: string,
-    option?: SearchableSelectOption
+    option?: SearchableSelectOption,
   ) => {
     handleParadaChange(id, "nombreLugar", placeId);
 
@@ -246,7 +251,7 @@ export default function CreateTripContent() {
     if (option?.data) {
       try {
         const placeDetails = await referenceService.getPlaceById(
-          parseInt(placeId)
+          parseInt(placeId),
         );
         setParadas(
           paradas.map((p) =>
@@ -261,8 +266,8 @@ export default function CreateTripContent() {
                   ciudad: placeDetails.city || "",
                   estado: placeDetails.state || "",
                 }
-              : p
-          )
+              : p,
+          ),
         );
       } catch (error) {
         console.error("Error fetching place details:", error);
@@ -320,7 +325,7 @@ export default function CreateTripContent() {
         console.log("No order data found, redirecting...");
         showErrorAlert(
           "Error",
-          "No se encontraron datos del pedido. Redirigiendo..."
+          "No se encontraron datos del pedido. Redirigiendo...",
         );
         setTimeout(() => {
           router.push("/dashboard/createOrder");
@@ -382,7 +387,7 @@ export default function CreateTripContent() {
         const selectedVehicle = unidades.find((u) => u.value === value);
         const unitNumber = field.replace("unidadAsignada", "") || "";
         const placaField = `placa${unitNumber}`;
-        
+
         if (selectedVehicle?.licensePlate) {
           setTripFormData((prev) => ({
             ...prev,
@@ -406,56 +411,6 @@ export default function CreateTripContent() {
     }));
   };
 
-  const handleTimeIncrement = (
-    field: "idaHora" | "idaMinutos" | "regresoHora" | "regresoMinutos"
-  ) => {
-    setTripFormData((prev) => {
-      const current = prev[field] as number;
-      if (field.includes("Hora")) {
-        return { ...prev, [field]: current >= 12 ? 1 : current + 1 };
-      } else {
-        return { ...prev, [field]: current >= 59 ? 0 : current + 1 };
-      }
-    });
-  };
-
-  const handleTimeDecrement = (
-    field: "idaHora" | "idaMinutos" | "regresoHora" | "regresoMinutos"
-  ) => {
-    setTripFormData((prev) => {
-      const current = prev[field] as number;
-      if (field.includes("Hora")) {
-        return { ...prev, [field]: current <= 1 ? 12 : current - 1 };
-      } else {
-        return { ...prev, [field]: current <= 0 ? 59 : current - 1 };
-      }
-    });
-  };
-
-  const parseDDMMYYYYToDate = (dateString: string): Date | null => {
-    if (!dateString) return null;
-    const parts = dateString.split("/");
-    if (parts.length !== 3) return null;
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1;
-    const year = parseInt(parts[2], 10);
-    if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
-
-    if (day < 1 || day > 31 || month < 0 || month > 11 || year < 1900)
-      return null;
-
-    const date = new Date(year, month, day);
-    if (
-      date.getDate() !== day ||
-      date.getMonth() !== month ||
-      date.getFullYear() !== year
-    ) {
-      return null;
-    }
-
-    return date;
-  };
-
   const handleCancel = () => {
     setTripData(tripFormData);
     router.push("/dashboard/createOrder");
@@ -475,27 +430,27 @@ export default function CreateTripContent() {
 
     // Define required fields
     const requiredFields = [
-      'origenNombreLugar',
-      'origenCalle',
-      'origenNumero',
-      'origenColonia',
-      'origenCodigoPostal',
-      'origenCiudad',
-      'origenEstado',
-      'destinoNombreLugar',
-      'destinoCalle',
-      'destinoNumero',
-      'destinoColonia',
-      'destinoCodigoPostal',
-      'destinoCiudad',
-      'destinoEstado',
-      'idaFecha',
-      'numeroPasajeros',
+      "origenNombreLugar",
+      "origenCalle",
+      "origenNumero",
+      "origenColonia",
+      "origenCodigoPostal",
+      "origenCiudad",
+      "origenEstado",
+      "destinoNombreLugar",
+      "destinoCalle",
+      "destinoNumero",
+      "destinoColonia",
+      "destinoCodigoPostal",
+      "destinoCiudad",
+      "destinoEstado",
+      "idaFecha",
+      "numeroPasajeros",
     ];
 
     // Add conditional required fields
     if (canAssignResources) {
-      requiredFields.push('tipoUnidad');
+      requiredFields.push("tipoUnidad");
     }
 
     // Check for missing fields
@@ -515,7 +470,7 @@ export default function CreateTripContent() {
     if (hasErrors) {
       showErrorAlert(
         "Error",
-        "Complete todos los campos obligatorios marcados en rojo"
+        "Complete todos los campos obligatorios marcados en rojo",
       );
       return;
     }
@@ -531,10 +486,7 @@ export default function CreateTripContent() {
 
       // Create contract with embedded trip using new comprehensive endpoint
       const contractPayload = {
-        ...mapCompleteOrderToPayload(
-          orderData as OrderFormData,
-          tripFormData
-        ),
+        ...mapCompleteOrderToPayload(orderData as OrderFormData, tripFormData),
         send_notification: sendNotification,
       };
       console.log("Contract payload:", contractPayload);
@@ -543,10 +495,10 @@ export default function CreateTripContent() {
       console.log("Contract created:", result);
 
       showSuccessAlert("Éxito", "Contrato y viaje creados correctamente");
-      
+
       // Clear all form data
       clearData();
-      
+
       // Clear local trip form data
       setTripFormData({
         ...tripData,
@@ -560,13 +512,13 @@ export default function CreateTripContent() {
         unidadAsignada3: "",
         placa3: "",
       });
-      
+
       // Clear paradas
       setParadas([]);
-      
+
       // Clear field errors
       setFieldErrors({});
-      
+
       router.push("/dashboard");
     } catch (error) {
       console.error("Error creating contract and trip:", error);
@@ -578,7 +530,7 @@ export default function CreateTripContent() {
           "Error",
           error instanceof Error
             ? error.message
-            : "Error al crear el contrato y viaje"
+            : "Error al crear el contrato y viaje",
         );
       }
     }
@@ -596,8 +548,7 @@ export default function CreateTripContent() {
           <div>
             <h1 className={styles.title}>Crear viaje</h1>
             <p className={styles.subtitle} style={{ color: "red" }}>
-              Campos obligatorios{" "}
-              <strong style={{ color: "red" }}>* </strong>
+              Campos obligatorios <strong style={{ color: "red" }}>* </strong>
             </p>
           </div>
         </div>
@@ -620,7 +571,9 @@ export default function CreateTripContent() {
               placeholder="dd/mm/yyyy"
               required
               hasError={fieldErrors.idaFecha}
-              errorMessage={fieldErrors.idaFecha ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.idaFecha ? "Este campo es obligatorio" : ""
+              }
             />
             <InputComponent
               type="number"
@@ -657,7 +610,9 @@ export default function CreateTripContent() {
               }
               className={styles.input}
               hasError={fieldErrors.idaPasajeros}
-              errorMessage={fieldErrors.idaPasajeros ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.idaPasajeros ? "Este campo es obligatorio" : ""
+              }
             />
           </div>
 
@@ -675,7 +630,9 @@ export default function CreateTripContent() {
               placeholder="Buscar"
               className={styles.input}
               hasError={fieldErrors.origenNombreLugar}
-              errorMessage={fieldErrors.origenNombreLugar ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.origenNombreLugar ? "Este campo es obligatorio" : ""
+              }
             />
           </div>
           <div className={styles.section}>
@@ -690,7 +647,9 @@ export default function CreateTripContent() {
               }
               containerClassName={styles.streetInputContainer}
               hasError={fieldErrors.origenCalle}
-              errorMessage={fieldErrors.origenCalle ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.origenCalle ? "Este campo es obligatorio" : ""
+              }
             />
             <InputComponent
               type="text"
@@ -703,7 +662,9 @@ export default function CreateTripContent() {
               }
               containerClassName={styles.numberInputContainer}
               hasError={fieldErrors.origenNumero}
-              errorMessage={fieldErrors.origenNumero ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.origenNumero ? "Este campo es obligatorio" : ""
+              }
             />
           </div>
           <div className={styles.section}>
@@ -719,7 +680,9 @@ export default function CreateTripContent() {
               className={styles.input}
               containerClassName={styles.streetInputContainer}
               hasError={fieldErrors.origenColonia}
-              errorMessage={fieldErrors.origenColonia ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.origenColonia ? "Este campo es obligatorio" : ""
+              }
             />
             <InputComponent
               type="text"
@@ -733,7 +696,11 @@ export default function CreateTripContent() {
               className={styles.input}
               containerClassName={styles.numberInputContainer}
               hasError={fieldErrors.origenCodigoPostal}
-              errorMessage={fieldErrors.origenCodigoPostal ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.origenCodigoPostal
+                  ? "Este campo es obligatorio"
+                  : ""
+              }
             />
           </div>
           <div className={styles.section}>
@@ -748,7 +715,9 @@ export default function CreateTripContent() {
               }
               className={styles.input}
               hasError={fieldErrors.origenCiudad}
-              errorMessage={fieldErrors.origenCiudad ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.origenCiudad ? "Este campo es obligatorio" : ""
+              }
             />
             <InputComponent
               type="text"
@@ -761,7 +730,9 @@ export default function CreateTripContent() {
               }
               className={styles.input}
               hasError={fieldErrors.origenEstado}
-              errorMessage={fieldErrors.origenEstado ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.origenEstado ? "Este campo es obligatorio" : ""
+              }
             />
           </div>
 
@@ -853,7 +824,11 @@ export default function CreateTripContent() {
               placeholder="Buscar"
               className={styles.input}
               hasError={fieldErrors.destinoNombreLugar}
-              errorMessage={fieldErrors.destinoNombreLugar ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.destinoNombreLugar
+                  ? "Este campo es obligatorio"
+                  : ""
+              }
             />
           </div>
           <div className={styles.section}>
@@ -868,7 +843,9 @@ export default function CreateTripContent() {
               }
               containerClassName={styles.streetInputContainer}
               hasError={fieldErrors.destinoCalle}
-              errorMessage={fieldErrors.destinoCalle ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.destinoCalle ? "Este campo es obligatorio" : ""
+              }
             />
             <InputComponent
               type="text"
@@ -881,7 +858,9 @@ export default function CreateTripContent() {
               }
               containerClassName={styles.numberInputContainer}
               hasError={fieldErrors.destinoNumero}
-              errorMessage={fieldErrors.destinoNumero ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.destinoNumero ? "Este campo es obligatorio" : ""
+              }
             />
           </div>
           <div className={styles.section}>
@@ -897,7 +876,9 @@ export default function CreateTripContent() {
               className={styles.input}
               containerClassName={styles.streetInputContainer}
               hasError={fieldErrors.destinoColonia}
-              errorMessage={fieldErrors.destinoColonia ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.destinoColonia ? "Este campo es obligatorio" : ""
+              }
             />
             <InputComponent
               type="text"
@@ -911,7 +892,11 @@ export default function CreateTripContent() {
               className={styles.input}
               containerClassName={styles.numberInputContainer}
               hasError={fieldErrors.destinoCodigoPostal}
-              errorMessage={fieldErrors.destinoCodigoPostal ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.destinoCodigoPostal
+                  ? "Este campo es obligatorio"
+                  : ""
+              }
             />
           </div>
           <div className={styles.section}>
@@ -926,7 +911,9 @@ export default function CreateTripContent() {
               }
               className={styles.input}
               hasError={fieldErrors.destinoCiudad}
-              errorMessage={fieldErrors.destinoCiudad ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.destinoCiudad ? "Este campo es obligatorio" : ""
+              }
             />
             <InputComponent
               type="text"
@@ -939,7 +926,9 @@ export default function CreateTripContent() {
               }
               className={styles.input}
               hasError={fieldErrors.destinoEstado}
-              errorMessage={fieldErrors.destinoEstado ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.destinoEstado ? "Este campo es obligatorio" : ""
+              }
             />
           </div>
 
@@ -955,7 +944,9 @@ export default function CreateTripContent() {
               label="No. de pasajeros"
               className={styles.input}
               hasError={fieldErrors.numeroPasajeros}
-              errorMessage={fieldErrors.numeroPasajeros ? "Este campo es obligatorio" : ""}
+              errorMessage={
+                fieldErrors.numeroPasajeros ? "Este campo es obligatorio" : ""
+              }
             />
           </div>
 
@@ -969,12 +960,12 @@ export default function CreateTripContent() {
                   <input
                     type="radio"
                     name="tipoViaje"
-                    value="oneWay"
-                    checked={tripFormData.tipoViaje === "oneWay"}
+                    value="sencillo"
+                    checked={tripFormData.tipoViaje === "sencillo"}
                     onChange={() =>
                       setTripFormData((prev) => ({
                         ...prev,
-                        tipoViaje: "oneWay",
+                        tipoViaje: "sencillo",
                       }))
                     }
                   />
@@ -985,11 +976,11 @@ export default function CreateTripContent() {
                     type="radio"
                     name="tipoViaje"
                     value="roundTrip"
-                    checked={tripFormData.tipoViaje === "roundTrip"}
+                    checked={tripFormData.tipoViaje === "redondo"}
                     onChange={() =>
                       setTripFormData((prev) => ({
                         ...prev,
-                        tipoViaje: "roundTrip",
+                        tipoViaje: "redondo",
                       }))
                     }
                   />
@@ -999,7 +990,7 @@ export default function CreateTripContent() {
             </div>
           </div>
 
-          {tripFormData.tipoViaje === "roundTrip" && (
+          {tripFormData.tipoViaje === "redondo" && (
             <>
               <div className={styles.divider}>
                 <h2 className={styles.subsectionTitle}>Regreso</h2>
@@ -1093,7 +1084,9 @@ export default function CreateTripContent() {
                   }
                   className={styles.input}
                   hasError={fieldErrors.tipoUnidad}
-                  errorMessage={fieldErrors.tipoUnidad ? "Este campo es obligatorio" : ""}
+                  errorMessage={
+                    fieldErrors.tipoUnidad ? "Este campo es obligatorio" : ""
+                  }
                 />
               </div>
               <div className={styles.section}>
@@ -1101,22 +1094,22 @@ export default function CreateTripContent() {
                   label="Chofer"
                   options={[
                     { value: "POR_ASIGNAR", label: "Por Asignar" },
-                    ...choferes
+                    ...choferes,
                   ]}
                   value={tripFormData.nombreChofer || ""}
                   onChange={handleTripSelectChange("nombreChofer")}
                   className={styles.input}
                 />
               </div>
-              
+
               <h3 className={styles.subsectionTitle}>Unidades Asignadas</h3>
-              
+
               <div className={styles.section}>
                 <SelectComponent
                   label="Unidad 1"
                   options={[
                     { value: "POR_ASIGNAR", label: "Por Asignar" },
-                    ...unidades
+                    ...unidades,
                   ]}
                   value={tripFormData.unidadAsignada1 || ""}
                   onChange={handleTripSelectChange("unidadAsignada1")}
@@ -1130,13 +1123,13 @@ export default function CreateTripContent() {
                   className={styles.input}
                 />
               </div>
-              
+
               <div className={styles.section}>
                 <SelectComponent
                   label="Unidad 2"
                   options={[
                     { value: "POR_ASIGNAR", label: "Por Asignar" },
-                    ...unidades
+                    ...unidades,
                   ]}
                   value={tripFormData.unidadAsignada2 || ""}
                   onChange={handleTripSelectChange("unidadAsignada2")}
@@ -1150,13 +1143,13 @@ export default function CreateTripContent() {
                   className={styles.input}
                 />
               </div>
-              
+
               <div className={styles.section}>
                 <SelectComponent
                   label="Unidad 3"
                   options={[
                     { value: "POR_ASIGNAR", label: "Por Asignar" },
-                    ...unidades
+                    ...unidades,
                   ]}
                   value={tripFormData.unidadAsignada3 || ""}
                   onChange={handleTripSelectChange("unidadAsignada3")}
