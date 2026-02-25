@@ -2,6 +2,9 @@
 import React, { useState } from "react";
 import styles from "./ConfirmationModal.module.css";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
+import RouteTimeline, {
+  RouteLocation,
+} from "@/app/Components/RouteTimeline/RouteTimeline";
 
 interface Parada {
   id: string;
@@ -36,7 +39,35 @@ export default function ConfirmationModal({
   const [sendNotification, setSendNotification] = useState(true);
 
   if (!isOpen) return null;
+  const origenLabel =
+    lugares.find((l) => l.value === tripFormData?.origenNombreLugar)?.label ||
+    tripFormData?.origenNombreLugar ||
+    "Origen";
 
+  const destinoLabel =
+    lugares.find((l) => l.value === tripFormData?.destinoNombreLugar)?.label ||
+    tripFormData?.destinoNombreLugar ||
+    "Destino";
+
+  const routeLocations: RouteLocation[] = [
+    {
+      label: origenLabel,
+      type: "origin",
+    },
+
+    ...(paradas ?? []).map<RouteLocation>((parada) => ({
+      id: parada.id,
+      label:
+        lugares.find((l) => l.value === parada.nombreLugar)?.label ||
+        parada.nombreLugar,
+      type: "stop",
+    })),
+
+    {
+      label: destinoLabel,
+      type: "destination",
+    },
+  ];
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
@@ -80,7 +111,9 @@ export default function ConfirmationModal({
               <div className={styles.infoItem}>
                 <div className={styles.summaryLabel}>No. pasajeros</div>
                 <div className={styles.summaryValue}>
-                  {tripFormData?.idaPasajeros || tripFormData?.numeroPasajeros || "0"}
+                  {tripFormData?.idaPasajeros ||
+                    tripFormData?.numeroPasajeros ||
+                    "0"}
                 </div>
               </div>
 
@@ -113,50 +146,7 @@ export default function ConfirmationModal({
 
             {/* RIGHT: ROUTE BUBBLES */}
             <div className={styles.rightColumn}>
-              <div className={styles.routeSection}>
-                {/* Origin */}
-                <div className={styles.routeItem}>
-                  <div className={styles.outsideBubble}>
-                    <div className={styles.routeBubble}>1</div>
-                  </div>
-                  <span className={styles.routeText}>
-                    {lugares.find(
-                      (l) => l.value === tripFormData?.origenNombreLugar
-                    )?.label ||
-                      tripFormData?.origenNombreLugar ||
-                      "Origen"}
-                  </span>
-                </div>
-
-                {/* Paradas (stops) */}
-                {paradas &&
-                  paradas.length > 0 &&
-                  paradas.map((parada, index) => (
-                    <div key={parada.id} className={styles.routeItem}>
-                      <div className={styles.outsideBubble}>
-                        <div className={styles.routeBubble}>{index + 2}</div>
-                      </div>
-                      <span className={styles.routeText}>
-                        {lugares.find((l) => l.value === parada.nombreLugar)
-                          ?.label || parada.nombreLugar}
-                      </span>
-                    </div>
-                  ))}
-
-                {/* Destination */}
-                <div className={styles.routeItem}>
-                  <div className={styles.outsideBubble}>
-                    <div className={styles.routeBubble}>{paradas.length + 2}</div>
-                  </div>
-                  <span className={styles.routeText}>
-                    {lugares.find(
-                      (l) => l.value === tripFormData?.destinoNombreLugar
-                    )?.label ||
-                      tripFormData?.destinoNombreLugar ||
-                      "Destino"}
-                  </span>
-                </div>
-              </div>
+              <RouteTimeline locations={routeLocations} />
             </div>
           </div>
 
@@ -164,22 +154,23 @@ export default function ConfirmationModal({
           <div className={styles.summarySection}>
             <div className={styles.radioBlock}>
               <span className={styles.radioTitle}>
-                Mandar notificación al cliente <strong style={{color:"red"}} >*</strong>
+                Mandar notificación al cliente{" "}
+                <strong style={{ color: "red" }}>*</strong>
               </span>
               <div className={styles.radioOptions}>
                 <label className={styles.radioOption}>
-                  <input 
-                    type="radio" 
-                    name="notif" 
+                  <input
+                    type="radio"
+                    name="notif"
                     checked={sendNotification === true}
                     onChange={() => setSendNotification(true)}
                   />
                   <span>Sí</span>
                 </label>
                 <label className={styles.radioOption}>
-                  <input 
-                    type="radio" 
-                    name="notif" 
+                  <input
+                    type="radio"
+                    name="notif"
                     checked={sendNotification === false}
                     onChange={() => setSendNotification(false)}
                   />

@@ -19,6 +19,15 @@
   margin-bottom: 2rem;
 }
 
+/* =========================
+   TRIP DATES SIDE BY SIDE
+========================= */
+
+.tripDates {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
 .backButton {
   background-color: #f3f2f1;
   color: #333;
@@ -53,12 +62,26 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+.contractHeader {
+  position: relative;
+}
+
 .contractGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem 2rem;
+  padding-right: 240px;
 }
 
+.tripDates {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
 /* Labels & Values */
 
 .label {
@@ -131,22 +154,27 @@
 /* LEFT COLUMN */
 
 .servicesLeft {
-  background: #f4f4f4;
+  background: var(--Main-FFFFFF);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  text-align: center;
+  align-items: center;
+  width: 220px;
 }
 
 .serviceTab {
-  background: transparent;
   border: none;
   padding: 0.75rem;
-  text-align: left;
+  text-align: center;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
   transition: background 0.2s ease;
+  background-color: var(--Background-F5F7FA);
+  color: var(--Text-Primary-333);
+  width: 110px;
 }
 
 .serviceTab:hover {

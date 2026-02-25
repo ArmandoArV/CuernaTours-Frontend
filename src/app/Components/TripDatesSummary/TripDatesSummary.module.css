@@ -1,0 +1,51 @@
+.container {
+  display: flex;
+  align-items: center;
+  background: #f3f2f1;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  gap: 1rem;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.label {
+  font-size: 0.75rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.date strong {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.date span {
+  display: block;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+  color: #444;
+}
+
+.date small {
+  display: block;
+  font-size: 0.75rem;
+  color: #777;
+}
+
+.divider {
+  width: 1px;
+  height: 48px;
+  background: #d1d1d1;
+}
