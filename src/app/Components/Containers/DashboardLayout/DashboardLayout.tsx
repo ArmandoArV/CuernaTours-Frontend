@@ -30,7 +30,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       link: "/dashboard/historical",
       icon: <HistoryFilled />,
     }, // Visible to all
-    { title: "Perfil", link: "/profile", icon: <PersonCircleFilled /> }, // Visible to all
   ];
 
   const handleNotificationClick = () => {

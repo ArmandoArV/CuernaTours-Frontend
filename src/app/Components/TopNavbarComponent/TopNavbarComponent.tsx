@@ -64,8 +64,11 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
           const userRole =
             userData.role?.name ||
             userData.role ||
-            (userData.role_id ? getRoleName(userData.role_id) : 
-             userData.roleId ? getRoleName(userData.roleId) : "Usuario");
+            (userData.role_id
+              ? getRoleName(userData.role_id)
+              : userData.roleId
+                ? getRoleName(userData.roleId)
+                : "Usuario");
 
           setUserInfo({
             name: formattedName,
@@ -131,10 +134,10 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
     };
 
     // Listen for route changes
-    window.addEventListener('popstate', handleRouteChange);
-    
+    window.addEventListener("popstate", handleRouteChange);
+
     return () => {
-      window.removeEventListener('popstate', handleRouteChange);
+      window.removeEventListener("popstate", handleRouteChange);
     };
   }, []);
 
@@ -193,7 +196,7 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
               setTimeout(() => {
                 router.push("/");
               }, 50);
-            }
+            },
           );
         } catch (error) {
           console.error("Logout error:", error);
@@ -207,14 +210,14 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
               setTimeout(() => {
                 router.push("/");
               }, 50);
-            }
+            },
           );
         }
       },
       () => {
         // Cancel function - do nothing
         console.log("Logout cancelled");
-      }
+      },
     );
   };
 
@@ -250,13 +253,6 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
 
             {isUserMenuOpen && (
               <div className={styles.userDropdown}>
-                <div
-                  className={styles.dropdownItem}
-                  onClick={handleProfileClick}
-                >
-                  <PersonRegular className={styles.dropdownIcon} />
-                  Perfil
-                </div>
                 <div
                   className={styles.dropdownItem}
                   onClick={handleLogoutClick}

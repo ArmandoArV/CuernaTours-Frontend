@@ -29,6 +29,16 @@ const STATUS_MAP: Record<number, string> = {
   7: "Cancelado",
 };
 
+// ✅ Prevent UTC parsing problems
+const parseLocalDate = (dateStr: string) => {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
+
+// ✅ Compare only calendar days (timezone-safe)
+const toDayNumber = (date: Date) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+
 // Function to transform API data to table format (contract-based)
 // Function to transform API data to table format (contract-based)
 function transformApiData(apiData: any[]): any[] {
@@ -204,20 +214,24 @@ export default function DashboardContent() {
   // Transform API data for the table
   const transformedData = transformApiData(contractsData);
 
-  // Apply date range filter
   const sampleData = useMemo(() => {
+    // No filter applied
     if (!dateRangeStart || !dateRangeEnd) {
       return transformedData;
     }
 
-    const startDate = new Date(dateRangeStart);
-    const endDate = new Date(dateRangeEnd);
-    endDate.setHours(23, 59, 59, 999); // Include the end date entirely
+    const startDate = parseLocalDate(dateRangeStart);
+    const endDate = parseLocalDate(dateRangeEnd);
+
+    const startDay = toDayNumber(startDate);
+    const endDay = toDayNumber(endDate);
 
     return transformedData.filter((item) => {
       if (!item._sortDate) return false;
-      const itemDate = new Date(item._sortDate);
-      return itemDate >= startDate && itemDate <= endDate;
+
+      const itemDay = toDayNumber(new Date(item._sortDate));
+
+      return itemDay >= startDay && itemDay <= endDay;
     });
   }, [transformedData, dateRangeStart, dateRangeEnd]);
 
@@ -243,9 +257,7 @@ export default function DashboardContent() {
       "Empresa O Cliente",
       "Cliente",
       Array.from(
-        new Set(
-          sampleData.map((item) => item["Empresa O Cliente"]).filter(Boolean),
-        ),
+        new Set(transformedData.map((item) => item["Empresa O Cliente"])),
       ),
       "Filtrar Por Cliente",
     ),
