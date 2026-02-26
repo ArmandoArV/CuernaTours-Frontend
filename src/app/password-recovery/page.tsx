@@ -6,12 +6,41 @@ import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authService, ApiError } from "@/services/api";
 import { showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
-
+import { Button, Input, Text, Field } from "@fluentui/react-components";
+import { EyeRegular, EyeOffRegular } from "@fluentui/react-icons";
+import { makeStyles, shorthands } from "@fluentui/react-components";
+import Image from "next/image";
+const useFluentOverrides = makeStyles({
+  inputRoot: {
+    backgroundColor: "#f3f3f3",
+    border: "1px solid #d1d1d1",
+    borderRadius: "4px",
+    ...shorthands.padding("6px", "10px"),
+  },
+  inputRootFocused: {
+    border: "1px solid #b48b2b",
+    boxShadow: "0 0 0 2px rgba(180,139,43,0.15)",
+  },
+  eyeButton: {
+    minWidth: "unset",
+    padding: "4px",
+  },
+  primaryButton: {
+    backgroundColor: "#b48b2b",
+    border: "1px solid #b48b2b",
+    width: "200px",
+    fontWeight: 600,
+  },
+  primaryButtonHover: {
+    backgroundColor: "#9e7924",
+    border: "1px solid #b48b2b",
+  },
+});
 export default function PasswordRecoveryPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  
+  const fluentStyles = useFluentOverrides();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -32,17 +61,26 @@ export default function PasswordRecoveryPage() {
   const validateToken = async (tokenValue: string) => {
     try {
       setValidatingToken(true);
-      await authService.verifyResetToken(tokenValue);
-      setTokenValid(true);
+
+      const result = await authService.verifyResetToken(tokenValue);
+
+      if (result.valid) {
+        setTokenValid(true);
+      } else {
+        setTokenValid(false);
+        showErrorAlert(
+          "Token inválido",
+          "El enlace de restablecimiento de contraseña no es válido o ha expirado.",
+        );
+      }
     } catch (error) {
       console.error("Error validating token:", error);
       setTokenValid(false);
-      if (error instanceof ApiError) {
-        showErrorAlert(
-          "Token inválido",
-          "El enlace de restablecimiento de contraseña no es válido o ha expirado."
-        );
-      }
+
+      showErrorAlert(
+        "Token inválido",
+        "El enlace de restablecimiento de contraseña no es válido o ha expirado.",
+      );
     } finally {
       setValidatingToken(false);
     }
@@ -64,7 +102,7 @@ export default function PasswordRecoveryPage() {
     if (password.length < 6) {
       showErrorAlert(
         "Contraseña débil",
-        "La contraseña debe tener al menos 6 caracteres."
+        "La contraseña debe tener al menos 6 caracteres.",
       );
       return;
     }
@@ -82,19 +120,20 @@ export default function PasswordRecoveryPage() {
         "Tu contraseña ha sido restablecida correctamente.",
         () => {
           router.push("/");
-        }
+        },
       );
     } catch (error) {
       console.error("Error resetting password:", error);
       if (error instanceof ApiError) {
         showErrorAlert(
           "Error",
-          error.message || "No se pudo restablecer la contraseña. El enlace puede haber expirado."
+          error.message ||
+            "No se pudo restablecer la contraseña. El enlace puede haber expirado.",
         );
       } else {
         showErrorAlert(
           "Error",
-          "No se pudo restablecer la contraseña. Por favor, intenta nuevamente."
+          "No se pudo restablecer la contraseña. Por favor, intenta nuevamente.",
         );
       }
     } finally {
@@ -116,10 +155,19 @@ export default function PasswordRecoveryPage() {
     return (
       <div className={styles.pageWrap}>
         <div className={styles.card}>
-          <div className={styles.logo}>CUERNATOURS</div>
+          <div className={styles.logo}>
+            <Image
+              src="/Images/CuernatoursLogo.svg"
+              alt="Cuernatours Logo"
+              width={120}
+              height={90}
+              priority
+            />
+          </div>
           <h2 className={styles.title}>Enlace inválido</h2>
           <p className={styles.errorText}>
-            El enlace de restablecimiento de contraseña no es válido o ha expirado.
+            El enlace de restablecimiento de contraseña no es válido o ha
+            expirado.
           </p>
           <button
             className={styles.backHomeButton}
@@ -143,51 +191,66 @@ export default function PasswordRecoveryPage() {
           <ArrowLeftRegular />
         </button>
 
-        <div className={styles.logo}>CUERNATOURS</div>
+        <div className={styles.logo}>
+          <Image
+            src="/Images/CuernatoursLogo.svg"
+            alt="Cuernatours Logo"
+            width={180}
+            height={120}
+            priority
+          />
+        </div>
         <h2 className={styles.title}>Recuperar contraseña</h2>
 
         <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.passwordContainer}>
-            <input
+          <Field>
+            <Input
               type={showPassword ? "text" : "password"}
               placeholder="Contraseña nueva"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={styles.input}
-              autoComplete="new-password"
+              onChange={(_, data) => setPassword(data.value)}
+              className={fluentStyles.inputRoot}
+              contentAfter={
+                <Button
+                  appearance="subtle"
+                  size="small"
+                  icon={showPassword ? <EyeOffRegular /> : <EyeRegular />}
+                  onClick={() => setShowPassword(!showPassword)}
+                  className={fluentStyles.eyeButton}
+                />
+              }
             />
-            <button
-              type="button"
-              className={styles.togglePassword}
-              onClick={() => setShowPassword(!showPassword)}
-              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-            >
-              {showPassword ? "🙈" : "👁️"}
-            </button>
-          </div>
+          </Field>
 
-          <div className={styles.passwordContainer}>
-            <input
+          <Field>
+            <Input
               type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirmar contraseña nueva"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className={styles.input}
-              autoComplete="new-password"
+              onChange={(_, data) => setConfirmPassword(data.value)}
+              className={fluentStyles.inputRoot}
+              contentAfter={
+                <Button
+                  appearance="subtle"
+                  size="small"
+                  className={fluentStyles.eyeButton}
+                  icon={
+                    showConfirmPassword ? <EyeOffRegular /> : <EyeRegular />
+                  }
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                />
+              }
             />
-            <button
-              type="button"
-              className={styles.togglePassword}
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-            >
-              {showConfirmPassword ? "🙈" : "👁️"}
-            </button>
-          </div>
+          </Field>
 
-          <button type="submit" className={styles.submitBtn} disabled={loading}>
+          <Button
+            appearance="primary"
+            type="submit"
+            disabled={loading}
+            className={`${styles.submitBtn} ${fluentStyles.primaryButton}`}
+          >
             {loading ? "Restableciendo..." : "Restablecer contraseña"}
-          </button>
+          </Button>
         </form>
       </div>
     </div>
