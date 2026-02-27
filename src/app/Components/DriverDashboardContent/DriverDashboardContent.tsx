@@ -117,7 +117,6 @@ export default function DriverDashboardContent() {
           showActions
           onRowClick={handleRowClick}
           onPayDriver={handleAddPayment}
-          emptyMessage="No tienes viajes asignados en este momento"
           enablePagination
           itemsPerPage={10}
           currentPage={currentPage}

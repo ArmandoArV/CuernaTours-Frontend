@@ -22,6 +22,36 @@
   background-color: white;
 }
 
+.actionsContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.actionsContainer > * {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionsContainer button {
+  min-width: unset;
+  height: 32px;
+  width: 32px;
+  padding: 0;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.actionsWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
 .table tbody tr td:first-child {
   padding-left: 36px; /* 16px + 20px for the color bar */
 }

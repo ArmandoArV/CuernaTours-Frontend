@@ -18,8 +18,9 @@ interface FilterableTableProps extends Omit<TableComponentProps, "data"> {
   onFiltersChange?: (filters: Record<string, string | string[]>) => void;
   onSearch?: (searchTerm: string) => void;
   actionButtons?: React.ReactNode;
+  title?: string;
+  description?: string;
 }
-
 const FilterableTableComponent: React.FC<FilterableTableProps> = ({
   originalData,
   filterConfigs = [],
@@ -54,9 +55,10 @@ const FilterableTableComponent: React.FC<FilterableTableProps> = ({
             originalData
               .map((row) => row[key])
               .filter(
-                (value) => value !== null && value !== undefined && value !== ""
-              )
-          )
+                (value) =>
+                  value !== null && value !== undefined && value !== "",
+              ),
+          ),
         );
 
         if (uniqueValues.length > 1 && uniqueValues.length < 50) {
@@ -75,8 +77,8 @@ const FilterableTableComponent: React.FC<FilterableTableProps> = ({
               FilterPresets.createSelectFilter(
                 key,
                 key.charAt(0).toUpperCase() + key.slice(1),
-                uniqueValues
-              )
+                uniqueValues,
+              ),
             );
           }
         }
@@ -94,7 +96,7 @@ const FilterableTableComponent: React.FC<FilterableTableProps> = ({
     if (searchTerm.trim()) {
       data = data.filter((row) => {
         return Object.values(row).some((value) =>
-          String(value).toLowerCase().includes(searchTerm.toLowerCase().trim())
+          String(value).toLowerCase().includes(searchTerm.toLowerCase().trim()),
         );
       });
     }
@@ -119,7 +121,7 @@ const FilterableTableComponent: React.FC<FilterableTableProps> = ({
               String(rowValue).toLowerCase().trim() ===
               String(filterValue).toLowerCase().trim()
             );
-          }
+          },
         );
       });
     }
@@ -142,7 +144,6 @@ const FilterableTableComponent: React.FC<FilterableTableProps> = ({
       {/* Title */}
       {title && <h2 className={styles.title}>{title}</h2>}
       {description && <p className={styles.description}>{description}</p>}
-
       {/* Search, Filter and Action Bar */}
       <div className={styles.searchFilterBar}>
         {enableFiltering && defaultFilterConfigs.length > 0 && (
@@ -165,13 +166,7 @@ const FilterableTableComponent: React.FC<FilterableTableProps> = ({
           <div className={styles.actionSection}>{actionButtons}</div>
         )}
       </div>
-
-      <TableComponent
-        {...tableProps}
-        data={filteredData}
-        title={undefined} // Remove title from table since we show it above
-        description={undefined} // Remove description from table since we show it above
-      />
+      <TableComponent {...tableProps} data={filteredData} />{" "}
     </div>
   );
 };
@@ -224,7 +219,7 @@ export const FilterableTableExample: React.FC = () => {
   const customFilters: FilterConfig[] = [
     FilterPresets.createDateFilter(
       "fecha",
-      sampleData.map((d) => d.fecha)
+      sampleData.map((d) => d.fecha),
     ),
     FilterPresets.createSelectFilter("encargado", "Encargado", [
       "Juan Pérez",
@@ -260,7 +255,6 @@ export const FilterableTableExample: React.FC = () => {
       showActions={true}
       onFiltersChange={(filters) => console.log("Filters changed:", filters)}
       onViewDetails={(row) => console.log("View details:", row)}
-      onEdit={(row) => console.log("Edit:", row)}
     />
   );
 };
