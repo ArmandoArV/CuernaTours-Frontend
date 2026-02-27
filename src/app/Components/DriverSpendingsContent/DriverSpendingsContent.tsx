@@ -3,65 +3,44 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import FilterableTableComponent from "@/app/Components/FilterableTable/FilterableTableComponent";
 import { FilterConfig, FilterPresets } from "@/app/Components/FilterComponent";
-import ButtonComponent from "@/app/Components/ButtonComponent/ButtonComponent";
 import { AddFilled } from "@fluentui/react-icons";
+import { Button } from "@fluentui/react-components";
 import LoadingComponent from "@/app/Components/LoadingComponent/LoadingComponent";
-import { getCookie } from "@/app/Utils/CookieUtil";
+import DriverSpendingsCard from "@/app/Components/DriverSpendingsCard/DriverSpendingsCard";
+import { useIsMobile } from "@/app/hooks/useIsMobile";
 import styles from "./DriverSpendingsContent.module.css";
+import { useDriverId } from "@/app/hooks/useDriverId";
 
 export default function DriverSpendingsContent() {
   const router = useRouter();
+  const isMobile = useIsMobile();
+
+  const { driverId, error, loading: driverLoading } = useDriverId();
   const [currentPage, setCurrentPage] = useState(1);
   const [spendingsData, setSpendingsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [driverId, setDriverId] = useState<number | null>(null);
 
-  // Get driver ID from user cookie
-  useEffect(() => {
-    try {
-      const userCookie = getCookie("user");
-      if (userCookie) {
-        const userData = JSON.parse(userCookie);
-        // Try multiple possible ID fields
-        const userId = userData.id || userData.user_id || userData.userId;
-        
-        if (userId) {
-          setDriverId(userId);
-        } else {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error("Error getting user data:", error);
-      setLoading(false);
-    }
-  }, []);
-
-  // Fetch spendings (mock data for now)
+  /* ------------------ Fetch Spendings ------------------ */
   useEffect(() => {
     if (!driverId) return;
 
     setLoading(true);
-    
-    // TODO: Replace with actual API call
-    // const spendings = await spendingsService.getByDriver(driverId);
-    
-    // Mock data
-    setTimeout(() => {
+
+    const timer = setTimeout(() => {
       setSpendingsData([
         {
-          "ID": 1,
-          "Fecha": new Date().toLocaleDateString(),
-          "Categoría": "Combustible",
-          "Monto": "$500.00",
-          "Estatus": "Pendiente",
-          "Descripción": "Carga de combustible en viaje a CDMX",
+          ID: 1,
+          Fecha: new Date().toLocaleDateString(),
+          Categoría: "Combustible",
+          Monto: "$500.00",
+          Estatus: "Pendiente",
+          Descripción: "Carga de combustible en viaje a CDMX",
         },
       ]);
       setLoading(false);
     }, 500);
+
+    return () => clearTimeout(timer);
   }, [driverId]);
 
   const handleCreateSpending = () => {
@@ -69,7 +48,6 @@ export default function DriverSpendingsContent() {
   };
 
   const handleRowClick = (row: any) => {
-    // Navigate to spending details if needed
     console.log("Clicked spending:", row);
   };
 
@@ -77,46 +55,82 @@ export default function DriverSpendingsContent() {
     FilterPresets.createStatusFilter(
       "Estatus",
       ["Pendiente", "Aprobado", "Rechazado"],
-      "Filtrar por Estatus"
+      "Filtrar por Estatus",
     ),
   ];
+
+  if (driverLoading) {
+    return <LoadingComponent message="Verificando sesión..." />;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   if (loading) {
     return <LoadingComponent message="Cargando gastos..." />;
   }
-
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
+      {/* Header */}
+      <div
+        className={`${styles.header} ${isMobile ? styles.headerMobile : ""}`}
+      >
         <div>
           <h1 className={styles.title}>Mis Gastos</h1>
           <p className={styles.subtitle}>
-            {spendingsData.length} {spendingsData.length === 1 ? "gasto registrado" : "gastos registrados"}
+            {spendingsData.length}{" "}
+            {spendingsData.length === 1
+              ? "gasto registrado"
+              : "gastos registrados"}
           </p>
         </div>
-        <ButtonComponent
-          text="Registrar Gasto"
+
+        <Button
+          appearance="primary"
           icon={<AddFilled />}
           onClick={handleCreateSpending}
-          className={styles.createButton}
-        />
+        >
+          Registrar Gasto
+        </Button>
       </div>
 
-      <FilterableTableComponent
-        title="Gastos Registrados"
-        originalData={spendingsData}
-        columns={["ID", "Fecha", "Categoría", "Monto", "Estatus", "Descripción"]}
-        filterConfigs={filterConfigs}
-        enableFiltering={true}
-        enableSearch={true}
-        showActions={false}
-        onRowClick={handleRowClick}
-        emptyMessage="No has registrado gastos aún"
-        enablePagination={true}
-        itemsPerPage={10}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-      />
+      {isMobile ? (
+        <div>
+          {spendingsData.length === 0 ? (
+            <p>No has registrado gastos aún</p>
+          ) : (
+            spendingsData.map((spending, index) => (
+              <DriverSpendingsCard
+                key={index}
+                spending={spending}
+                onClick={(row) => handleRowClick(row)}
+              />
+            ))
+          )}
+        </div>
+      ) : (
+        <FilterableTableComponent
+          title="Gastos Registrados"
+          originalData={spendingsData}
+          columns={[
+            "ID",
+            "Fecha",
+            "Categoría",
+            "Monto",
+            "Estatus",
+            "Descripción",
+          ]}
+          filterConfigs={filterConfigs}
+          enableFiltering
+          enableSearch
+          showActions={false}
+          enablePagination
+          itemsPerPage={10}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   );
 }

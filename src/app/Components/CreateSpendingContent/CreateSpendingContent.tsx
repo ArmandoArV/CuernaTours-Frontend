@@ -1,262 +1,203 @@
 "use client";
 import { useState } from "react";
-import SelectComponent from "@/app/Components/SelectComponent/SelectComponent";
-import InputComponent from "@/app/Components/InputComponent/InputComponent";
-import ButtonComponent from "@/app/Components/ButtonComponent/ButtonComponent";
+import {
+  Button,
+  Field,
+  Input,
+  Textarea,
+  Dropdown,
+  Option,
+  Text,
+  Spinner,
+} from "@fluentui/react-components";
 import { AddFilled, DeleteFilled } from "@fluentui/react-icons";
-import { ApiError } from "@/services/api";
 import { useRouter } from "next/navigation";
+import {
+  showSuccessAlert,
+  showErrorAlert,
+  showConfirmAlert,
+} from "@/app/Utils/AlertUtil";
 import styles from "./CreateSpendingContent.module.css";
-
+import { useCreateSpendingForm } from "@/app/hooks/useCreateSpendingForm";
+import { spendingsService } from "@/services/api/spendings.service";
+import {
+  NETWORK_ERROR_MESSAGE,
+  SERVER_ERROR_MESSAGE,
+} from "@/config/api.config";
 const SPENDING_CATEGORIES = [
-  { value: "combustible", label: "Combustible" },
+  { value: "gas", label: "Gasolina" },
   { value: "casetas", label: "Casetas" },
   { value: "alimentacion", label: "Alimentación" },
   { value: "estacionamiento", label: "Estacionamiento" },
   { value: "mantenimiento", label: "Mantenimiento" },
+  { value: "TAG", label: "TAG" },
   { value: "otro", label: "Otro" },
 ];
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const MAX_FILES = 5;
-
-interface FileWithPreview {
-  file: File;
-  preview?: string;
-}
 
 export default function CreateSpendingContent() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  // Form fields
-  const [category, setCategory] = useState("");
-  const [customCategory, setCustomCategory] = useState("");
-  const [amount, setAmount] = useState("");
-  const [description, setDescription] = useState("");
-  const [files, setFiles] = useState<FileWithPreview[]>([]);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  // Validation
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!category) {
-      newErrors.category = "La categoría es obligatoria";
-    }
-
-    if (category === "otro" && !customCategory.trim()) {
-      newErrors.customCategory = "Especifica la categoría";
-    }
-
-    if (!amount || parseFloat(amount) <= 0) {
-      newErrors.amount = "El monto debe ser mayor a 0";
-    }
-
-    if (!description.trim()) {
-      newErrors.description = "La descripción es obligatoria";
-    }
-
-    if (files.length === 0) {
-      newErrors.files = "Debes adjuntar al menos un archivo";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    const newErrors: Record<string, string> = {};
-
-    if (files.length + selectedFiles.length > MAX_FILES) {
-      newErrors.files = `Máximo ${MAX_FILES} archivos permitidos`;
-      setErrors(newErrors);
-      return;
-    }
-
-    const validFiles: FileWithPreview[] = [];
-
-    for (const file of selectedFiles) {
-      if (file.size > MAX_FILE_SIZE) {
-        newErrors.files = `El archivo ${file.name} excede el tamaño máximo de 5MB`;
-        continue;
-      }
-
-      validFiles.push({ file });
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-    } else {
-      setFiles([...files, ...validFiles]);
-      setErrors({ ...errors, files: "" });
-    }
-
-    // Reset input
-    e.target.value = "";
-  };
-
-  const handleRemoveFile = (index: number) => {
-    const newFiles = files.filter((_, i) => i !== index);
-    setFiles(newFiles);
-    if (newFiles.length === 0) {
-      setErrors({ ...errors, files: "Debes adjuntar al menos un archivo" });
-    }
-  };
+  const {
+    category,
+    setCategory,
+    customCategory,
+    setCustomCategory,
+    amount,
+    setAmount,
+    description,
+    setDescription,
+    files,
+    errors,
+    validate,
+    addFiles,
+    removeFile,
+  } = useCreateSpendingForm();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
 
-    if (!validateForm()) {
-      return;
-    }
+    showConfirmAlert(
+      "Confirmar Registro",
+      "¿Deseas registrar este gasto?",
+      "Registrar",
+      async () => {
+        setLoading(true);
 
-    setLoading(true);
-    setError(null);
+        try {
+          const payload = {
+            amount: Number(amount),
+            spending_date: new Date().toISOString(), // ISO format for backend
+            category: category === "otro" ? customCategory : category,
+            description,
+          };
 
-    try {
-      // Create FormData for file upload
-      const formData = new FormData();
-      formData.append("category", category === "otro" ? customCategory : category);
-      formData.append("amount", amount);
-      formData.append("description", description);
-      
-      files.forEach((fileObj, index) => {
-        formData.append(`files`, fileObj.file);
-      });
+          // 1️⃣ Create spending
+          const createdSpending = await spendingsService.create(payload);
 
-      // TODO: Replace with actual API call
-      // await spendingsService.create(formData);
-      
-      console.log("Gasto creado:", {
-        category: category === "otro" ? customCategory : category,
-        amount,
-        description,
-        fileCount: files.length,
-      });
+          // 2️⃣ Upload files (controlled sequential upload)
+          for (const fileObj of files) {
+            await spendingsService.uploadFile(
+              createdSpending.spending_id,
+              fileObj.file,
+            );
+          }
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+          showSuccessAlert(
+            "Gasto Registrado",
+            "El gasto fue registrado correctamente",
+            () => router.push("/chofer/gastos"),
+          );
+        } catch (error: any) {
+          console.error("Spending creation error:", error);
 
-      // Redirect back to driver dashboard
-      router.push("/chofer/gastos");
-    } catch (err) {
-      console.error("Error creating spending:", err);
-      setError(err instanceof ApiError ? err.message : "Error al crear el gasto");
-    } finally {
-      setLoading(false);
-    }
+          const errorMessage =
+            error?.message || NETWORK_ERROR_MESSAGE || SERVER_ERROR_MESSAGE;
+
+          showErrorAlert("Error al registrar", errorMessage);
+        } finally {
+          setLoading(false);
+        }
+      },
+    );
   };
-
-  const handleCancel = () => {
-    router.back();
-  };
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>Registrar Gasto</h1>
-        <p className={styles.subtitle}>Completa todos los campos para registrar tu gasto</p>
+        <p className={styles.subtitle}>
+          Completa todos los campos para registrar tu gasto
+        </p>
       </div>
 
-      {error && (
+      {apiError && (
         <div className={styles.errorAlert}>
-          <p>{error}</p>
+          <p>{apiError}</p>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className={styles.form}>
+        {/* ========================= */}
+        {/* Información del Gasto */}
+        {/* ========================= */}
         <div className={styles.formSection}>
           <h2 className={styles.sectionTitle}>Información del Gasto</h2>
 
           <div className={styles.formRow}>
             <div className={styles.formField}>
-              <SelectComponent
+              <Field
                 label="Categoría"
-                value={category}
-                onChange={(e) => {
-                  setCategory(e.target.value);
-                  setErrors({ ...errors, category: "" });
-                  if (e.target.value !== "otro") {
-                    setCustomCategory("");
-                    setErrors({ ...errors, customCategory: "" });
-                  }
-                }}
-                options={SPENDING_CATEGORIES}
-                placeholder="Selecciona una categoría"
                 required
-                id="category"
-              />
-              {errors.category && <span className={styles.errorText}>{errors.category}</span>}
+                validationMessage={errors.category}
+              >
+                <Dropdown
+                  value={category}
+                  placeholder="Selecciona una categoría"
+                  onOptionSelect={(_, data) =>
+                    setCategory(String(data.optionValue))
+                  }
+                >
+                  {SPENDING_CATEGORIES.map((cat) => (
+                    <Option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </Option>
+                  ))}
+                </Dropdown>
+              </Field>
             </div>
 
             {category === "otro" && (
               <div className={styles.formField}>
-                <InputComponent
+                <Field
                   label='Categoría "Otro"'
-                  type="text"
-                  value={customCategory}
-                  onChange={(e) => {
-                    setCustomCategory(e.target.value);
-                    setErrors({ ...errors, customCategory: "" });
-                  }}
-                  placeholder="Especifica la categoría"
-                  id="customCategory"
-                />
-                {errors.customCategory && (
-                  <span className={styles.errorText}>{errors.customCategory}</span>
-                )}
+                  validationMessage={errors.customCategory}
+                >
+                  <Input
+                    value={customCategory}
+                    onChange={(_, data) => setCustomCategory(data.value)}
+                  />
+                </Field>
               </div>
             )}
           </div>
 
           <div className={styles.formRow}>
             <div className={styles.formField}>
-              <InputComponent
-                label="Monto ($)"
-                type="number"
-                value={amount}
-                onChange={(e) => {
-                  setAmount(e.target.value);
-                  setErrors({ ...errors, amount: "" });
-                }}
-                placeholder="0.00"
-                id="amount"
-              />
-              {errors.amount && <span className={styles.errorText}>{errors.amount}</span>}
+              <Field label="Monto ($)" validationMessage={errors.amount}>
+                <Input
+                  type="number"
+                  value={amount}
+                  onChange={(_, data) => setAmount(data.value)}
+                />
+              </Field>
             </div>
           </div>
 
-          <div className={styles.formRow}>
-            <div className={styles.formFieldFull}>
-              <label htmlFor="description" className={styles.label}>
-                Descripción o Comentarios <span className={styles.required}>*</span>
-              </label>
-              <textarea
-                id="description"
+          <div className={styles.formFieldFull}>
+            <Field
+              label="Descripción o Comentarios"
+              required
+              validationMessage={errors.description}
+            >
+              <Textarea
                 value={description}
-                onChange={(e) => {
-                  setDescription(e.target.value);
-                  setErrors({ ...errors, description: "" });
-                }}
-                placeholder="Describe el gasto realizado..."
-                className={styles.textarea}
+                onChange={(_, data) => setDescription(data.value)}
                 rows={4}
               />
-              {errors.description && (
-                <span className={styles.errorText}>{errors.description}</span>
-              )}
-            </div>
+            </Field>
           </div>
         </div>
 
+        {/* ========================= */}
+        {/* Comprobantes */}
+        {/* ========================= */}
         <div className={styles.formSection}>
           <h2 className={styles.sectionTitle}>Comprobantes</h2>
           <p className={styles.helpText}>
-            Adjunta los comprobantes del gasto (máximo 5 archivos de 5MB cada uno)
+            Adjunta los comprobantes del gasto (máximo 5 archivos de 5MB cada
+            uno)
           </p>
 
           <div className={styles.fileDropzone}>
@@ -265,9 +206,10 @@ export default function CreateSpendingContent() {
               id="fileInput"
               multiple
               accept="image/*,application/pdf"
-              onChange={handleFileChange}
+              onChange={(e) => addFiles(e.target.files)}
               className={styles.fileInput}
             />
+
             <label htmlFor="fileInput" className={styles.fileLabel}>
               <AddFilled className={styles.uploadIcon} />
               <span>Haz clic o arrastra archivos aquí</span>
@@ -277,7 +219,9 @@ export default function CreateSpendingContent() {
             </label>
           </div>
 
-          {errors.files && <span className={styles.errorText}>{errors.files}</span>}
+          {errors.files && (
+            <span className={styles.errorText}>{errors.files}</span>
+          )}
 
           {files.length > 0 && (
             <div className={styles.fileList}>
@@ -289,34 +233,43 @@ export default function CreateSpendingContent() {
                       {(fileObj.file.size / 1024 / 1024).toFixed(2)} MB
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveFile(index)}
-                    className={styles.removeButton}
-                    aria-label="Eliminar archivo"
-                  >
-                    <DeleteFilled />
-                  </button>
+
+                  <Button
+                    appearance="subtle"
+                    icon={<DeleteFilled />}
+                    onClick={() => removeFile(index)}
+                  />
                 </div>
               ))}
             </div>
           )}
         </div>
 
+        {/* ========================= */}
+        {/* Actions */}
+        {/* ========================= */}
         <div className={styles.formActions}>
-          <ButtonComponent
-            text="Cancelar"
-            onClick={handleCancel}
-            type="button"
+          <Button
+            appearance="secondary"
+            onClick={() => router.back()}
+            disabled={loading}
             className={styles.cancelButton}
-            disabled={loading}
-          />
-          <ButtonComponent
-            text={loading ? "Guardando..." : "Guardar Gasto"}
+          >
+            Cancelar
+          </Button>
+
+          <Button
             type="submit"
-            className={styles.submitButton}
             disabled={loading}
-          />
+            className={styles.submitButton}
+            style={{
+              backgroundColor: "var(--Main-96781A, #96781a)",
+              borderColor: "var(--Main-96781A, #96781a)",
+              color: "#ffffff",
+            }}
+          >
+            {loading ? <Spinner size="tiny" /> : "Guardar Gasto"}
+          </Button>
         </div>
       </form>
     </div>

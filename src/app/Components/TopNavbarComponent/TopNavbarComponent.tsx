@@ -174,49 +174,31 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
     // Clear user info state
     setUserInfo(null);
   };
-
   const handleLogoutClick = () => {
     setIsUserMenuOpen(false);
 
-    // Show confirmation dialog
     showConfirmAlert(
       "Cerrar Sesión",
       "¿Estás seguro de que quieres cerrar sesión?",
       "Sí, cerrar sesión",
       async () => {
         try {
+          // 1️⃣ Call backend logout (optional safety)
           await authService.logout();
-
-          // Show success message
-          showSuccessAlert(
-            "Sesión Cerrada",
-            "Has cerrado sesión exitosamente.",
-            () => {
-              // Additional safety delay before redirect to ensure cookies are cleared
-              setTimeout(() => {
-                router.push("/");
-              }, 50);
-            },
-          );
         } catch (error) {
-          console.error("Logout error:", error);
-
-          // Show success message anyway since local session is cleared
-          showSuccessAlert(
-            "Sesión Cerrada",
-            "Has cerrado sesión exitosamente.",
-            () => {
-              // Additional safety delay before redirect to ensure cookies are cleared
-              setTimeout(() => {
-                router.push("/");
-              }, 50);
-            },
-          );
+          console.error("Backend logout error:", error);
         }
-      },
-      () => {
-        // Cancel function - do nothing
-        console.log("Logout cancelled");
+
+        // 2️⃣ ALWAYS clear client session locally
+        clearAllCookies();
+
+        // 3️⃣ Force navigation without history
+        router.replace("/");
+
+        // 4️⃣ Force full reload to reset state (important)
+        setTimeout(() => {
+          window.location.reload();
+        }, 50);
       },
     );
   };

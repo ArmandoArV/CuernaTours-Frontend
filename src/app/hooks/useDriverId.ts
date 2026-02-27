@@ -1,33 +1,58 @@
-// hooks/useDriverId.ts
 "use client";
 import { useEffect, useState } from "react";
 import { getCookie } from "@/app/Utils/CookieUtil";
 
-export function useDriverId() {
+type UseDriverIdReturn = {
+  driverId: number | null;
+  error: string | null;
+  loading: boolean;
+};
+
+export function useDriverId(): UseDriverIdReturn {
   const [driverId, setDriverId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     try {
       const userCookie = getCookie("user");
+
       if (!userCookie) {
         setError("Sesión no válida");
+        setLoading(false);
         return;
       }
 
       const userData = JSON.parse(userCookie);
-      const userId = userData.id || userData.user_id || userData.userId;
 
-      if (!userId) {
+      const rawId =
+        userData?.id ??
+        userData?.user_id ??
+        userData?.userId ??
+        null;
+
+      if (!rawId) {
         setError("No se pudo identificar al usuario");
+        setLoading(false);
         return;
       }
 
-      setDriverId(userId);
-    } catch {
+      const numericId = Number(rawId);
+
+      if (isNaN(numericId)) {
+        setError("ID de usuario inválido");
+        setLoading(false);
+        return;
+      }
+
+      setDriverId(numericId);
+    } catch (err) {
+      console.error("Error parsing user cookie:", err);
       setError("Error al obtener datos del usuario");
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  return { driverId, error };
+  return { driverId, error, loading };
 }

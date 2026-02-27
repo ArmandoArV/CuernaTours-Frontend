@@ -251,21 +251,26 @@
 }
 
 .submitButton {
-  background-color: #0078d4;
-  color: white;
-  border: none;
+  background-color: var(--Main-96781A, #96781a) !important;
+  color: white !important;
+  border: none !important;
   padding: 0.75rem 2rem;
   border-radius: 4px;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition:
+    background-color 0.2s ease,
+    transform 0.05s ease;
 }
 
 .submitButton:hover:not(:disabled) {
-  background-color: #106ebe;
+  background-color: #7d6516 !important; /* slightly darker */
 }
 
-.cancelButton:disabled,
+.submitButton:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
 .submitButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
