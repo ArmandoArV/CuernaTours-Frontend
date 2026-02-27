@@ -2,12 +2,12 @@
 import { useState, useCallback, useEffect } from "react";
 import styles from "./CreateOrderContent.module.css";
 import InputComponent from "../InputComponent/InputComponent";
-import SelectComponent from "../SelectComponent/SelectComponent";
+import SelectComponent from "@/app/Components/SelectComponent/SelectComponent";
 import SearchableSelectComponent, {
   SearchableSelectOption,
-} from "../SearchableSelectComponent/SearchableSelectComponent";
+} from "@/app/Components/SearchableSelectComponent/SearchableSelectComponent";
 import CreateClientModal from "../CreateClientModal/CreateClientModal";
-import ButtonComponent from "../ButtonComponent/ButtonComponent";
+import ButtonComponent from "@/app/Components/ButtonComponent/ButtonComponent";
 import {
   ArrowLeftFilled,
   Edit24Regular,
@@ -447,9 +447,6 @@ export default function CreateOrderContent() {
               createButtonText="Crear Nuevo Cliente"
               noResultsText="No se encontraron clientes"
               loadingText="Buscando..."
-              className={`${styles.select} ${
-                mergedErrors.empresa ? styles.fieldError : ""
-              }`}
             />
             {mergedErrors.empresa && (
               <p className={styles.requiredLabel}>{mergedErrors.empresa}</p>

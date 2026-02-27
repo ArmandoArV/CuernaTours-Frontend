@@ -1,28 +1,39 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import styles from './SearchableSelectComponent.module.css';
-import { Search20Regular, Add20Regular, ChevronDown20Regular } from '@fluentui/react-icons';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import {
+  Combobox,
+  Option,
+  Spinner,
+  Field,
+  Button,
+} from "@fluentui/react-components";
+import { Add20Regular } from "@fluentui/react-icons";
+import type {
+  OptionOnSelectData,
+  SelectionEvents,
+} from "@fluentui/react-combobox";
 
 export interface SearchableSelectOption {
   value: string;
   label: string;
-  data?: any; // Additional data for auto-fill
+  data?: any;
 }
 
-interface SearchableSelectComponentProps {
+interface Props {
   value: string;
-  onChange: (value: string, option?: SearchableSelectOption) => void | Promise<void>;
+  onChange: (
+    value: string,
+    option?: SearchableSelectOption,
+  ) => void | Promise<void>;
   onSearch: (query: string) => Promise<SearchableSelectOption[]>;
-  onCreate?: () => void; // Callback for "Create New" button
+  onCreate?: () => void;
   placeholder?: string;
   label?: string;
   disabled?: boolean;
   required?: boolean;
   id?: string;
-  className?: string;
-  containerClassName?: string;
-  createButtonText?: string; // Text for create button (e.g., "Create New Client")
+  createButtonText?: string;
   noResultsText?: string;
   loadingText?: string;
   debounceMs?: number;
@@ -35,267 +46,170 @@ export default function SearchableSelectComponent({
   onChange,
   onSearch,
   onCreate,
-  placeholder = 'Search or select...',
+  placeholder = "Search or select...",
   label,
   disabled = false,
   required = false,
   id,
-  className = '',
-  containerClassName = '',
-  createButtonText = 'Crear nuevo',
-  noResultsText = 'No results found',
-  loadingText = 'Loading...',
+  createButtonText = "Crear nuevo",
+  noResultsText = "No results found",
+  loadingText = "Loading...",
   debounceMs = 300,
   hasError = false,
-  errorMessage = '',
-}: SearchableSelectComponentProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [displayValue, setDisplayValue] = useState('');
+  errorMessage = "",
+}: Props) {
   const [options, setOptions] = useState<SearchableSelectOption[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const [selectedValue, setSelectedValue] = useState<string | undefined>(
+    value || undefined,
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [lastSearchQuery, setLastSearchQuery] = useState(''); // Preserve query for no-results display
-  const [searchPerformed, setSearchPerformed] = useState(false); // Track if search was performed
-  
-  const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchPerformed, setSearchPerformed] = useState(false);
 
-  // Update display value when external value changes
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  /* ---------------------------------------
+     Sync external value
+  --------------------------------------- */
   useEffect(() => {
-    if (value && options.length > 0) {
-      const selectedOption = options.find(opt => opt.value === value);
-      if (selectedOption) {
-        setDisplayValue(selectedOption.label);
-      }
-    } else if (!value) {
-      setDisplayValue('');
-      setSearchQuery('');
-    }
-  }, [value, options]);
+    setSelectedValue(value || undefined);
+  }, [value]);
 
-  // Debounced search
+  /* ---------------------------------------
+     Debounced Search
+  --------------------------------------- */
   const performSearch = useCallback(
     async (query: string) => {
-      if (!query.trim()) {
-        setOptions([]);
-        setIsLoading(false);
-        setLastSearchQuery('');
-        setSearchPerformed(false);
-        return;
-      }
-
       try {
         setIsLoading(true);
-        setLastSearchQuery(query); // Preserve the query
         const results = await onSearch(query);
         setOptions(results);
-        setSelectedIndex(-1);
-        setSearchPerformed(true); // Mark search as completed
-      } catch (error) {
-        console.error('Search error:', error);
+        setSearchPerformed(true);
+      } catch (err) {
+        console.error("Search error:", err);
         setOptions([]);
-        setSearchPerformed(true); // Still mark as performed even on error
+        setSearchPerformed(true);
       } finally {
         setIsLoading(false);
       }
     },
-    [onSearch]
+    [onSearch],
   );
 
-  // Handle search input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    setDisplayValue(query);
-    setIsOpen(true);
+  const handleInputChange: React.FormEventHandler<HTMLInputElement> = (
+    event,
+  ) => {
+    const newValue = event.currentTarget.value;
+    setInputValue(newValue);
 
-    // Clear previous timer
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const query = newValue.trim();
 
-    // Set new timer
-    debounceTimerRef.current = setTimeout(() => {
+      if (query.length === 0) {
+        setOptions([]);
+        setSearchPerformed(false);
+        return;
+      }
+
       performSearch(query);
     }, debounceMs);
   };
 
-  // Handle option selection
-  const handleSelectOption = (option: SearchableSelectOption) => {
-    setDisplayValue(option.label);
-    setSearchQuery(option.label);
-    setIsOpen(false);
-    onChange(option.value, option);
-  };
+  /* ---------------------------------------
+     Load full dataset on open
+  --------------------------------------- */
+  const handleOpenChange = async (_: any, data: { open: boolean }) => {
+    setIsOpen(data.open);
 
-  // Handle create new button click
-  const handleCreateNew = () => {
-    setIsOpen(false);
-    if (onCreate) {
-      onCreate();
+    if (data.open) {
+      await performSearch(inputValue.trim());
+    } else {
+      // Reset when closing
+      setSearchPerformed(false);
     }
   };
 
-  // Handle input focus
-  const handleFocus = () => {
-    setIsOpen(true);
-    if (searchQuery && !isLoading) {
-      performSearch(searchQuery);
-    }
+  /* ---------------------------------------
+     Option Selection
+  --------------------------------------- */
+  const handleOptionSelect = async (
+    _: SelectionEvents,
+    data: OptionOnSelectData,
+  ) => {
+    if (!data.optionValue) return;
+
+    const selected = options.find((opt) => opt.value === data.optionValue);
+
+    setSelectedValue(data.optionValue);
+    setInputValue(selected?.label || "");
+    await onChange(data.optionValue, selected);
   };
-
-  // Handle input blur
-  const handleBlur = () => {
-    // Delay to allow click events on dropdown items
-    setTimeout(() => {
-      setIsOpen(false);
-    }, 200);
-  };
-
-  // Keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isOpen) {
-      if (e.key === 'ArrowDown' || e.key === 'Enter') {
-        setIsOpen(true);
-        if (searchQuery) {
-          performSearch(searchQuery);
-        }
-      }
-      return;
-    }
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < options.length - 1 ? prev + 1 : prev
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex(prev => (prev > 0 ? prev - 1 : -1));
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0 && options[selectedIndex]) {
-          handleSelectOption(options[selectedIndex]);
-        }
-        break;
-      case 'Escape':
-        e.preventDefault();
-        setIsOpen(false);
-        break;
-    }
-  };
-
-  // Click outside to close
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   return (
-    <div className={`${styles.container} ${containerClassName}`} ref={containerRef}>
-      {label && (
-        <label htmlFor={id} className={styles.label}>
-          {label}
-          {required && <span className={styles.required}> *</span>}
-        </label>
-      )}
-      
-      <div className={styles.inputWrapper}>
-        <div className={`${styles.inputContainer} ${hasError ? styles.inputError : ''}`}>
-          <Search20Regular className={styles.searchIcon} />
-          <input
-            ref={inputRef}
-            type="text"
-            id={id}
-            value={displayValue}
-            onChange={handleInputChange}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            disabled={disabled}
-            className={`${styles.input} ${className}`}
-            autoComplete="off"
-          />
-          <ChevronDown20Regular 
-            className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`}
-            onClick={() => !disabled && setIsOpen(!isOpen)}
-          />
-        </div>
-        
-        {/* Persistent Create Button */}
-        {onCreate && (
-          <button
-            type="button"
-            className={styles.externalCreateButton}
-            onClick={handleCreateNew}
-            disabled={disabled}
-            title={createButtonText}
-          >
-            <Add20Regular className={styles.createIcon} />
-            <span className={styles.createButtonLabel}>{createButtonText}</span>
-          </button>
-        )}
+    <Field
+      label={label}
+      required={required}
+      validationMessage={hasError ? errorMessage : undefined}
+      validationState={hasError ? "error" : undefined}
+    >
+      <div style={{ display: "flex", gap: 8 }}>
+        <Combobox
+          id={id}
+          placeholder={placeholder}
+          value={inputValue}
+          selectedOptions={selectedValue ? [selectedValue] : []}
+          onInput={handleInputChange}
+          onOptionSelect={handleOptionSelect}
+          onOpenChange={handleOpenChange}
+          disabled={disabled}
+          style={{ flex: 1 }}
+        >
+          {isLoading && (
+            <Option value="loading" text={loadingText} disabled>
+              <Spinner size="tiny" /> {loadingText}
+            </Option>
+          )}
 
-        {isOpen && (
-          <div className={styles.dropdown}>
-            {isLoading ? (
-              <div className={styles.loadingMessage}>{loadingText}</div>
-            ) : options.length > 0 ? (
-              <>
-                {options.map((option, index) => (
-                  <div
-                    key={option.value}
-                    className={`${styles.option} ${
-                      index === selectedIndex ? styles.optionSelected : ''
-                    } ${option.value === value ? styles.optionActive : ''}`}
-                    onClick={() => handleSelectOption(option)}
-                    onMouseEnter={() => setSelectedIndex(index)}
-                  >
-                    {option.label}
-                  </div>
-                ))}
-                {onCreate && (
-                  <div className={styles.createButtonWrapper}>
-                    <button
-                      type="button"
-                      className={styles.createButton}
-                      onClick={handleCreateNew}
-                    >
-                      <Add20Regular className={styles.createIcon} />
-                      {createButtonText}
-                    </button>
-                  </div>
-                )}
-              </>
-            ) : searchPerformed && lastSearchQuery.trim() ? (
-              <div className={styles.noResults}>
-                <div className={styles.noResultsText}>
-                  {noResultsText} para "{lastSearchQuery}"
-                </div>
-              </div>
-            ) : !isLoading && displayValue.trim() ? (
-              <div className={styles.noResults}>
-                <div className={styles.noResultsText}>Escribe para buscar...</div>
-              </div>
-            ) : null}
-          </div>
+          {!isLoading &&
+            options.map((opt) => (
+              <Option key={opt.value} value={opt.value} text={opt.label}>
+                {opt.label}
+              </Option>
+            ))}
+
+          {!isLoading && searchPerformed && options.length === 0 && (
+            <Option value="no-results" text={noResultsText} disabled>
+              {noResultsText}
+            </Option>
+          )}
+        </Combobox>
+
+        {onCreate && (
+          <Button
+            appearance="primary"
+            icon={<Add20Regular />}
+            onClick={onCreate}
+            disabled={disabled}
+            style={{
+              backgroundColor: "var(--Main-96781A)",
+              borderColor: "var(--Main-96781A)",
+              color: "#ffffff",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#7e6315";
+              e.currentTarget.style.borderColor = "#7e6315";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--Main-96781A)";
+              e.currentTarget.style.borderColor = "var(--Main-96781A)";
+            }}
+          >
+            {createButtonText}
+          </Button>
         )}
       </div>
-      {hasError && errorMessage && (
-        <span className={styles.errorMessage}>{errorMessage}</span>
-      )}
-    </div>
+    </Field>
   );
 }
