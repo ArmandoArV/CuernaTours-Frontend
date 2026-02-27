@@ -1,318 +1,145 @@
-.detailsPanel {
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  min-height: 600px;
-  width: 100%;
-  max-width: 100vw;
-  overflow-y: auto;
-  box-sizing: border-box;
-  background: #fff;
-  padding: 20px;
-}
-
-.closeButton {
-  align-self: flex-end;
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #666;
-  margin-bottom: 16px;
-}
-
-.closeButton:hover {
+.container {
+  padding: 24px;
+  background-color: #fff;
+  font-family: "Inter", sans-serif; /* Use a clean sans-serif */
   color: #333;
 }
 
-.topSection {
-  display: flex;  
-  flex-direction: row;
-  align-items: stretch;
+/* HEADER STYLES */
+.header {
+  display: flex;
   justify-content: space-between;
-  min-height: 160px;
-  flex-wrap: wrap;
-  gap: 16px;
-  padding: 16px;
+  align-items: flex-start;
+  margin-bottom: 30px;
 }
 
-.bottomSection {
-  display: flex;
-  flex-direction: row;
-  gap: 16px;
-  align-items: stretch;
-  justify-content: flex-start;
-  flex: 1;
-  min-height: 300px;
-  padding: 16px;
-  flex-wrap: wrap;
-}
-
-.topLeftSection {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  align-items: stretch;
-  flex: 1;
-  min-width: 300px;
-  justify-content: flex-start;
-}
-
-.topRightSection {
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  gap: 16px;
-  flex: 2;
-  min-width: 500px;
-  justify-content: space-between;
-}
-
-.section {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  gap: 12px;
-  flex: 1;
-  min-width: 250px;
-  max-width: calc(33.333% - 12px);
-  padding: 16px;
-  border-radius: 6px;
-  box-sizing: border-box;
-  height: fit-content;
-
-}
-
-.sectionsTop {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  gap: 12px;
-  flex: 1;
-  min-width: 200px;
-  max-width: 100%;
-  padding: 16px;
-  border-radius: 6px;
-  box-sizing: border-box;
-  height: fit-content;
-}
-
-.tripDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  padding: 0;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-.tripInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-}
-
-.tripInfo:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-.label {
-  font-size: 12px;
-  color: #6c757d;
-  margin-bottom: 6px;
-  width: 100%;
-  text-align: left;
-  display: block;
-  font-weight: 500;
-  word-wrap: break-word;
-  white-space: normal;
-  line-height: 1.2;
-}
-
-.value {
-  display: block;
-  font-size: 16px;
-  color: #212529;
+.clientName {
+  font-size: 1.35rem;
   font-weight: 600;
-  width: 100%;
-  text-align: left;
-  word-wrap: break-word;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: normal;
-  line-height: 1.4;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  color: #444;
 }
 
-.datesContainer {
+.contactRow {
+  font-size: 1.25rem;
+  color: #888;
   display: flex;
-  flex-direction: row;
-  gap: 8px;
-  width: 100%;
-  justify-content: space-around;
+  gap: 10px;
   align-items: center;
 }
 
-.dateField {
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.tripTypeBox label {
+  display: block;
+  font-size: 1.2rem;
+  color: #999;
+  text-transform: none;
+}
+
+.tripTypeBox strong {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.whatsappIcon {
+  color: #25d366;
+  font-size: 20px;
+  position: relative;
+  top: 1px;
+}
+
+.emailIcon {
+  color: #888;
+  font-size: 20px;
+  position: relative;
+  top: 1px;
+}
+
+.datesWrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.serviceTypeBox {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  gap: 4px;
+  width: 50%;
 }
 
-.dateFieldSeparator {
-  width: 2px;
-  height: 60px;
-  background-color: var(--Text-ADADAD);
+.verticalDivider {
+  width: 1px;
+  height: 40px;
+  background-color: #eee;
 }
 
-.dateFieldRight {
+/* GRID STYLES */
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1.5fr; /* Matches the image proportions */
+  gap: 40px;
+}
+
+.column {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  gap: 18px;
 }
 
-
-
-.tripCard {
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 12px;
-  border-left: 4px solid #007acc;
+.infoGroup label {
+  display: block;
+  font-size: 1.15rem;
+  color: #999;
+  margin-bottom: 2px;
 }
 
-.tripHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
+.infoGroup span,
+.infoGroup strong {
+  font-size: 1.2rem;
 }
 
-.tripHeader h4 {
+.addressText {
+  font-size: 1.2rem;
+  line-height: 1.3;
   margin: 0;
-  color: #333;
-  font-size: 18px;
-  font-weight: 600;
+  color: #444;
 }
 
-.flightInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 10em;
-}
-
-.tripNotes {
-  border-radius: 4px;
-  padding: 8px;
-  margin-top: 8px;
-  font-size: 13px;
-}
-
-.sectionTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 8px;
-}
-
-.sectionContent {
-  font-size: 14px;
+.observationsText {
+  font-size: 1.2rem;
   color: #666;
   line-height: 1.4;
 }
 
-.contactInfo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.contactItem {
-  font-size: 14px;
-  color: #333;
-}
-
-.contactLink {
-  color: #007acc;
-  text-decoration: none;
-}
-
-.contactLink:hover {
-  text-decoration: underline;
-}
-
-.field {
-  width: 100%;
-}
-
-.field h1 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #212529;
-  margin: 0;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  hyphens: auto;
-}
-
-/* Mobile devices (up to 768px) */
 @media (max-width: 768px) {
-  .detailsPanel {
-    padding: 12px;
+  .mainGrid {
+    grid-template-columns: 1fr; /* Stack columns on mobile */
+    width: 100%;
   }
 
-  .topSection {
+  .header {
     flex-direction: column;
-    width: 100%;
-    min-height: auto;
-    padding: 12px;
+    align-items: flex-start;
+    gap: 15px;
   }
 
-  .topLeftSection{
+  .serviceTypeBox {
+    width: 100%;
+  }
+
+  .datesWrapper {
     flex-direction: column;
-    width: 100%;
-    min-width: auto;
+    align-items: flex-start;
   }
 
-  .topRightSection{
-    flex-direction: column;
-    width: 100%;
-    min-width: auto;
-  }
-
-  .bottomSection{
-    flex-direction: column;
-    width: 100%;
-    min-height: auto;
-    padding: 12px;
-  }
-
-  .section,
-  .sectionsTop {
-    width: 100%;
-    min-width: auto;
-    max-width: 100%;
-    margin-bottom: 12px;
-  }
-
-  .value {
-    font-size: 14px;
-  }
-
-  .label {
-    font-size: 11px;
+  .verticalDivider {
+    display: none; /* Hide divider on mobile */
   }
 }
