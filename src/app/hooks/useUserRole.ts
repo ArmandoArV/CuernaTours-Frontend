@@ -63,7 +63,7 @@ export function useUserRole(): UserRoleInfo {
           const userRoleId = userData.roleId || userData.role_id || null;
           setRoleId(userRoleId);
         } else {
-          console.log('⚠️ No user cookie found');
+          console.log("⚠️ No user cookie found");
         }
       } catch (error) {
         console.error("Error loading user role:", error);
@@ -85,17 +85,21 @@ export function useUserRole(): UserRoleInfo {
     return {
       roleId,
       roleName: roleId ? ROLE_NAMES[roleId] || "Usuario" : "Usuario",
+
+      // PURE ROLE FLAGS (no mixing)
       isMaestro,
       isAdmin,
-      // Maestro has all permissions, so it's treated as both Chofer and Oficina
-      isChofer: isChofer || isMaestro,
-      isOficina: isOficina || isMaestro,
+      isChofer,
+      isOficina,
+
+      // PERMISSION FLAGS
       hasFullAccess: isMaestro || isAdmin,
       canCreateOrders: isMaestro || isAdmin || isOficina,
       canAssignResources: isMaestro || isAdmin,
       canManagePayments: isMaestro || isAdmin,
       canViewAllContracts: isMaestro || isAdmin || isOficina,
-      isDriverOnly: isChofer && !isMaestro,
+      isDriverOnly: isChofer,
+
       isLoading,
     };
   }, [roleId, isLoading]);

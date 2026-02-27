@@ -1,9 +1,29 @@
 "use client";
-import React, { useState, useMemo, useEffect } from "react";
+
+import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./TableComponent.module.css";
-import { Button, Tooltip, Badge } from "@fluentui/react-components";
-import { EyeFilled, MoneyCalculatorFilled } from "@fluentui/react-icons";
+
+import {
+  Button,
+  Tooltip,
+  Badge,
+  Menu,
+  MenuTrigger,
+  MenuPopover,
+  MenuList,
+  MenuItem,
+  MenuDivider,
+} from "@fluentui/react-components";
+
+import {
+  MoreVerticalRegular,
+  PersonAddRegular,
+  EditRegular,
+  MoneyRegular,
+  EyeFilled,
+} from "@fluentui/react-icons";
+
 import { Pagination } from "@/app/PaginationComponent/PaginationComponent";
 import DetailsPanel from "@/app/Components/DetailsPanel/DetailsPanel";
 import AssignDriverModal from "@/app/Components/AssignDriverModal/AssignDriverModal";
@@ -20,8 +40,6 @@ export type TableComponentProps = {
   currentPage?: number;
   onPageChange?: (page: number) => void;
   onRowClick?: (rowData: any) => void;
-  onViewDetails?: (rowData: any) => void;
-  onPayDriver?: (rowData: any) => void;
 };
 
 const TableComponent: React.FC<TableComponentProps> = ({
@@ -33,11 +51,10 @@ const TableComponent: React.FC<TableComponentProps> = ({
   currentPage,
   onPageChange,
   onRowClick,
-  onViewDetails,
-  onPayDriver,
 }) => {
   const router = useRouter();
-  const { isChofer } = useUserRole();
+  const { isChofer, isAdmin, isMaestro } = useUserRole();
+  const canManage = isAdmin || isMaestro;
 
   const [internalCurrentPage, setInternalCurrentPage] = useState(
     currentPage || 1
@@ -45,8 +62,12 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
   const [selectedRow, setSelectedRow] = useState<any | null>(null);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
-  const [selectedExpenseRowIndex, setSelectedExpenseRowIndex] =
-    useState<number | null>(null);
+
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [assignRow, setAssignRow] = useState<any | null>(null);
+
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentTripId, setPaymentTripId] = useState<number | null>(null);
 
   const activePage =
     currentPage !== undefined ? currentPage : internalCurrentPage;
@@ -73,7 +94,6 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
     setSelectedRow(null);
     setSelectedRowIndex(null);
-    setSelectedExpenseRowIndex(null);
   };
 
   const getRowId = (row: any) =>
@@ -144,9 +164,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
     }
 
     try {
-      const contractData = await contractsService.getContractDetails(
-        Number(id)
-      );
+      const contractData =
+        await contractsService.getContractDetails(Number(id));
       setSelectedRow(contractData);
     } catch (err) {
       console.error("Error fetching contract details:", err);
@@ -162,7 +181,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
             {columns.map((col) => (
               <th key={col}>{col}</th>
             ))}
-            {showActions && <th></th>}
+            {showActions && <th />}
           </tr>
         </thead>
 
@@ -174,6 +193,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
             const isSelected = selectedRowIndex === globalRowIndex;
             const status = getStatusFromRow(row);
+            const id = getRowId(row);
 
             return (
               <React.Fragment key={globalRowIndex}>
@@ -187,12 +207,12 @@ const TableComponent: React.FC<TableComponentProps> = ({
                       return;
                     }
 
-                    if (onRowClick) {
-                      onRowClick(row);
-                    } else {
-                      const id = getRowId(row);
-                      if (id) router.push(`/dashboard/trips/${id}`);
+                    if (canManage && id) {
+                      router.push(`/dashboard/trips/${id}`);
+                      return;
                     }
+
+                    if (onRowClick) onRowClick(row);
                   }}
                 >
                   {columns.map((col, colIndex) => {
@@ -207,7 +227,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
                         style={
                           colIndex === 0
                             ? ({
-                                "--indicator-color": getStatusColor(status),
+                                "--indicator-color":
+                                  getStatusColor(status),
                               } as React.CSSProperties)
                             : undefined
                         }
@@ -228,6 +249,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
                   {showActions && (
                     <td className={styles.actionsContainer}>
+                      {/* Ver Detalles for ALL roles */}
                       <Tooltip content="Ver Detalles" relationship="label">
                         <Button
                           appearance="subtle"
@@ -236,67 +258,97 @@ const TableComponent: React.FC<TableComponentProps> = ({
                             e.stopPropagation();
 
                             if (isChofer) {
-                              handleRowToggle(row, globalRowIndex);
-                            } else {
-                              const id = getRowId(row);
-                              if (id)
-                                router.push(`/dashboard/trips/${id}`);
+                              handleRowToggle(
+                                row,
+                                globalRowIndex
+                              );
+                              return;
+                            }
+
+                            if (canManage && id) {
+                              router.push(
+                                `/dashboard/trips/${id}`
+                              );
                             }
                           }}
                         />
                       </Tooltip>
 
-                      {isChofer && onPayDriver && (
-                        <Tooltip
-                          content="Registrar Gasto"
-                          relationship="label"
-                        >
-                          <Button
-                            appearance="subtle"
-                            icon={<MoneyCalculatorFilled />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedExpenseRowIndex(
-                                selectedExpenseRowIndex === globalRowIndex
-                                  ? null
-                                  : globalRowIndex
-                              );
-                            }}
-                          />
-                        </Tooltip>
+                      {/* 3-dot menu for Admin/Maestro */}
+                      {canManage && (
+                        <Menu>
+                          <MenuTrigger disableButtonEnhancement>
+                            <Button
+                              appearance="subtle"
+                              icon={<MoreVerticalRegular />}
+                              onClick={(e) =>
+                                e.stopPropagation()
+                              }
+                            />
+                          </MenuTrigger>
+
+                          <MenuPopover>
+                            <MenuList>
+                              <MenuItem
+                                icon={<PersonAddRegular />}
+                                onClick={() => {
+                                  setAssignRow(row);
+                                  setIsAssignModalOpen(true);
+                                }}
+                              >
+                                Asignar Chofer
+                              </MenuItem>
+
+                              <MenuItem
+                                icon={<EditRegular />}
+                                onClick={() => {
+                                  if (id)
+                                    router.push(
+                                      `/dashboard/order/${id}`
+                                    );
+                                }}
+                              >
+                                Editar Orden
+                              </MenuItem>
+
+                              <MenuDivider />
+
+                              <MenuItem
+                                icon={<MoneyRegular />}
+                                onClick={() => {
+                                  if (id) {
+                                    setPaymentTripId(
+                                      Number(id)
+                                    );
+                                    setIsPaymentModalOpen(
+                                      true
+                                    );
+                                  }
+                                }}
+                              >
+                                Pagar Chofer
+                              </MenuItem>
+                            </MenuList>
+                          </MenuPopover>
+                        </Menu>
                       )}
                     </td>
                   )}
                 </tr>
 
-                {isSelected && (
+                {/* Inline details only for Chofer */}
+                {isChofer && isSelected && (
                   <tr>
                     <td
-                      colSpan={columns.length + (showActions ? 1 : 0)}
+                      colSpan={
+                        columns.length + (showActions ? 1 : 0)
+                      }
                       className={styles.detailsRowCell}
                     >
                       <DetailsPanel data={selectedRow} />
                     </td>
                   </tr>
                 )}
-
-                {isChofer &&
-                  selectedExpenseRowIndex === globalRowIndex && (
-                    <tr>
-                      <td
-                        colSpan={columns.length + (showActions ? 1 : 0)}
-                        className={styles.detailsRowCell}
-                      >
-                        <DriverPaymentModal
-                          isOpen={true}
-                          onClose={() =>
-                            setSelectedExpenseRowIndex(null)
-                          }
-                          tripId={getRowId(row)}
-                        />
-                      </td>
-                    </tr>
-                  )}
               </React.Fragment>
             );
           })}
@@ -314,10 +366,26 @@ const TableComponent: React.FC<TableComponentProps> = ({
       )}
 
       <AssignDriverModal
-        isOpen={false}
-        onClose={() => {}}
-        tripData={null}
-        onAssign={() => {}}
+        isOpen={isAssignModalOpen}
+        onClose={() => {
+          setIsAssignModalOpen(false);
+          setAssignRow(null);
+        }}
+        tripData={assignRow}
+        onAssign={() => setIsAssignModalOpen(false)}
+      />
+
+      <DriverPaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => {
+          setIsPaymentModalOpen(false);
+          setPaymentTripId(null);
+        }}
+        tripId={
+          paymentTripId !== null
+            ? String(paymentTripId)
+            : null
+        }
       />
     </div>
   );

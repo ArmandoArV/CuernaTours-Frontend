@@ -3,10 +3,26 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import FilterableTableComponent from "../FilterableTable/FilterableTableComponent";
 import { FilterConfig, FilterPresets } from "../FilterComponent";
 import DateRangeFilter from "../DateRangeFilter/DateRangeFilter";
+
 import {
   AddFilled,
   DocumentAddRegular,
   ArrowRepeatAllRegular,
+} from "@fluentui/react-icons";
+import {
+  Menu,
+  MenuTrigger,
+  MenuPopover,
+  MenuList,
+  MenuItem,
+  MenuDivider,
+} from "@fluentui/react-components";
+
+import {
+  MoreVerticalRegular,
+  PersonAddRegular,
+  EditRegular,
+  MoneyRegular,
 } from "@fluentui/react-icons";
 import { useRouter } from "next/navigation";
 import { contractsService, ApiError } from "@/services/api";
@@ -371,15 +387,11 @@ export default function DashboardContent() {
         enableSearch={true}
         showActions={true}
         onSearch={handleSearch}
-        emptyMessage="No Hay Contratos Disponibles"
         enablePagination={true}
         itemsPerPage={10}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         onFiltersChange={handleFiltersChange}
-        onEditOrder={handleEditOrder}
-        onAssignDriver={canAssignResources ? handleAssignDriver : undefined}
-        onPayDriver={canAssignResources ? handlePayDriver : undefined}
         actionButtons={
           canCreateOrders ? (
             <div ref={dropdownRef} style={{ position: "relative" }}>

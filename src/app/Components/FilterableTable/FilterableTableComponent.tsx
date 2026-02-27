@@ -254,7 +254,6 @@ export const FilterableTableExample: React.FC = () => {
       itemsPerPage={5}
       showActions={true}
       onFiltersChange={(filters) => console.log("Filters changed:", filters)}
-      onViewDetails={(row) => console.log("View details:", row)}
     />
   );
 };
