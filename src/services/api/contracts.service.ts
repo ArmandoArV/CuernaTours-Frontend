@@ -215,7 +215,7 @@ class ContractsService {
    * Update existing contract
    */
   async update(contractId: number, data: UpdateContractRequest): Promise<Contract> {
-    const endpoint = `${API_ENDPOINTS.CONTRACTS.BASE}/${contractId}`;
+    const endpoint = API_ENDPOINTS.CONTRACTS.UPDATE(contractId);
     const response = await apiClient.patch<Contract>(endpoint, data);
     return validateResponse<Contract>(response);
   }
