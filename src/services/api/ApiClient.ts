@@ -4,7 +4,7 @@
  * Core HTTP client with token management, interceptors, and error handling
  */
 
-import { apiConfig, HTTP_STATUS, REQUEST_TIMEOUT_MESSAGE, NETWORK_ERROR_MESSAGE } from '@/config/api.config';
+import { apiConfig, API_ENDPOINTS, HTTP_STATUS, REQUEST_TIMEOUT_MESSAGE, NETWORK_ERROR_MESSAGE } from '@/config/api.config';
 import { 
   ApiError, 
   NetworkError, 
@@ -80,7 +80,7 @@ export class ApiClient {
       }
 
       try {
-        const response = await fetch(`${this.baseUrl}/auth/refresh`, {
+        const response = await fetch(`${this.baseUrl}${API_ENDPOINTS.AUTH.REFRESH}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

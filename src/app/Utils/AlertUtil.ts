@@ -1,4 +1,5 @@
 import Swal, { SweetAlertIcon } from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
 
 export type AlertOptions = {
   title: string;
@@ -22,13 +23,21 @@ const defaultOptions = {
 };
 
 export const showAlert = (options: AlertOptions) => {
-  const mergedOptions = { ...defaultOptions, ...options };
-  Swal.fire(mergedOptions).then((result: any) => {
-    if (result.isConfirmed && options.func) {
-      options.func();
-    } else if (result.isDismissed && options.cancelFunc) {
-      options.cancelFunc();
+  const { func, cancelFunc, ...swalOptions } = { ...defaultOptions, ...options };
+  // Force a very high z-index and ensure it's not overridden
+  swalOptions.customClass = {
+    ...(swalOptions.customClass || {}),
+    container: 'swal2-container-override'
+  };
+  
+  Swal.fire(swalOptions).then((result: any) => {
+    if (result.isConfirmed && func) {
+      func();
+    } else if (result.isDismissed && cancelFunc) {
+      cancelFunc();
     }
+  }).catch(error => {
+    console.error("SweetAlert2 failed to fire:", error);
   });
 };
 
@@ -47,6 +56,7 @@ export const showSuccessAlert = (
     timerProgressBar: true,
     customClass: {
       confirmButton: "swal-confirm-button",
+      container: 'swal2-container-override' // Inject override here too
     },
   }).then((result: any) => {
     if ((result.isConfirmed || result.isDismissed) && func) {

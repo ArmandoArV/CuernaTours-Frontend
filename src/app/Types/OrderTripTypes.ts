@@ -21,6 +21,7 @@ export interface OrderFormData {
   porcentaje: string;
   montoArreglado: string;
   coordinadorViaje: string;
+  coordinadorNombre?: string; // Nombre del coordinador para mostrar
   observacionesInternas: string;
 }
 

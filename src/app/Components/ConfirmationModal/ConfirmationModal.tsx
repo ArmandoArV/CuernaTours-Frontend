@@ -84,7 +84,9 @@ export default function ConfirmationModal({
               <div className={styles.infoItem}>
                 <div className={styles.summaryLabel}>Empresa/Cliente</div>
                 <div className={styles.summaryValue}>
-                  {orderData?.empresaTipo || "Tipo de cliente"}
+                  {orderData?.empresaNombre ||
+                    orderData?.empresa ||
+                    "Cliente no seleccionado"}
                 </div>
               </div>
 
@@ -127,18 +129,34 @@ export default function ConfirmationModal({
               <div className={styles.infoItem}>
                 <div className={styles.summaryLabel}>Coordinador</div>
                 <div className={styles.summaryValue}>
-                  {orderData?.coordinadorViaje || "Sin asignar"}
+                  {orderData?.coordinadorNombre || "Sin asignar"}
                 </div>
               </div>
 
               <div className={styles.infoItem}>
                 <div className={styles.summaryLabel}>Fecha</div>
                 <div className={styles.summaryValue}>
-                  {tripFormData?.idaFecha || "00/00/0000, 00:00"}
+                  {tripFormData?.idaFecha
+                    ? `${tripFormData.idaFecha}, ${tripFormData.idaHora?.padStart(
+                        2,
+                        "0",
+                      )}:${tripFormData.idaMinutos?.padStart(2, "0")}:00 ${
+                        tripFormData.idaAmPm || ""
+                      }`
+                    : "00/00/0000, 00:00:00"}
                   <br />
-                  {tripFormData?.tipoViaje === "redondo" &&
-                  tripFormData?.regresoFecha
+                  {tripFormData?.tipoViaje === "redondo"
                     ? tripFormData.regresoFecha
+                      ? `${
+                          tripFormData.regresoFecha
+                        }, ${tripFormData.regresoHora?.padStart(
+                          2,
+                          "0",
+                        )}:${tripFormData.regresoMinutos?.padStart(
+                          2,
+                          "0",
+                        )}:00 ${tripFormData.regresoAmPm || ""}`
+                      : "Sin fecha de regreso"
                     : "SOLO IDA"}
                 </div>
               </div>

@@ -301,7 +301,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               <MenuList>
                                 <MenuItem
                                   icon={<PersonAddRegular />}
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setAssignRow(row);
                                     setIsAssignModalOpen(true);
                                   }}
@@ -311,7 +312,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
                                 <MenuItem
                                   icon={<EditRegular />}
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     if (id)
                                       router.push(`/dashboard/order/${id}`);
                                   }}
@@ -323,7 +325,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
                                 <MenuItem
                                   icon={<MoneyRegular />}
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     if (id) {
                                       setPaymentTripId(Number(id));
                                       setIsPaymentModalOpen(true);

@@ -130,10 +130,14 @@ export default function CreateOrderContent({
         // Pre-fill form with contract data
         const updatedFormData: Partial<OrderFormData> = {
           empresa: contractData.client_id?.toString() || "",
+          empresaNombre: contractData.client_name || "",
           tipoPago: contractData.payment_type_id?.toString() || "",
           aplicaIva: contractData.IVA ? "Si" : "No",
           costoViaje: contractData.amount?.toString() || "",
           coordinadorViaje: contractData.coordinator_id?.toString() || "",
+          coordinadorNombre: contractData.coordinator_name
+            ? `${contractData.coordinator_name} ${contractData.coordinator_lastname || ""}`.trim()
+            : "",
           observacionesInternas: contractData.internal_observations || "",
           comentarios: contractData.observations || "",
         };
@@ -385,6 +389,9 @@ export default function CreateOrderContent({
           : "",
         coordinadorViaje: porAsignarCoordinator
           ? porAsignarCoordinator.user_id.toString()
+          : "",
+        coordinadorNombre: porAsignarCoordinator
+          ? porAsignarCoordinator.display_name
           : "",
       }));
     }
@@ -852,7 +859,20 @@ export default function CreateOrderContent({
 
           <div className={styles.section}>
             <SelectComponent
-              {...select("coordinadorViaje")}
+              value={formData.coordinadorViaje}
+              onChange={(e) => {
+                const selectedId = e.target.value;
+                const selectedCoordinator = prefillableData?.coordinators?.find(
+                  (c) => c.user_id.toString() === selectedId,
+                );
+                setFormData((prev) => ({
+                  ...prev,
+                  coordinadorViaje: selectedId,
+                  coordinadorNombre:
+                    selectedCoordinator?.display_name ||
+                    (selectedId === "POR_ASIGNAR" ? "Por asignar" : ""),
+                }));
+              }}
               options={[
                 { value: "POR_ASIGNAR", label: "Por asignar" },
                 ...(prefillableData?.coordinators

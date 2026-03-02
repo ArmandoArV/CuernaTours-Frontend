@@ -98,6 +98,13 @@ a {
   color: #7d6316 !important;
 }
 
+/* Ensure SweetAlert appears above FluentUI Modals */
+div:where(.swal2-container), .swal2-container, .swal2-container-override {
+  z-index: 2147483647 !important;
+  position: fixed !important;
+  pointer-events: auto !important;
+}
+
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;

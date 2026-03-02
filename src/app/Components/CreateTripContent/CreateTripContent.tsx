@@ -95,16 +95,48 @@ export default function CreateTripContent({
     fetchUnidades,
   } = useTripDropdowns();
 
-  const handleFieldTouch = (field: string) => {
+  const handleFieldTouch = (field: string, value?: any) => {
+      // Use provided value or fallback to current state
+      const valueToCheck = value !== undefined ? value : tripFormData[field as keyof TripFormData];
+      
+      // Special validation for Place ID fields (can be empty if manual address is provided)
+      if (field === "origenNombreLugar") {
+        if (!valueToCheck && !(tripFormData.origenCalle && tripFormData.origenColonia && tripFormData.origenCiudad)) {
+             setErrors(prev => ({...prev, [field]: "Este campo es obligatorio"}));
+             return;
+        } else {
+             setErrors(prev => {
+                const newErrors = {...prev};
+                delete newErrors[field];
+                return newErrors;
+             });
+             return;
+        }
+      }
+      
+      if (field === "destinoNombreLugar") {
+        if (!valueToCheck && !(tripFormData.destinoCalle && tripFormData.destinoColonia && tripFormData.destinoCiudad)) {
+             setErrors(prev => ({...prev, [field]: "Este campo es obligatorio"}));
+             return;
+        } else {
+             setErrors(prev => {
+                const newErrors = {...prev};
+                delete newErrors[field];
+                return newErrors;
+             });
+             return;
+        }
+      }
+
       // Simple validation for required fields
-      if (!tripFormData[field as keyof TripFormData]) {
+      if (!valueToCheck) {
           setErrors(prev => ({...prev, [field]: "Este campo es obligatorio"}));
       } else {
           setErrors(prev => {
               const newErrors = {...prev};
               delete newErrors[field];
               return newErrors;
-          });
+           });
       }
   };
 
@@ -128,7 +160,7 @@ export default function CreateTripContent({
   } = usePlaceSelection({
     onPlaceSelect: (field, placeId, option) => {
       setTripFormData((prev) => ({ ...prev, [field]: placeId }));
-      handleFieldTouch(field);
+      handleFieldTouch(field, placeId);
 
       // Auto-fill address fields if available
       if (option?.data) {
@@ -144,7 +176,7 @@ export default function CreateTripContent({
         };
 
         setTripFormData((prev) => ({ ...prev, ...updates }));
-        Object.keys(updates).forEach((key) => handleFieldTouch(key));
+        Object.entries(updates).forEach(([key, value]) => handleFieldTouch(key, value));
 
         // Update original data and disable editing
         if (prefix === "origen") {
@@ -164,7 +196,7 @@ export default function CreateTripContent({
     },
     onPlaceCreated: (context, placeId, placeName, placeData) => {
       if (context === "origen") {
-        const updates = {
+        const updates: Partial<TripFormData> = {
            origenNombreLugar: placeId.toString(),
            origenCalle: placeData?.address || "",
            origenNumero: placeData?.number || "",
@@ -182,22 +214,15 @@ export default function CreateTripContent({
         setOriginalOrigenData(updates as Partial<TripFormData>);
         setIsEditingOrigen(false);
 
-        // Mark fields as touched
-        [
-          "origenNombreLugar",
-          "origenCalle",
-          "origenNumero",
-          "origenColonia",
-          "origenCodigoPostal",
-          "origenCiudad",
-          "origenEstado",
-        ].forEach((field) => handleFieldTouch(field));
+        // Mark fields as touched with new values
+        Object.entries(updates).forEach(([key, value]) => handleFieldTouch(key, value));
       } else if (context === "destino") {
-        const updates = {
+        const updates: Partial<TripFormData> = {
            destinoNombreLugar: placeId.toString(),
            destinoCalle: placeData?.address || "",
            destinoNumero: placeData?.number || "",
            destinoColonia: placeData?.colonia || "",
+
            destinoCodigoPostal: placeData?.zip_code || "",
            destinoCiudad: placeData?.city || "",
            destinoEstado: placeData?.state || "",
@@ -211,16 +236,8 @@ export default function CreateTripContent({
         setOriginalDestinoData(updates as Partial<TripFormData>);
         setIsEditingDestino(false);
 
-        // Mark fields as touched
-        [
-          "destinoNombreLugar",
-          "destinoCalle",
-          "destinoNumero",
-          "destinoColonia",
-          "destinoCodigoPostal",
-          "destinoCiudad",
-          "destinoEstado",
-        ].forEach((field) => handleFieldTouch(field));
+        // Mark fields as touched with new values
+        Object.entries(updates).forEach(([key, value]) => handleFieldTouch(key, value));
       }
     },
   });
@@ -336,7 +353,9 @@ export default function CreateTripContent({
             tipoUnidad: trip.unit_type || "",
             nombreChofer: trip.driver?.id?.toString() || "",
             unidadAsignada: trip.vehicle?.id?.toString() || "",
-            placa: trip.vehicle?.license_plate || "",
+            placa: trip.vehicle?.license_plate || trip.vehicle?.placa || "",
+            unidadAsignada1: trip.vehicle?.id?.toString() || "",
+            placa1: trip.vehicle?.license_plate || trip.vehicle?.placa || "",
             observacionesChofer: trip.internal_notes || "",
             observacionesCliente: trip.notes || "",
             tipoViaje: tipoViajeValue,
@@ -413,13 +432,63 @@ export default function CreateTripContent({
   };
   const handleTripInputChange =
     (field: keyof typeof tripFormData) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      updateField(field, e.target.value);
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const newValue = e.target.value;
+      updateField(field, newValue);
+
+      // If we are updating address fields, check if we can clear the parent field error
+      if (field.startsWith("origen") && field !== "origenNombreLugar") {
+         if (tripFormData.origenCalle || newValue) { // Basic check
+            setErrors(prev => {
+                const newErrors = {...prev};
+                delete newErrors["origenNombreLugar"];
+                return newErrors;
+            });
+         }
+      }
+      if (field.startsWith("destino") && field !== "destinoNombreLugar") {
+         if (tripFormData.destinoCalle || newValue) {
+            setErrors(prev => {
+                const newErrors = {...prev};
+                delete newErrors["destinoNombreLugar"];
+                return newErrors;
+            });
+         }
+      }
+    };
 
   const handleTripSelectChange =
     (field: keyof typeof tripFormData) =>
     (e: React.ChangeEvent<HTMLSelectElement>) =>
       updateField(field, e.target.value);
+
+  const handleUnitChange =
+    (
+      unitField: "unidadAsignada1" | "unidadAsignada2" | "unidadAsignada3",
+      plateField: "placa1" | "placa2" | "placa3",
+    ) =>
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const selectedId = e.target.value;
+      const selectedUnit = unidades.find((u) => u.value === selectedId);
+
+      setTripFormData((prev) => {
+        const updates: any = {
+          [unitField]: selectedId,
+          [plateField]: selectedUnit?.licensePlate || "",
+        };
+
+        // If updating unit 1, also update the main vehicle_id field used by payload mapper
+        if (unitField === "unidadAsignada1") {
+          updates.unidadAsignada = selectedId;
+          updates.placa = selectedUnit?.licensePlate || "";
+        }
+
+        return {
+          ...prev,
+          ...updates,
+        };
+      });
+    };
 
   const handleRadioChange = (field: keyof typeof tripFormData, value: any) => {
     updateField(field, value);
@@ -628,6 +697,20 @@ export default function CreateTripContent({
     let hasErrors = false;
 
     requiredFields.forEach((field) => {
+      // If manually editing origin (no Place ID), skip ID validation if address fields are present
+      if (field === "origenNombreLugar" && !tripFormData.origenNombreLugar) {
+        if (tripFormData.origenCalle && tripFormData.origenColonia && tripFormData.origenCiudad) {
+          return; // Valid custom address
+        }
+      }
+      
+      // If manually editing destination (no Place ID), skip ID validation if address fields are present
+      if (field === "destinoNombreLugar" && !tripFormData.destinoNombreLugar) {
+        if (tripFormData.destinoCalle && tripFormData.destinoColonia && tripFormData.destinoCiudad) {
+          return; // Valid custom address
+        }
+      }
+
       if (!tripFormData[field as keyof typeof tripFormData]) {
         errors[field] = true;
         hasErrors = true;
@@ -1393,7 +1476,7 @@ export default function CreateTripContent({
                     ...unidades,
                   ]}
                   value={tripFormData.unidadAsignada1 || ""}
-                  onChange={handleTripSelectChange("unidadAsignada1")}
+                  onChange={handleUnitChange("unidadAsignada1", "placa1")}
                   className={styles.input}
                 />
                 <InputComponent
@@ -1413,7 +1496,7 @@ export default function CreateTripContent({
                     ...unidades,
                   ]}
                   value={tripFormData.unidadAsignada2 || ""}
-                  onChange={handleTripSelectChange("unidadAsignada2")}
+                  onChange={handleUnitChange("unidadAsignada2", "placa2")}
                   className={styles.input}
                 />
                 <InputComponent
@@ -1433,7 +1516,7 @@ export default function CreateTripContent({
                     ...unidades,
                   ]}
                   value={tripFormData.unidadAsignada3 || ""}
-                  onChange={handleTripSelectChange("unidadAsignada3")}
+                  onChange={handleUnitChange("unidadAsignada3", "placa3")}
                   className={styles.input}
                 />
                 <InputComponent
