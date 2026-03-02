@@ -39,6 +39,7 @@ interface Props {
   debounceMs?: number;
   hasError?: boolean;
   errorMessage?: string;
+  className?: string;
 }
 
 export default function SearchableSelectComponent({
@@ -57,6 +58,7 @@ export default function SearchableSelectComponent({
   debounceMs = 300,
   hasError = false,
   errorMessage = "",
+  className = "",
 }: Props) {
   const [options, setOptions] = useState<SearchableSelectOption[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -154,7 +156,7 @@ export default function SearchableSelectComponent({
       validationMessage={hasError ? errorMessage : undefined}
       validationState={hasError ? "error" : undefined}
     >
-      <div style={{ display: "flex", gap: 8 }}>
+      <div style={{ display: "flex", gap: 8 }} className={className}>
         <Combobox
           id={id}
           placeholder={placeholder}

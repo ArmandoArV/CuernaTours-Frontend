@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./selectStyles.module.css";
+import { Field, Select } from "@fluentui/react-components";
 import { SelectTypes } from "@/app/Types/SelectTypes";
 
 export default function SelectComponent({
@@ -25,25 +25,20 @@ export default function SelectComponent({
   containerStyle?: React.CSSProperties;
 }) {
   return (
-    <div
-      className={`${styles.selectContainer} ${containerClassName}`}
-      style={containerStyle}
-    >
-      {label && (
-        <label
-          htmlFor={id}
-          className={`${styles.label} ${labelClassName}`}
-          style={labelStyle}
-        >
-          {label}
-          {required && <span className={styles.required}> *</span>}
-        </label>
-      )}
-      <div className={styles.selectWrapper}>
-        <select
+    <div className={containerClassName} style={containerStyle}>
+      <Field
+        label={
+          label
+            ? { children: label, className: labelClassName, style: labelStyle }
+            : undefined
+        }
+        required={required}
+        htmlFor={id}
+      >
+        <Select
           value={value}
           onChange={onChange}
-          className={`${styles.select} ${className}`}
+          className={className}
           disabled={disabled}
           id={id}
           style={style}
@@ -56,8 +51,8 @@ export default function SelectComponent({
               {option.label}
             </option>
           ))}
-        </select>
-      </div>
+        </Select>
+      </Field>
     </div>
   );
 }

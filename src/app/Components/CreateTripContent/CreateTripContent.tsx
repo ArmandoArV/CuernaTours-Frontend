@@ -32,46 +32,27 @@ import {
   ApiError,
 } from "@/services/api";
 import { useOrderForm } from "@/app/hooks/useOrderForm";
-interface Parada {
-  id: string;
-  nombreLugar: string;
-  calle: string;
-  numero: string;
-  colonia: string;
-  codigoPostal: string;
-  ciudad: string;
-  estado: string;
+import type { TripFormData } from "@/app/Types/OrderTripTypes";
+import { useTripDropdowns } from "@/app/hooks/useTripDropdowns";
+import { usePlaceSelection } from "@/app/hooks/usePlaceSelection";
+import { useParadas, Parada } from "@/app/hooks/useParadas";
+
+interface CreateTripContentProps {
+  contractId?: string;
 }
 
-export default function CreateTripContent() {
+export default function CreateTripContent({
+  contractId,
+}: CreateTripContentProps) {
+  const isEdit = !!contractId;
   const { orderData, tripData, setTripData, clearData } = useOrderContext();
   const router = useRouter();
   const { canAssignResources } = useUserRole();
 
-  // Dropdown data
-  const [lugares, setLugares] = useState<
-    Array<{ value: string; label: string }>
-  >([]);
-  const [choferes, setChoferes] = useState<
-    Array<{ value: string; label: string }>
-  >([]);
-  const [unidades, setUnidades] = useState<
-    Array<{ value: string; label: string; licensePlate?: string }>
-  >([]);
+  // Loading state for trip data
+  const [isLoadingTrip, setIsLoadingTrip] = useState(false);
+  const [editingTripId, setEditingTripId] = useState<number | null>(null);
 
-  // Place modal state
-  const [isPlaceModalOpen, setIsPlaceModalOpen] = useState(false);
-  const [placeModalContext, setPlaceModalContext] = useState<
-    "origen" | "destino" | null
-  >(null);
-
-  // Confirmation modal state
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
-
-  // Paradas state
-  const [paradas, setParadas] = useState<Parada[]>([]);
-
-  // Field validation errors state
   const tripForm = useOrderForm({
     ...tripData,
     numeroPasajeros: tripData.regresoPasajeros || "",
@@ -96,6 +77,260 @@ export default function CreateTripContent() {
     select,
     updateField,
   } = tripForm;
+
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+
+  const {
+    choferes,
+    unidades,
+    lugares,
+    fetchLugares,
+    fetchChoferes,
+    fetchUnidades,
+  } = useTripDropdowns();
+
+  const handleFieldTouch = (field: string) => {
+      // Simple validation for required fields
+      if (!tripFormData[field as keyof TripFormData]) {
+          setErrors(prev => ({...prev, [field]: "Este campo es obligatorio"}));
+      } else {
+          setErrors(prev => {
+              const newErrors = {...prev};
+              delete newErrors[field];
+              return newErrors;
+          });
+      }
+  };
+
+  const {
+    paradas,
+    setParadas,
+    handleAddParada,
+    handleRemoveParada,
+    handleParadaChange,
+    handleParadaPlaceSelect,
+  } = useParadas();
+
+  const {
+    isPlaceModalOpen,
+    placeModalContext,
+    setIsPlaceModalOpen,
+    handlePlaceSearch,
+    handlePlaceSelect: handlePlaceSelectHook,
+    handleCreatePlace,
+    handlePlaceCreated,
+  } = usePlaceSelection({
+    onPlaceSelect: (field, placeId, option) => {
+      setTripFormData((prev) => ({ ...prev, [field]: placeId }));
+      handleFieldTouch(field);
+
+      // Auto-fill address fields if available
+      if (option?.data) {
+        const placeData = option.data;
+        const prefix = field === "origenNombreLugar" ? "origen" : "destino";
+        const updates: Partial<TripFormData> = {
+          [`${prefix}Calle`]: placeData.address || "",
+          [`${prefix}Numero`]: placeData.number || "",
+          [`${prefix}Colonia`]: placeData.colonia || "",
+          [`${prefix}CodigoPostal`]: placeData.zip_code || "",
+          [`${prefix}Ciudad`]: placeData.city || "",
+          [`${prefix}Estado`]: placeData.state || "",
+        };
+
+        setTripFormData((prev) => ({ ...prev, ...updates }));
+        Object.keys(updates).forEach((key) => handleFieldTouch(key));
+      }
+    },
+    onPlaceCreated: (context, placeId, placeName, placeData) => {
+      if (context === "origen") {
+        setTripFormData((prev) => ({
+          ...prev,
+          origenNombreLugar: placeId.toString(),
+          origenCalle: placeData?.address || "",
+          origenNumero: placeData?.number || "",
+          origenColonia: placeData?.colonia || "",
+          origenCodigoPostal: placeData?.zip_code || "",
+          origenCiudad: placeData?.city || "",
+          origenEstado: placeData?.state || "",
+        }));
+        // Mark fields as touched
+        [
+          "origenNombreLugar",
+          "origenCalle",
+          "origenNumero",
+          "origenColonia",
+          "origenCodigoPostal",
+          "origenCiudad",
+          "origenEstado",
+        ].forEach((field) => handleFieldTouch(field));
+      } else if (context === "destino") {
+        setTripFormData((prev) => ({
+          ...prev,
+          destinoNombreLugar: placeId.toString(),
+          destinoCalle: placeData?.address || "",
+          destinoNumero: placeData?.number || "",
+          destinoColonia: placeData?.colonia || "",
+          destinoCodigoPostal: placeData?.zip_code || "",
+          destinoCiudad: placeData?.city || "",
+          destinoEstado: placeData?.state || "",
+        }));
+        // Mark fields as touched
+        [
+          "destinoNombreLugar",
+          "destinoCalle",
+          "destinoNumero",
+          "destinoColonia",
+          "destinoCodigoPostal",
+          "destinoCiudad",
+          "destinoEstado",
+        ].forEach((field) => handleFieldTouch(field));
+      }
+    },
+  });
+
+  const handlePlaceSelect = handlePlaceSelectHook;
+
+
+  useEffect(() => {
+    const fetchTripData = async () => {
+      if (!contractId) return;
+
+      try {
+        setIsLoadingTrip(true);
+
+        // Fetch contract details to get trips
+        const contractData = await contractsService.getContractDetails(
+          parseInt(contractId),
+        );
+
+        // If there are trips, populate the form with the first trip's data
+        if (contractData.trips && contractData.trips.length > 0) {
+          const trip = contractData.trips[0];
+          setEditingTripId(trip.id);
+
+          // Parse the service date
+          let idaFechaFormatted = "";
+          if (trip.service_date) {
+            const date = new Date(trip.service_date);
+            const day = String(date.getDate()).padStart(2, "0");
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const year = date.getFullYear();
+            idaFechaFormatted = `${day}/${month}/${year}`;
+          }
+
+          // Parse origin time (HH:MM:SS format)
+          let idaHora: string | undefined = undefined;
+          let idaMinutos: string | undefined = undefined;
+          let idaAmPm: "AM" | "PM" | undefined = "AM";
+          if (trip.origin_time) {
+            const timeParts = trip.origin_time.split(":");
+            let hour = parseInt(timeParts[0] || "0");
+            let minutes = parseInt(timeParts[1] || "0");
+            if (hour >= 12) {
+              idaAmPm = "PM";
+              if (hour > 12) hour -= 12;
+            } else if (hour === 0) {
+              hour = 12;
+            }
+            idaHora = hour.toString();
+            idaMinutos = minutes.toString();
+          }
+
+          // Fetch place details for origin and destination
+          let origenData: any = {};
+          let destinoData: any = {};
+
+          if (trip.origin?.id) {
+            try {
+              const originPlace = await referenceService.getPlaceById(
+                trip.origin.id,
+              );
+              origenData = {
+                origenNombreLugar: trip.origin.id.toString(),
+                origenCalle: originPlace.address || "",
+                origenNumero: originPlace.number || "",
+                origenColonia: originPlace.colonia || "",
+                origenCodigoPostal: originPlace.zip_code || "",
+                origenCiudad: originPlace.city || "",
+                origenEstado: originPlace.state || "",
+              };
+            } catch (e) {
+              console.error("Error fetching origin place:", e);
+              origenData = { origenNombreLugar: trip.origin.id.toString() };
+            }
+          }
+
+          if (trip.destination?.id) {
+            try {
+              const destPlace = await referenceService.getPlaceById(
+                trip.destination.id,
+              );
+              destinoData = {
+                destinoNombreLugar: trip.destination.id.toString(),
+                destinoCalle: destPlace.address || "",
+                destinoNumero: destPlace.number || "",
+                destinoColonia: destPlace.colonia || "",
+                destinoCodigoPostal: destPlace.zip_code || "",
+                destinoCiudad: destPlace.city || "",
+                destinoEstado: destPlace.state || "",
+              };
+            } catch (e) {
+              console.error("Error fetching destination place:", e);
+              destinoData = {
+                destinoNombreLugar: trip.destination.id.toString(),
+              };
+            }
+          }
+
+          // Determine tipoViaje based on whether there's a return trip
+          const tipoViajeValue: "sencillo" | "redondo" = trip.is_round_trip
+            ? "redondo"
+            : "sencillo";
+
+          const tripUpdatedData: Partial<TripFormData> = {
+            ...origenData,
+            ...destinoData,
+            idaFecha: idaFechaFormatted,
+            idaHora,
+            idaMinutos:
+              idaMinutos !== undefined ? idaMinutos.toString() : undefined,
+            idaAmPm,
+            idaPasajeros: trip.passengers?.toString() || "",
+            tipoUnidad: trip.unit_type || "",
+            nombreChofer: trip.driver?.id?.toString() || "",
+            unidadAsignada: trip.vehicle?.id?.toString() || "",
+            placa: trip.vehicle?.license_plate || "",
+            observacionesChofer: trip.internal_notes || "",
+            observacionesCliente: trip.notes || "",
+            tipoViaje: tipoViajeValue,
+            // Flight information
+            origenEsVuelo: !!trip.flight,
+            origenNumeroVuelo: trip.flight?.flight_number || "",
+            origenAerolinea: trip.flight?.airline || "",
+            origenLugarVuelo: trip.flight?.flight_origin || "",
+          };
+
+          setTripFormData((prev: any) => ({
+            ...prev,
+            ...tripUpdatedData,
+          }));
+
+          setTripData({
+            ...tripFormData, // Use current form data as base
+            ...tripUpdatedData, // Apply updates
+          } as TripFormData);
+        }
+      } catch (err) {
+        console.error("Error fetching trip data:", err);
+      } finally {
+        setIsLoadingTrip(false);
+      }
+    };
+
+    fetchTripData();
+  }, [contractId, setTripData]);
+
+
 
   /* =============================
    COMPATIBILITY (DO NOT REMOVE)
@@ -146,223 +381,15 @@ export default function CreateTripContent() {
   const handleRadioChange = (field: keyof typeof tripFormData, value: any) => {
     updateField(field, value);
   };
-  // Place search and selection handlers
-  const handlePlaceSearch = async (
-    query: string,
-  ): Promise<SearchableSelectOption[]> => {
-    try {
-      const results = await referenceService.searchPlaces(query);
-      return results.map((place) => ({
-        value: (place.place_id || place.id)?.toString() || "",
-        label: place.name || place.nombre || "",
-        data: place,
-      }));
-    } catch (error) {
-      console.error("Error searching places:", error);
-      return [];
-    }
-  };
 
-  const handlePlaceSelect = async (
-    field: string,
-    placeId: string,
-    option?: SearchableSelectOption,
-  ) => {
-    setTripFormData((prev) => ({ ...prev, [field]: placeId }));
 
-    // Clear error when field is filled
-    if (placeId && fieldErrors[field]) {
-      setFieldErrors((prev) => ({ ...prev, [field]: false }));
-    }
 
-    // Auto-fill address fields if available
-    if (option?.data) {
-      try {
-        const placeDetails = await referenceService.getPlaceById(
-          parseInt(placeId),
-        );
-        const prefix = field.replace("NombreLugar", "");
 
-        // Clear errors for autofilled fields
-        const updatedErrors = { ...fieldErrors };
-        if (placeDetails.address) updatedErrors[`${prefix}Calle`] = false;
-        if (placeDetails.number) updatedErrors[`${prefix}Numero`] = false;
-        if (placeDetails.colonia) updatedErrors[`${prefix}Colonia`] = false;
-        if (placeDetails.zip_code)
-          updatedErrors[`${prefix}CodigoPostal`] = false;
-        if (placeDetails.city) updatedErrors[`${prefix}Ciudad`] = false;
-        if (placeDetails.state) updatedErrors[`${prefix}Estado`] = false;
-        setFieldErrors(updatedErrors);
+  // Parada handlers replaced by useParadas hook
 
-        setTripFormData((prev) => ({
-          ...prev,
-          [`${prefix}Calle`]: placeDetails.address || "",
-          [`${prefix}Numero`]: placeDetails.number || "",
-          [`${prefix}Colonia`]: placeDetails.colonia || "",
-          [`${prefix}CodigoPostal`]: placeDetails.zip_code || "",
-          [`${prefix}Ciudad`]: placeDetails.city || "",
-          [`${prefix}Estado`]: placeDetails.state || "",
-        }));
-      } catch (error) {
-        console.error("Error fetching place details:", error);
-      }
-    }
-  };
 
-  const handleCreatePlace = (context: "origen" | "destino") => {
-    setPlaceModalContext(context);
-    setIsPlaceModalOpen(true);
-  };
+  // Removed manual fetchLugares, fetchChoferes, fetchUnidades as they are in the hook
 
-  const handlePlaceCreated = (
-    placeId: number,
-    placeName: string,
-    placeData?: any,
-  ) => {
-    if (placeModalContext === "origen") {
-      // Clear errors for autofilled origen fields
-      const updatedErrors = { ...fieldErrors };
-      updatedErrors.origenNombreLugar = false;
-      if (placeData?.address) updatedErrors.origenCalle = false;
-      if (placeData?.number) updatedErrors.origenNumero = false;
-      if (placeData?.colonia) updatedErrors.origenColonia = false;
-      if (placeData?.zip_code) updatedErrors.origenCodigoPostal = false;
-      if (placeData?.city) updatedErrors.origenCiudad = false;
-      if (placeData?.state) updatedErrors.origenEstado = false;
-      setFieldErrors(updatedErrors);
-
-      setTripFormData((prev) => ({
-        ...prev,
-        origenNombreLugar: placeId.toString(),
-        origenCalle: placeData?.address || "",
-        origenNumero: placeData?.number || "",
-        origenColonia: placeData?.colonia || "",
-        origenCodigoPostal: placeData?.zip_code || "",
-        origenCiudad: placeData?.city || "",
-        origenEstado: placeData?.state || "",
-      }));
-    } else if (placeModalContext === "destino") {
-      // Clear errors for autofilled destino fields
-      const updatedErrors = { ...fieldErrors };
-      updatedErrors.destinoNombreLugar = false;
-      if (placeData?.address) updatedErrors.destinoCalle = false;
-      if (placeData?.number) updatedErrors.destinoNumero = false;
-      if (placeData?.colonia) updatedErrors.destinoColonia = false;
-      if (placeData?.zip_code) updatedErrors.destinoCodigoPostal = false;
-      if (placeData?.city) updatedErrors.destinoCiudad = false;
-      if (placeData?.state) updatedErrors.destinoEstado = false;
-      setFieldErrors(updatedErrors);
-
-      setTripFormData((prev) => ({
-        ...prev,
-        destinoNombreLugar: placeId.toString(),
-        destinoCalle: placeData?.address || "",
-        destinoNumero: placeData?.number || "",
-        destinoColonia: placeData?.colonia || "",
-        destinoCodigoPostal: placeData?.zip_code || "",
-        destinoCiudad: placeData?.city || "",
-        destinoEstado: placeData?.state || "",
-      }));
-    }
-
-    setIsPlaceModalOpen(false);
-    setPlaceModalContext(null);
-  };
-
-  // Parada handlers
-  const handleAddParada = () => {
-    const newParada: Parada = {
-      id: Date.now().toString(),
-      nombreLugar: "",
-      calle: "",
-      numero: "",
-      colonia: "",
-      codigoPostal: "",
-      ciudad: "",
-      estado: "",
-    };
-    setParadas([...paradas, newParada]);
-  };
-
-  const handleRemoveParada = (id: string) => {
-    setParadas(paradas.filter((p) => p.id !== id));
-  };
-
-  const handleParadaChange = (
-    id: string,
-    field: keyof Parada,
-    value: string,
-  ) => {
-    setParadas(
-      paradas.map((p) => (p.id === id ? { ...p, [field]: value } : p)),
-    );
-  };
-
-  const handleParadaPlaceSelect = async (
-    id: string,
-    placeId: string,
-    option?: SearchableSelectOption,
-  ) => {
-    handleParadaChange(id, "nombreLugar", placeId);
-
-    // Auto-fill address fields if available
-    if (option?.data) {
-      try {
-        const placeDetails = await referenceService.getPlaceById(
-          parseInt(placeId),
-        );
-        setParadas(
-          paradas.map((p) =>
-            p.id === id
-              ? {
-                  ...p,
-                  nombreLugar: placeId,
-                  calle: placeDetails.address || "",
-                  numero: placeDetails.number || "",
-                  colonia: placeDetails.colonia || "",
-                  codigoPostal: placeDetails.zip_code || "",
-                  ciudad: placeDetails.city || "",
-                  estado: placeDetails.state || "",
-                }
-              : p,
-          ),
-        );
-      } catch (error) {
-        console.error("Error fetching place details:", error);
-      }
-    }
-  };
-
-  // Fetch functions
-  const fetchLugares = useCallback(async () => {
-    try {
-      const data = await referenceService.getPlaces();
-      const lugarOptions = referenceService.transformPlacesForSelect(data);
-      setLugares(lugarOptions);
-    } catch (error) {
-      console.error("Error fetching lugares:", error);
-    }
-  }, []);
-
-  const fetchChoferes = useCallback(async () => {
-    try {
-      const data = await referenceService.getDrivers();
-      const choferOptions = referenceService.transformDriversForSelect(data);
-      setChoferes(choferOptions);
-    } catch (error) {
-      console.error("Error fetching choferes:", error);
-    }
-  }, []);
-
-  const fetchUnidades = useCallback(async () => {
-    try {
-      const data = await referenceService.getVehicles();
-      const unidadOptions = referenceService.transformVehiclesForSelect(data);
-      setUnidades(unidadOptions);
-    } catch (error) {
-      console.error("Error fetching unidades:", error);
-    }
-  }, []);
 
   // Load data and sync with context
   useEffect(() => {
@@ -397,7 +424,7 @@ export default function CreateTripContent() {
     const timeoutId = setTimeout(checkOrderData, 500);
 
     // Sync form data with context data, ensuring proper defaults
-    setTripFormData((prev) => ({
+    setTripFormData((prev: any) => ({
       ...prev,
       ...tripData,
       numeroPasajeros: tripData.regresoPasajeros || prev.numeroPasajeros || "",
@@ -405,12 +432,8 @@ export default function CreateTripContent() {
       regresoFecha: tripData.regresoFecha || prev.regresoFecha || "",
     }));
 
-    fetchLugares();
-    fetchChoferes();
-    fetchUnidades();
-
     return () => clearTimeout(timeoutId);
-  }, [fetchLugares, fetchChoferes, fetchUnidades, orderData, tripData, router]);
+  }, [orderData, tripData, router]);
 
   // Debug effect to monitor form data changes
   useEffect(() => {
@@ -490,42 +513,72 @@ export default function CreateTripContent() {
       // Close the confirmation modal
       setIsConfirmationModalOpen(false);
 
-      // Create contract with embedded trip using new comprehensive endpoint
-      const contractPayload = {
-        ...mapCompleteOrderToPayload(orderData as OrderFormData, tripFormData),
-        send_notification: sendNotification,
-      };
-      console.log("Contract payload:", contractPayload);
+      if (isEdit && editingTripId) {
+        // UPDATE EXISTING TRIP
+         const convertDateFormat = (ddmmyyyy: string): string => {
+            if (!ddmmyyyy) return "";
+            const parts = ddmmyyyy.split("/");
+            if (parts.length !== 3) return "";
+            return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+          };
 
-      const result = await contractsService.create(contractPayload);
-      console.log("Contract created:", result);
+          const convertTimeFormat = (
+            hour: string,
+            minutes: string,
+            ampm: "AM" | "PM",
+          ): string => {
+            let h = parseInt(hour, 10);
+            const m = parseInt(minutes, 10);
+            if (isNaN(h) || isNaN(m)) return "00:00";
+            if (ampm === "PM" && h !== 12) h += 12;
+            if (ampm === "AM" && h === 12) h = 0;
+            return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+          };
 
-      showSuccessAlert("Éxito", "Contrato y viaje creados correctamente");
+        const updatePayload = {
+          service_date: convertDateFormat(tripFormData.idaFecha || ""),
+          origin_time: convertTimeFormat(
+             tripFormData.idaHora || "0",
+             tripFormData.idaMinutos || "0",
+             tripFormData.idaAmPm || "AM"
+          ),
+          origin_id: parseInt(tripFormData.origenNombreLugar || "0"),
+          destination_id: parseInt(tripFormData.destinoNombreLugar || "0"),
+          passengers: parseInt(tripFormData.numeroPasajeros || tripFormData.idaPasajeros || "1"),
+          unit_type: tripFormData.tipoUnidad,
+          vehicle_id: tripFormData.unidadAsignada ? parseInt(tripFormData.unidadAsignada) : undefined,
+          driver_id: tripFormData.nombreChofer ? parseInt(tripFormData.nombreChofer) : undefined,
+          observations: tripFormData.observacionesCliente,
+          internal_observations: tripFormData.observacionesChofer,
+          // Add other fields as needed
+        };
 
-      // Clear all form data
-      clearData();
+        await tripsService.update(editingTripId, updatePayload);
+        showSuccessAlert("Éxito", "Viaje actualizado correctamente");
+        
+        // Go back to contract details
+        router.push(`/dashboard/order/${contractId}`);
 
-      // Clear local trip form data
-      setTripFormData({
-        ...tripData,
-        numeroPasajeros: "",
-        idaFecha: "",
-        regresoFecha: "",
-        unidadAsignada1: "",
-        placa1: "",
-        unidadAsignada2: "",
-        placa2: "",
-        unidadAsignada3: "",
-        placa3: "",
-      });
+      } else {
+        // CREATE NEW CONTRACT + TRIP
+        const contractPayload = {
+          ...mapCompleteOrderToPayload(orderData as OrderFormData, tripFormData),
+          send_notification: sendNotification,
+        };
+        console.log("Contract payload:", contractPayload);
 
-      // Clear paradas
-      setParadas([]);
+        const result = await contractsService.create(contractPayload);
+        console.log("Contract created:", result);
 
-      // Clear field errors
-      setFieldErrors({});
+        showSuccessAlert("Éxito", "Contrato y viaje creados correctamente");
 
-      router.push("/dashboard");
+        // Clear all form data
+        clearData();
+        setParadas([]);
+        setFieldErrors({});
+
+        router.push("/dashboard");
+      }
     } catch (error) {
       console.error("Error creating contract and trip:", error);
 
@@ -546,13 +599,18 @@ export default function CreateTripContent() {
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <Link href="/dashboard/createOrder" passHref>
+          <Link
+            href={isEdit ? `/dashboard/order/${contractId}` : "/dashboard/createOrder"}
+            passHref
+          >
             <button className={styles.backButton}>
               <ArrowHookUpLeftRegular color="black" />
             </button>
           </Link>
           <div>
-            <h1 className={styles.title}>Crear viaje</h1>
+            <h1 className={styles.title}>
+              {isEdit ? "Editar viaje" : "Crear viaje"}
+            </h1>
             <p className={styles.subtitle} style={{ color: "red" }}>
               Campos obligatorios <strong style={{ color: "red" }}>* </strong>
             </p>
@@ -1218,7 +1276,6 @@ export default function CreateTripContent() {
         isOpen={isPlaceModalOpen}
         onClose={() => {
           setIsPlaceModalOpen(false);
-          setPlaceModalContext(null);
         }}
         onPlaceCreated={handlePlaceCreated}
       />

@@ -22,29 +22,46 @@ import {
 import { useOrderContext } from "@/app/Contexts/OrderContext";
 import { useRouter } from "next/navigation";
 import { referenceService, ApiError } from "@/services/api";
+import {
+  contractsService,
+  ContractWithDetails,
+} from "@/services/api/contracts.service";
 import type {
   PrefillableData,
-  ClientTypeReference,
-  PaymentTypeReference,
 } from "@/services/api/reference.service";
 import CountrySelect from "@/app/Components/CountrySelect/CountrySelect";
 import FormField from "@/app/Components/FormField/FormField";
 import { useOrderForm } from "@/app/hooks/useOrderForm";
 import { useOrderValidation } from "@/app/hooks/useOrderValidation";
+import { useClientSelection } from "@/app/hooks/useClientSelection";
 
-export default function CreateOrderContent() {
+interface CreateOrderContentProps {
+  contractId?: string;
+}
+
+export default function CreateOrderContent({
+  contractId,
+}: CreateOrderContentProps) {
+  const isEdit = !!contractId;
   const { orderData, setOrderData, clearData } = useOrderContext();
   const router = useRouter();
-
-  // Use context data as form data
 
   const [prefillableData, setPrefillableData] =
     useState<PrefillableData | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
-  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+  
+  // Replaced with hook:
+  // const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+  
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [originalContactData, setOriginalContactData] = useState<any>(null);
-  const orderForm = useOrderForm<OrderFormData>(orderData);
+
+  // Contract data from API (for edit mode)
+  const [contract, setContract] = useState<ContractWithDetails | null>(null);
+  const [isLoadingContract, setIsLoadingContract] = useState(false);
+  const [contractError, setContractError] = useState<string | null>(null);
+
+  const orderForm = useOrderForm<OrderFormData>(orderData as OrderFormData);
 
   const {
     formData,
@@ -56,62 +73,127 @@ export default function CreateOrderContent() {
     touchedFields,
     input,
     select,
+    textarea,
     radio,
     updateField,
   } = orderForm;
-  const { requiredErrors, isValid } = useOrderValidation(formData, showErrors);
-  // Function to get required field status
-  const getFieldRequiredStatus = useCallback(
-    (fieldName: string): boolean => {
-      switch (fieldName) {
-        case "empresa":
-        case "nombreContacto":
-        case "primerApellido":
-        case "tieneWhatsapp":
-        case "costoViaje":
-        case "aplicaIva":
-        case "llevaComision":
-        case "tipoPago":
-          return true;
-        case "nombreRecibeComision":
-        case "tipoComision":
-          return formData.llevaComision === "Si";
-        default:
-          return false;
+
+  const {
+    isClientModalOpen,
+    setIsClientModalOpen,
+    handleClientSearch,
+    handleClientSelect: handleClientSelectHook,
+    handleCreateClient,
+    handleClientCreated,
+  } = useClientSelection({
+    onClientSelect: (data) => {
+      setFormData((prev) => ({
+        ...prev,
+        ...data,
+      }));
+      
+      // Update original contact data if not editing
+      if (!isEditingContact) {
+         const contactData = {
+            nombreContacto: data.nombreContacto || "",
+            primerApellido: data.primerApellido || "",
+            segundoApellido: data.segundoApellido || "",
+            telefono: data.telefono || "",
+            correoElectronico: data.correoElectronico || "",
+            tieneWhatsapp: data.tieneWhatsapp || "No",
+          };
+          setOriginalContactData(contactData);
       }
     },
-    [formData.llevaComision],
-  );
+    onError: (error) => {
+      console.error(error);
+    }
+  });
 
-  const getMissingRequiredFields = useCallback(() => {
-    const missing: Record<string, string> = {};
+  // Wrapper for handleClientSelect to match component signature
+  const handleClientSelect = (clientId: string, option?: SearchableSelectOption) => {
+    handleClientSelectHook(clientId, option);
+  };
 
-    const check = (field: string, label: string) => {
-      if (!getFieldRequiredStatus(field)) return;
 
-      const value = formData[field as keyof typeof formData];
+  // Fetch contract data on mount using /contracts/details/[id] endpoint
+  useEffect(() => {
+    const fetchContract = async () => {
+      if (!contractId) {
+        return;
+      }
 
-      if (!value || value.toString().trim() === "") {
-        missing[field] = `${label} es obligatorio`;
+      try {
+        setIsLoadingContract(true);
+        const contractData = await contractsService.getContractDetails(
+          parseInt(contractId),
+        );
+        setContract(contractData);
+
+        // Pre-fill form with contract data
+        const updatedFormData: Partial<OrderFormData> = {
+          empresa: contractData.client_id?.toString() || "",
+          tipoPago: contractData.payment_type_id?.toString() || "",
+          aplicaIva: contractData.IVA ? "Si" : "No",
+          costoViaje: contractData.amount?.toString() || "",
+          coordinadorViaje: contractData.coordinator_id?.toString() || "",
+          observacionesInternas: contractData.internal_observations || "",
+          comentarios: contractData.observations || "",
+        };
+
+        // Fetch client details to get contact information
+        if (contractData.client_id) {
+          try {
+            const clientDetails = await referenceService.getClientById(
+              contractData.client_id,
+            );
+            const primaryContact =
+              clientDetails.primary_contact || clientDetails.contacts?.[0];
+
+            if (primaryContact) {
+              updatedFormData.nombreContacto = primaryContact.name || "";
+              updatedFormData.primerApellido =
+                primaryContact.first_lastname || "";
+              updatedFormData.segundoApellido =
+                primaryContact.second_lastname || "";
+              updatedFormData.telefono = primaryContact.phone || "";
+              updatedFormData.correoElectronico = primaryContact.email || "";
+              updatedFormData.tieneWhatsapp =
+                primaryContact.is_whatsapp_available ? "Si" : "No";
+            }
+          } catch (clientErr) {
+            console.error("Error fetching client details:", clientErr);
+          }
+        }
+
+        setFormData((prev) => ({
+          ...prev,
+          ...updatedFormData,
+        }));
+
+        // Also update context with the data
+        setOrderData({
+          ...orderData,
+          ...updatedFormData,
+        } as OrderFormData);
+      } catch (err: any) {
+        console.error("Error fetching contract:", err);
+        setContractError(
+          err?.message || "Error al cargar los datos del contrato",
+        );
+        showErrorAlert(
+          "Error",
+          "No se pudo cargar la información del contrato",
+        );
+      } finally {
+        setIsLoadingContract(false);
       }
     };
 
-    check("empresa", "Empresa o cliente");
-    check("nombreContacto", "Nombre del contacto");
-    check("primerApellido", "Primer apellido");
-    check("tieneWhatsapp", "WhatsApp");
-    check("costoViaje", "Costo del viaje");
-    check("aplicaIva", "Aplica IVA");
-    check("llevaComision", "Lleva comisión");
-    check("tipoPago", "Tipo de pago");
+    fetchContract();
+  }, [contractId, setOrderData]);
+  const { requiredErrors, isValid, getMissingRequiredFields } = useOrderValidation(formData, showErrors);
 
-    if (formData.llevaComision === "Si") {
-      check("nombreRecibeComision", "Nombre de quien recibe comisión");
-      check("tipoComision", "Tipo de comisión");
-    }
-
-    return missing;
-  }, [formData, getFieldRequiredStatus]);
 
   const mergedErrors = {
     ...requiredErrors,
@@ -128,23 +210,8 @@ export default function CreateOrderContent() {
     return phoneRegex.test(phone);
   };
 
-  const handleRadioChange = (field: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
 
-    // Clear error for this field when user makes a selection
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
-
-  const handleNext = () => {
+  const handleNext = async () => {
     setShowErrors(true);
 
     const missing = getMissingRequiredFields();
@@ -154,9 +221,34 @@ export default function CreateOrderContent() {
       return;
     }
 
-    setOrderData(formData);
+    if (isEdit && contractId) {
+      try {
+        // Construct update payload
+        // Note: UpdateContractRequest only supports limited fields.
+        // We might need to handle commission separately if changed.
+        const updatePayload: any = {
+          payment_type_id: parseInt(formData.tipoPago),
+          IVA: formData.aplicaIva === "Si",
+          amount: parseFloat(formData.costoViaje),
+          observations: formData.comentarios,
+          internal_observations: formData.observacionesInternas,
+          coordinator_id: formData.coordinadorViaje ? parseInt(formData.coordinadorViaje) : undefined,
+          // client_id is usually not editable in update?
+        };
 
-    router.push("/dashboard/createOrder/createTrip");
+        await contractsService.update(parseInt(contractId), updatePayload);
+        showSuccessAlert("Éxito", "Contrato actualizado correctamente");
+        
+        // Navigate back to contract details
+        router.push(`/dashboard/order/${contractId}`);
+      } catch (error) {
+        console.error("Error updating contract:", error);
+        showErrorAlert("Error", "Error al actualizar el contrato");
+      }
+    } else {
+      setOrderData(formData);
+      router.push("/dashboard/createOrder/createTrip");
+    }
   };
   const handleCancel = () => {
     // Handle cancel logic
@@ -181,96 +273,6 @@ export default function CreateOrderContent() {
       setIsLoadingData(false);
     }
   }, []);
-
-  const handleClientSearch = async (
-    query: string,
-  ): Promise<SearchableSelectOption[]> => {
-    try {
-      const results = await referenceService.searchClients(query);
-      return results.map((client) => ({
-        value: client.client_id.toString(),
-        label: client.name,
-        data: client,
-      }));
-    } catch (error) {
-      console.error("Error searching clients:", error);
-      return [];
-    }
-  };
-
-  const handleClientSelect = async (
-    clientId: string,
-    option?: SearchableSelectOption,
-  ) => {
-    console.log("handleClientSelect called with:", { clientId, option });
-
-    // Auto-fill contact information if available
-    if (option?.data) {
-      try {
-        console.log("Fetching client details for ID:", clientId);
-        const clientDetails = await referenceService.getClientById(
-          parseInt(clientId),
-        );
-        console.log("Client details received:", clientDetails);
-
-        const primaryContact =
-          clientDetails.primary_contact || clientDetails.contacts?.[0];
-        console.log("Primary contact:", primaryContact);
-
-        if (primaryContact) {
-          const contactData = {
-            nombreContacto: primaryContact.name || "",
-            primerApellido: primaryContact.first_lastname || "",
-            segundoApellido: primaryContact.second_lastname || "",
-            telefono: primaryContact.phone || "",
-            correoElectronico: primaryContact.email || "",
-            tieneWhatsapp: primaryContact.is_whatsapp_available ? "Si" : "No",
-          };
-          setFormData((prev) => ({
-            ...prev,
-            empresa: clientId,
-            empresaNombre: clientDetails.name || option.label,
-            empresaTipo: clientDetails.client_type_id?.toString() || "",
-            ...contactData,
-          }));
-          setOriginalContactData(contactData);
-          setIsEditingContact(false);
-        } else {
-          setFormData((prev) => ({
-            ...prev,
-            empresa: clientId,
-            empresaNombre: clientDetails.name || option.label,
-            empresaTipo: clientDetails.client_type_id?.toString() || "",
-          }));
-          setOriginalContactData(null);
-          setIsEditingContact(false);
-        }
-      } catch (error) {
-        console.error("Error fetching client details:", error);
-        setFormData((prev) => ({
-          ...prev,
-          empresa: clientId,
-          empresaNombre: option.label,
-          empresaTipo: "",
-        }));
-        setOriginalContactData(null);
-        setIsEditingContact(false);
-      }
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        empresa: clientId,
-        empresaNombre: option?.label || "",
-        empresaTipo: "",
-      }));
-      setOriginalContactData(null);
-      setIsEditingContact(false);
-    }
-  };
-
-  const handleCreateClient = () => {
-    setIsClientModalOpen(true);
-  };
 
   const handleEditContact = () => {
     setIsEditingContact(true);
@@ -346,46 +348,27 @@ export default function CreateOrderContent() {
     setIsEditingContact(false);
   };
 
-  const handleClientCreated = (
-    clientId: number,
-    clientName: string,
-    contactData?: any,
-  ) => {
-    // Auto-fill form with newly created client
-    const contact = {
-      nombreContacto: contactData?.name || "",
-      primerApellido: contactData?.first_lastname || "",
-      segundoApellido: contactData?.second_lastname || "",
-      telefono: contactData?.phone || "",
-      correoElectronico: contactData?.email || "",
-      tieneWhatsapp: contactData?.is_whatsapp_available ? "Si" : "No",
-    };
-    setFormData((prev) => ({
-      ...prev,
-      empresa: clientId.toString(),
-      ...contact,
-    }));
-    setOriginalContactData(contact);
-    setIsEditingContact(false);
-    setIsClientModalOpen(false);
-  };
+  // Removed local handleClientCreated as it's now in the hook
+
 
   useEffect(() => {
     const initializeForm = async () => {
       // Clear any persisted data on initial mount
-      clearData();
+      if (!isEdit) {
+        clearData();
+      }
 
       // Fetch prefillable data
       await fetchPrefillableData();
     };
 
     initializeForm();
-  }, []); // Empty dependency array - only run on mount
+  }, [isEdit]); // Run on mount and if isEdit changes
 
   // Set default values after prefillable data is loaded
   useEffect(() => {
-    if (prefillableData && !orderData.empresa) {
-      // Only set defaults if form is empty (no empresa selected)
+    if (prefillableData && !orderData.empresa && !isEdit) {
+      // Only set defaults if form is empty (no empresa selected) and not editing
       const porAsignarPaymentType = prefillableData.payment_types.find((type) =>
         type.name.toLowerCase().includes("por asignar"),
       );
@@ -422,13 +405,18 @@ export default function CreateOrderContent() {
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <Link href="/dashboard" passHref>
+          <Link
+            href={isEdit ? `/dashboard/order/${contractId}` : "/dashboard"}
+            passHref
+          >
             <button className={styles.backButton}>
               <ArrowLeftFilled color="#61636E" />
             </button>
           </Link>
           <div>
-            <h1 className={styles.title}>Crear contrato de orden</h1>
+            <h1 className={styles.title}>
+              {isEdit ? "Editar contrato de orden" : "Crear contrato de orden"}
+            </h1>
             <p className={styles.subtitle} style={{ color: "red" }}>
               Campos obligatorios <strong style={{ color: "red" }}>* </strong>
             </p>
@@ -566,9 +554,7 @@ export default function CreateOrderContent() {
                     <input
                       type="radio"
                       name="whatsapp"
-                      value="Si"
-                      checked={formData.tieneWhatsapp === "Si"}
-                      onChange={() => handleRadioChange("tieneWhatsapp", "Si")}
+                      {...radio("tieneWhatsapp", "Si")}
                       disabled={!isEditingContact}
                       className={styles.radioInput}
                     />
@@ -578,9 +564,7 @@ export default function CreateOrderContent() {
                     <input
                       type="radio"
                       name="whatsapp"
-                      value="No"
-                      checked={formData.tieneWhatsapp === "No"}
-                      onChange={() => handleRadioChange("tieneWhatsapp", "No")}
+                      {...radio("tieneWhatsapp", "No")}
                       disabled={!isEditingContact}
                       className={styles.radioInput}
                     />
@@ -708,10 +692,8 @@ export default function CreateOrderContent() {
                   <input
                     type="radio"
                     name="comision"
-                    value="Si"
                     className={styles.radioInput}
-                    checked={formData.llevaComision === "Si"}
-                    onChange={() => handleRadioChange("llevaComision", "Si")}
+                    {...radio("llevaComision", "Si")}
                   />
                   Sí
                 </label>
@@ -719,10 +701,8 @@ export default function CreateOrderContent() {
                   <input
                     type="radio"
                     name="comision"
-                    value="No"
                     className={styles.radioInput}
-                    checked={formData.llevaComision === "No"}
-                    onChange={() => handleRadioChange("llevaComision", "No")}
+                    {...radio("llevaComision", "No")}
                   />
                   No
                 </label>
@@ -893,13 +873,7 @@ export default function CreateOrderContent() {
             <div className={styles.textareaContainer}>
               <label className={styles.textareaLabel}>Observaciones</label>
               <textarea
-                value={formData.observacionesInternas}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    observacionesInternas: e.target.value,
-                  }))
-                }
+                {...textarea("observacionesInternas")}
                 className={styles.textarea}
                 rows={4}
               />

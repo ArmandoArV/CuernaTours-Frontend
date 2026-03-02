@@ -1,8 +1,8 @@
 "use client";
 
-import DashboardLayout from "@/app/Components/Containers/DashboardLayout/DashboardLayout";
-import EditOrderContent from "@/app/Components/EditOrderContent/EditOrderContent";
+import CreateOrderContent from "@/app/Components/CreateOrderContent/CreateOrderContent";
 import AuthComponent from "@/app/Components/AuthComponent/AuthComponent";
+import DashboardLayout from "@/app/Components/Containers/DashboardLayout/DashboardLayout";
 import { useUserRole } from "@/app/hooks";
 
 interface EditOrderPageWrapperProps {
@@ -40,7 +40,7 @@ export default function EditOrderPageWrapper({ contractId }: EditOrderPageWrappe
   return (
     <AuthComponent>
       <DashboardLayout userIsAdmin={hasFullAccess} userIsOwner={isMaestro}>
-        <EditOrderContent contractId={contractId} />
+        <CreateOrderContent contractId={contractId} />
       </DashboardLayout>
     </AuthComponent>
   );

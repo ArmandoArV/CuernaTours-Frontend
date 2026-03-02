@@ -73,14 +73,9 @@ export default function UsersContent() {
       </div>
       
       <TableComponent
-        title="Gestión de Usuarios"
-        description="Administrar todos los usuarios del sistema"
         data={usersData}
         columns={usersColumns}
         showActions={true}
-        onViewDetails={handleViewUser}
-        onEdit={handleEditUser}
-        emptyMessage="No hay usuarios registrados en el sistema"
       />
     </>
   );

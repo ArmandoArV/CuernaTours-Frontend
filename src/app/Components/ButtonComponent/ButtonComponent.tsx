@@ -1,6 +1,7 @@
 import React from "react";
 import styles from "./ButtonComponent.module.css";
 import { IButtonProps } from "../../Types/ButtonType";
+import { Button } from "@fluentui/react-components";
 
 export default function ButtonComponent({
   text,
@@ -9,22 +10,20 @@ export default function ButtonComponent({
   disabled = false, // Default to false if no disabled flag is provided
   type = "button", // Default to "button" if no type is provided
   icon,
+  title,
 }: IButtonProps) {
+  const buttonType = type === "cancel" ? "button" : type;
+  
   return (
-    <button
-      type={type === "cancel" ? "button" : type}
+    <Button
+      type={buttonType}
       onClick={(e) => onClick?.(e)}
       className={`${styles.button} ${className}`} // Combine default and custom classes
       disabled={disabled}
+      icon={icon ? <span className={styles.icon}>{icon}</span> : undefined}
+      title={title}
     >
-      {icon && (
-        <div className={styles.iconContainer}>
-          <span className={styles.icon}>{icon}</span>
-        </div>
-      )}
-      {text && (
-      <div className={styles.label}>{text}</div>
-      )}
-    </button>
+      {text}
+    </Button>
   );
 }

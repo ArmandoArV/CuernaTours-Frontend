@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import styles from "./inputStyles.module.css";
+import { Field, Input, Button, Textarea } from "@fluentui/react-components";
 import { EyeFilled, EyeOffFilled } from "@fluentui/react-icons";
 import { InputTypes } from "@/app/Types/InputTypes";
 
@@ -44,77 +44,76 @@ export default function InputComponent({
     if (onIconClick) {
       onIconClick();
     } else if (type === "date" && inputRef.current) {
-      inputRef.current.focus();
       inputRef.current.showPicker?.();
     }
   };
 
   const inputType = type === "password" && showPassword ? "text" : type;
 
-  return (
-    <div
-      className={`${styles.inputContainer} ${containerClassName}`}
-      style={containerStyle}
+  const contentAfter =
+    type === "password" ? (
+      <Button
+        appearance="transparent"
+        icon={showPassword ? <EyeFilled /> : <EyeOffFilled />}
+        onClick={togglePasswordVisibility}
+        aria-label={showPassword ? "Hide password" : "Show password"}
+      />
+    ) : null;
+
+  const contentBefore = icon ? (
+    <span
+      onClick={handleIconClick}
+      style={{
+        cursor: onIconClick || type === "date" ? "pointer" : "default",
+        display: "flex",
+        alignItems: "center",
+        paddingRight: "8px",
+      }}
     >
-      {label && (
-        <label
-          htmlFor={id}
-          className={`${styles.label} ${labelClassName}`}
-          style={labelStyle}
-        >
-          {label}
-        </label>
-      )}
+      {icon}
+    </span>
+  ) : null;
 
-      <div className={styles.inputWrapper}>
-        {icon && (
-          <span
-            className={`${styles.inputIcon} ${
-              onIconClick || type === "date" ? styles.clickableIcon : ""
-            }`}
-            onClick={handleIconClick}
-          >
-            {icon}
-          </span>
+  return (
+    <div className={containerClassName} style={containerStyle}>
+      <Field
+        label={
+          label
+            ? { children: label, className: labelClassName, style: labelStyle }
+            : undefined
+        }
+        validationMessage={hasError ? errorMessage : undefined}
+        validationState={hasError ? "error" : "none"}
+        htmlFor={id}
+      >
+        {type === "textarea" ? (
+          <Textarea
+            value={value}
+            onChange={onChange as any}
+            placeholder={placeholder}
+            disabled={disabled}
+            id={id}
+            name={name || id}
+            style={style}
+            className={className}
+          />
+        ) : (
+          <Input
+            ref={inputRef}
+            type={inputType}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            disabled={disabled}
+            id={id}
+            name={name || id}
+            style={style}
+            className={className}
+            contentBefore={contentBefore}
+            contentAfter={contentAfter}
+          />
         )}
-
-        <input
-          ref={inputRef}
-          type={inputType}
-          value={value ?? ""}
-          onChange={onChange}
-          placeholder={placeholder}
-          disabled={disabled}
-          id={id}
-          name={name || id}
-          style={style}
-          className={`
-            ${styles.input}
-            ${className}
-            ${icon ? styles.inputWithIcon : ""}
-            ${hasError ? styles.inputError : ""}
-          `}
-        />
-
-        {type === "password" && (
-          <button
-            type="button"
-            onClick={togglePasswordVisibility}
-            className={styles.showPasswordButton}
-            aria-label={showPassword ? "Hide password" : "Show password"}
-          >
-            {showPassword ? (
-              <EyeFilled className={styles.passwordIcon} />
-            ) : (
-              <EyeOffFilled className={styles.passwordIcon} />
-            )}
-          </button>
-        )}
-      </div>
-
-      {hasError && errorMessage && (
-        <span className={styles.errorMessage}>{errorMessage}</span>
-      )}
+      </Field>
     </div>
   );
 }

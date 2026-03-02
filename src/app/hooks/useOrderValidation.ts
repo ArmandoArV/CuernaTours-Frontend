@@ -1,7 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 
 export function useOrderValidation(formData: any, showErrors: boolean) {
-  const getMissingRequiredFields = () => {
+  const getMissingRequiredFields = useCallback(() => {
     const missing: Record<string, string> = {};
 
     const required = [
@@ -21,14 +21,16 @@ export function useOrderValidation(formData: any, showErrors: boolean) {
 
     if (formData.llevaComision === "Si") {
       if (!formData.tipoComision) missing.tipoComision = "Campo obligatorio";
+      if (!formData.nombreRecibeComision)
+        missing.nombreRecibeComision = "Campo obligatorio";
     }
 
     return missing;
-  };
+  }, [formData]);
 
   const requiredErrors = useMemo(
     () => (showErrors ? getMissingRequiredFields() : {}),
-    [formData, showErrors],
+    [formData, showErrors, getMissingRequiredFields],
   );
 
   const isValid = Object.keys(requiredErrors).length === 0;
@@ -36,5 +38,6 @@ export function useOrderValidation(formData: any, showErrors: boolean) {
   return {
     requiredErrors,
     isValid,
+    getMissingRequiredFields,
   };
 }

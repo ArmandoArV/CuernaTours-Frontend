@@ -59,6 +59,19 @@ export function useOrderForm<T extends Record<string, any>>(initialData: T) {
   );
 
   /* =========================
+     TEXTAREA BINDING
+  ========================= */
+
+  const textarea = useCallback(
+    <K extends keyof T>(field: K) => ({
+      value: formData[field] ?? "",
+      onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) =>
+        updateField(field, e.target.value as T[K]),
+    }),
+    [formData, updateField],
+  );
+
+  /* =========================
      RADIO BINDING
   ========================= */
 
@@ -83,6 +96,7 @@ export function useOrderForm<T extends Record<string, any>>(initialData: T) {
     // ✅ NEW API
     input,
     select,
+    textarea,
     radio,
   };
 }

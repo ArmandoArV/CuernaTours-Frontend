@@ -1,8 +1,8 @@
 "use client";
 
-import DashboardLayout from "@/app/Components/Containers/DashboardLayout/DashboardLayout";
-import EditTripContent from "@/app/Components/EditTripContent/EditTripContent";
+import CreateTripContent from "@/app/Components/CreateTripContent/CreateTripContent";
 import AuthComponent from "@/app/Components/AuthComponent/AuthComponent";
+import DashboardLayout from "@/app/Components/Containers/DashboardLayout/DashboardLayout";
 import { useUserRole } from "@/app/hooks";
 
 interface EditTripPageWrapperProps {
@@ -40,7 +40,7 @@ export default function EditTripPageWrapper({ contractId }: EditTripPageWrapperP
   return (
     <AuthComponent>
       <DashboardLayout userIsAdmin={hasFullAccess} userIsOwner={isMaestro}>
-        <EditTripContent contractId={contractId} />
+        <CreateTripContent contractId={contractId} />
       </DashboardLayout>
     </AuthComponent>
   );
