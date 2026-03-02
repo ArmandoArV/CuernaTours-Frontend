@@ -184,7 +184,7 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
     setLoading(true);
     try {
       const contractId = tripData.contract_id;
-      const payments = [];
+      const payments: { driver_id: number; driver_type: "internal" | "external"; amount: number }[] = [];
       
       // Process Internal Driver Payment
       if (internalPaymentAmount && parseFloat(internalPaymentAmount) > 0) {
@@ -194,7 +194,7 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
         } else {
             payments.push({
                 driver_id: tripData.driver_id,
-                driver_type: "internal",
+                driver_type: "internal" as const,
                 amount: parseFloat(internalPaymentAmount),
             });
         }
@@ -210,7 +210,7 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
             if (extId) {
                 payments.push({
                     driver_id: extId,
-                    driver_type: "external",
+                    driver_type: "external" as const,
                     amount: parseFloat(externalPaymentAmount),
                 });
             }
