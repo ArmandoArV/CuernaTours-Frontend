@@ -41,7 +41,7 @@
 
 .logo {
   font-weight: 600;
-  color: #b48b2b;
+  color: var(--Main-96781A);
   letter-spacing: 2px;
   margin-bottom: 16px;
   font-size: 18px;
@@ -64,10 +64,10 @@
   margin-top: 8px;
   width: 220px;
   align-self: center;
-  background: #b48b2b !important;
+  background: var(--Main-96781A) !important;
 }
 
 .submitBtn:hover {
-  background: #9e7924 !important;
+  background: #7d6316 !important;
 }
 

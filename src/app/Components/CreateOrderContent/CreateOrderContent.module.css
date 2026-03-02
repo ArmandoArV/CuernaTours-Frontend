@@ -89,23 +89,23 @@
 }
 
 .cancelButton {
-  color: var(--Main-96781A);
-  border: 2px solid var(--Main-96781A);
-  background-color: transparent;
+  color: var(--Main-96781A) !important;
+  border: 2px solid var(--Main-96781A) !important;
+  background-color: transparent !important;
 }
 
 .cancelButton:hover {
-  background-color: #e5e7eb;
+  background-color: rgba(150, 120, 26, 0.08) !important;
 }
 
 .nextButton {
-  background-color: var(--Main-96781A);
-  color: white;
-  border: none;
+  background-color: var(--Main-96781A) !important;
+  color: white !important;
+  border: none !important;
 }
 
 .nextButton:hover {
-  background-color: #7c5f14;
+  background-color: #7c5f14 !important;
 }
 
 .header {

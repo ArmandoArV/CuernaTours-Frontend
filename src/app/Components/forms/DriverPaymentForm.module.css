@@ -157,7 +157,7 @@
 }
 
 .saveButton {
-  background-color: #C5A572 !important;
+  background-color: var(--Main-96781A) !important;
   color: white !important;
   border: none !important;
   padding: 0.5rem 1.5rem !important;
@@ -168,5 +168,5 @@
 }
 
 .saveButton:hover {
-  background-color: #B39560 !important;
+  background-color: #7d6316 !important;
 }

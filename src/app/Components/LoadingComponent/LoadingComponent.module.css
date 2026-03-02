@@ -31,7 +31,7 @@
 }
 
 .dot {
-  color: #0078d4;
+  color: var(--Main-96781A);
   animation: dotPulse 1.4s infinite ease-in-out;
   opacity: 0;
 }

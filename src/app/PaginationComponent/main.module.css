@@ -25,8 +25,8 @@
 
 .paginationButton:hover:not(:disabled) {
   background-color: #f8f9fa;
-  border-color: #007acc;
-  color: #007acc;
+  border-color: var(--Main-96781A);
+  color: var(--Main-96781A);
 }
 
 .paginationButton:disabled {

@@ -136,7 +136,7 @@
 }
 
 .actionButton {
-  background-color: #0078d4;
+  background-color: var(--Main-96781A);
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -150,7 +150,7 @@
 }
 
 .actionButton:hover {
-  background-color: #106ebe;
+  background-color: #7d6316;
 }
 
 .dropdownContainer {

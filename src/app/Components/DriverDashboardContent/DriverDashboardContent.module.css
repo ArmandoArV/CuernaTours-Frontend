@@ -45,7 +45,7 @@
 
 .retryButton {
   padding: 0.5rem 1.5rem;
-  background-color: #0078d4;
+  background-color: var(--Main-96781A);
   color: white;
   border: none;
   border-radius: 4px;
@@ -55,11 +55,11 @@
 }
 
 .retryButton:hover {
-  background-color: #106ebe;
+  background-color: #7d6316;
 }
 
 .retryButton:active {
-  background-color: #005a9e;
+  background-color: #655013;
 }
 
 .detailsPanelContainer {

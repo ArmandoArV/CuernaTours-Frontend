@@ -885,12 +885,14 @@ export default function CreateOrderContent({
               text="Cancelar"
               onClick={handleCancel}
               type="cancel"
+              appearance="outline"
               className={styles.cancelButton}
             />
             <ButtonComponent
               text="Siguiente"
               onClick={handleNext}
               type="button"
+              appearance="primary"
               className={styles.nextButton}
               title={
                 !areAllRequiredFieldsFilled()

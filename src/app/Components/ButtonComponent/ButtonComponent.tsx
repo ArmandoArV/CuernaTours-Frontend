@@ -6,11 +6,12 @@ import { Button } from "@fluentui/react-components";
 export default function ButtonComponent({
   text,
   onClick,
-  className = "", // Default to empty string if no custom class is provided
-  disabled = false, // Default to false if no disabled flag is provided
-  type = "button", // Default to "button" if no type is provided
+  className = "",
+  disabled = false,
+  type = "button",
   icon,
   title,
+  appearance,
 }: IButtonProps) {
   const buttonType = type === "cancel" ? "button" : type;
   
@@ -18,10 +19,11 @@ export default function ButtonComponent({
     <Button
       type={buttonType}
       onClick={(e) => onClick?.(e)}
-      className={`${styles.button} ${className}`} // Combine default and custom classes
+      className={`${styles.button} ${className}`}
       disabled={disabled}
       icon={icon ? <span className={styles.icon}>{icon}</span> : undefined}
       title={title}
+      appearance={appearance}
     >
       {text}
     </Button>

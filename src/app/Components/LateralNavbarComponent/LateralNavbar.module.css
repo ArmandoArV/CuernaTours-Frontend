@@ -119,11 +119,11 @@
 
 /* Active state styling */
 .navLink.active {
-  background-color: #4a90e2;
+  background-color: var(--Main-96781A);
 }
 
 .navLink.active:hover {
-  background-color: #357abd;
+  background-color: #7d6316;
 }
 
 /* Mobile Hamburger Menu */

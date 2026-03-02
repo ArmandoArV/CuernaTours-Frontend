@@ -108,7 +108,7 @@
 
 .textarea:focus {
   outline: none;
-  border-color: #0078d4;
+  border-color: var(--Main-96781A);
 }
 
 .textarea::placeholder {
@@ -145,13 +145,13 @@
 }
 
 .fileLabel:hover {
-  border-color: #0078d4;
+  border-color: var(--Main-96781A);
   background-color: #f3f2f1;
 }
 
 .uploadIcon {
   font-size: 2rem;
-  color: #0078d4;
+  color: var(--Main-96781A);
 }
 
 .fileLabel span {

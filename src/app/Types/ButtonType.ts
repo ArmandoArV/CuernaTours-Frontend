@@ -6,4 +6,5 @@ export type IButtonProps = {
   type?: "button" | "submit" | "reset" | "cancel";
   icon?: React.ReactNode;
   title?: string;
+  appearance?: "primary" | "secondary" | "outline" | "subtle" | "transparent";
 }
