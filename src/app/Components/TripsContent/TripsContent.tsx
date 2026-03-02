@@ -21,23 +21,20 @@ import { Contract } from "@/app/Types/ContractTypes";
 
 // Status mapping
 const STATUS_MAP: Record<number, string> = {
-  1: "Agendado",
-  2: "Por asignar",
-  3: "Próximo",
-  4: "En curso",
-  5: "Por pagar",
-  6: "Finalizado",
-  7: "Cancelado",
+  1: "Pendiente",
+  2: "En curso",
+  3: "Finalizado",
+  4: "Cancelado",
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  Agendado: "#0078D4",
-  "Por asignar": "#F7630C",
-  Próximo: "#8764B8",
-  "En curso": "#FFC83D",
-  "Por pagar": "#D13438",
-  Finalizado: "#107C10",
-  Cancelado: "#605E5C",
+  Pendiente: "#19A5EB", // Mapping Pendiente to Agendado color as per user request
+  Agendado: "#19A5EB",
+  "Por asignar": "#F86E24",
+  Próximo: "#C89600",
+  "En curso": "#4D5DBC",
+  Finalizado: "#80C26C",
+  Cancelado: "#C7C7C7",
 };
 
 interface TripsContentProps {

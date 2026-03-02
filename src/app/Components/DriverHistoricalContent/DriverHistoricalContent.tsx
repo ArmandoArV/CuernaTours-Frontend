@@ -11,13 +11,10 @@ import styles from "./DriverHistoricalContent.module.css";
 
 // Status mapping
 const STATUS_MAP: Record<number, string> = {
-  1: "Agendado",
-  2: "Por asignar",
-  3: "Próximo",
-  4: "En curso",
-  5: "Por pagar",
-  6: "Finalizado",
-  7: "Cancelado",
+  1: "Pendiente",
+  2: "En curso",
+  3: "Finalizado",
+  4: "Cancelado",
 };
 
 // Transform API data to show only historical trips (Finalizado or Cancelado)
@@ -36,7 +33,7 @@ function transformDriverHistoricalData(apiData: any[], driverId: number): any[] 
         const contractStatus = STATUS_MAP[contractStatusId] || contract.contract_status_name || contract.status?.name || "";
         
         // Only show completed or cancelled trips
-        if (contractStatusId === 6 || contractStatusId === 7) {
+        if (contractStatusId === 3 || contractStatusId === 4) {
           historicalTrips.push({
             "ID Viaje": trip.trip_id,
             "ID Contrato": contract.contract_id,

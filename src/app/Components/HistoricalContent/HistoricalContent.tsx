@@ -9,21 +9,18 @@ import styles from "./HistoricalContent.module.css";
 
 // Status mapping based on provided ids
 const STATUS_MAP: Record<number, string> = {
-  1: "Agendado",
-  2: "Por asignar",
-  3: "Próximo",
-  4: "En curso",
-  5: "Por pagar",
-  6: "Finalizado",
-  7: "Cancelado",
+  1: "Pendiente",
+  2: "En curso",
+  3: "Finalizado",
+  4: "Cancelado",
 };
 
 // Function to transform API data to table format (historical trips from finished/cancelled contracts)
 function transformHistoricalData(apiData: any[]): any[] {
-  // Filter to get only "Finalizado" (6) and "Cancelado" (7) contracts
+  // Filter to get only "Finalizado" (3) and "Cancelado" (4) contracts
   const historicalContracts = apiData.filter((contract) => {
     const statusId = contract.contract_status_id || contract.status?.id;
-    return statusId === 6 || statusId === 7;
+    return statusId === 3 || statusId === 4;
   });
 
   // Transform to trip-based rows

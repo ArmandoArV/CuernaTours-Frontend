@@ -129,3 +129,43 @@ export const showConfirmAlert = (
 export const showCustomAlert = (options: AlertOptions) => {
   showAlert(options);
 };
+
+export const showInputAlert = async (
+  title: string,
+  text: string,
+  inputLabel: string,
+  inputPlaceholder: string,
+  confirmButtonText: string = "Confirmar",
+  cancelButtonText: string = "Cancelar",
+  confirmButtonColor: string = "#96781a",
+  cancelButtonColor: string = "#ffffff"
+): Promise<string | null> => {
+  const result = await Swal.fire({
+    title,
+    text,
+    input: "text",
+    inputLabel,
+    inputPlaceholder,
+    showCancelButton: true,
+    confirmButtonText,
+    cancelButtonText,
+    confirmButtonColor,
+    cancelButtonColor,
+    customClass: {
+      container: 'swal2-container-override',
+      confirmButton: 'swal-confirm-button', // Re-use the global class for gold button
+      cancelButton: 'swal-cancel-button'    // Re-use the global class for white/gold button
+    },
+    inputValidator: (value) => {
+      if (!value) {
+        return "¡Necesitas escribir una razón!";
+      }
+      return null;
+    }
+  });
+
+  if (result.isConfirmed) {
+    return result.value;
+  }
+  return null;
+};

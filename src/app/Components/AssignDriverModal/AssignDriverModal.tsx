@@ -123,7 +123,19 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
   const getTripId = (): number | null => {
     if (!tripData) return null;
     const data = tripData as any;
-    // Common ID fields
+    
+    // If tripData itself is the trip object (has origin/destination directly)
+    if ((tripData as any).origin || (tripData as any).destination) {
+        return data.contract_trip_id || data.trip_id || data.tripId || data.id || data.ID || null;
+    }
+
+    // If it's a contract row with _trips, use the first trip's ID
+    if (data._trips && Array.isArray(data._trips) && data._trips.length > 0) {
+        const firstTrip = data._trips[0];
+        return firstTrip.contract_trip_id || firstTrip.trip_id || firstTrip.id;
+    }
+
+    // Common ID fields for direct trip objects
     return data.contract_trip_id || data.trip_id || data.tripId || data.id || data.ID || null;
   };
 
@@ -144,7 +156,18 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
     setIsLoading(true);
     try {
       // Pre-fill form based on current assignment
-      const data = await tripsService.getById(id);
+      let data: any; // Use any to allow enriched data structure
+      
+      // If tripData passed as prop already has enriched details (origin object, etc), use it
+      // Otherwise fetch from API
+      if (tripData && (tripData as any).origin && (tripData as any).destination) {
+         console.log("Using provided enriched trip data");
+         data = tripData;
+      } else {
+         console.log("Fetching trip data from API");
+         data = await tripsService.getById(id);
+      }
+      
       console.log("Trip Data Loaded:", data);
       
       setFullTripData(data);

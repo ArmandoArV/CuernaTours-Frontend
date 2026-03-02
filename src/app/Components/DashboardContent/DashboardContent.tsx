@@ -8,6 +8,7 @@ import {
   AddFilled,
   DocumentAddRegular,
   ArrowRepeatAllRegular,
+  ArrowClockwiseRegular,
 } from "@fluentui/react-icons";
 import {
   Menu,
@@ -36,13 +37,10 @@ import styles from "./DashboardContent.module.css";
 
 // Status mapping based on provided ids
 const STATUS_MAP: Record<number, string> = {
-  1: "Agendado",
-  2: "Por asignar",
-  3: "Próximo",
-  4: "En curso",
-  5: "Por pagar",
-  6: "Finalizado",
-  7: "Cancelado",
+  1: "Pendiente",
+  2: "En curso",
+  3: "Finalizado",
+  4: "Cancelado",
 };
 
 // ✅ Prevent UTC parsing problems
@@ -58,13 +56,13 @@ const toDayNumber = (date: Date) =>
 // Function to transform API data to table format (contract-based)
 // Function to transform API data to table format (contract-based)
 function transformApiData(apiData: any[]): any[] {
-  // Filter out "Finalizado" (6) and "Cancelado" (7) contracts
+  // Filter out "Finalizado" (3) and "Cancelado" (4) contracts
   const activeContracts = apiData.filter((contract) => {
     const statusId = contract.contract_status_id || contract.status?.id;
     const statusName = contract.contract_status_name || contract.status?.name;
     return (
-      statusId !== 6 &&
-      statusId !== 7 &&
+      statusId !== 3 &&
+      statusId !== 4 &&
       statusName !== "Finalizado" &&
       statusName !== "Cancelado"
     );
@@ -201,29 +199,29 @@ export default function DashboardContent() {
   }, [showDropdown]);
 
   // Fetch data from API
-  useEffect(() => {
-    const fetchContracts = async () => {
-      try {
-        setLoading(true);
-        const data = await contractsService.getAll();
-        setContractsData(data);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching contracts:", err);
+  const fetchContracts = async () => {
+    try {
+      setLoading(true);
+      const data = await contractsService.getAll();
+      setContractsData(data);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching contracts:", err);
 
-        if (err instanceof ApiError) {
-          setError(err.message);
-        } else {
-          setError(err instanceof Error ? err.message : "An error occurred");
-        }
-
-        // Fallback to empty array in case of error
-        setContractsData([]);
-      } finally {
-        setLoading(false);
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError(err instanceof Error ? err.message : "An error occurred");
       }
-    };
 
+      // Fallback to empty array in case of error
+      setContractsData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchContracts();
   }, []);
 
@@ -393,41 +391,51 @@ export default function DashboardContent() {
         onPageChange={setCurrentPage}
         onFiltersChange={handleFiltersChange}
         actionButtons={
-          canCreateOrders ? (
-            <div ref={dropdownRef} style={{ position: "relative" }}>
-              <ButtonComponent
-                text="Crear Orden"
-                icon={
-                  <AddFilled
-                    fontWeight={600}
-                    color="white"
-                    width={16}
-                    height={16}
-                  />
-                }
-                className={styles.createOrderButton}
-                onClick={handleButtonClick}
-              />
-              {showDropdown && (
-                <div className={styles.dropdownMenu}>
-                  <ButtonComponent
-                    text="Nuevo Viaje"
-                    icon={<DocumentAddRegular width={16} height={16} />}
-                    className={styles.dropdownItem}
-                    onClick={() =>
-                      handleMenuItemClick("/dashboard/createOrder")
-                    }
-                  />
-                  <ButtonComponent
-                    text="Viaje frecuente"
-                    icon={<ArrowRepeatAllRegular width={16} height={16} />}
-                    className={styles.dropdownItem}
-                    onClick={() => handleMenuItemClick("/dashboard")}
-                  />
-                </div>
-              )}
-            </div>
-          ) : null
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <ButtonComponent
+              text="Actualizar"
+              icon={<ArrowClockwiseRegular width={16} height={16} />}
+              onClick={fetchContracts}
+              className={styles.refreshButton}
+              appearance="outline"
+            />
+
+            {canCreateOrders ? (
+              <div ref={dropdownRef} style={{ position: "relative" }}>
+                <ButtonComponent
+                  text="Crear Orden"
+                  icon={
+                    <AddFilled
+                      fontWeight={600}
+                      color="white"
+                      width={16}
+                      height={16}
+                    />
+                  }
+                  className={styles.createOrderButton}
+                  onClick={handleButtonClick}
+                />
+                {showDropdown && (
+                  <div className={styles.dropdownMenu}>
+                    <ButtonComponent
+                      text="Nuevo Viaje"
+                      icon={<DocumentAddRegular width={16} height={16} />}
+                      className={styles.dropdownItem}
+                      onClick={() =>
+                        handleMenuItemClick("/dashboard/createOrder")
+                      }
+                    />
+                    <ButtonComponent
+                      text="Viaje frecuente"
+                      icon={<ArrowRepeatAllRegular width={16} height={16} />}
+                      className={styles.dropdownItem}
+                      onClick={() => handleMenuItemClick("/dashboard")}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
         }
       />
 

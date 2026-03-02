@@ -69,14 +69,17 @@ const useStyles = makeStyles({
 export default function DriverTripCard({ trip, onClick }: Props) {
   const styles = useStyles();
 
-  const getStatusColorClass = () => {
-    switch (trip.Estatus) {
-      case "Finalizado":
-        return styles.success;
-      case "Cancelado":
-        return styles.danger;
-      default:
-        return styles.warning;
+  const getStatusColor = (status: string) => {
+    const key = (status || "").toLowerCase();
+    switch (key) {
+      case "agendado": return "#19A5EB";
+      case "por asignar": return "#F86E24";
+      case "proximo": return "#C89600";
+      case "en curso": return "#4D5DBC";
+      case "pendiente": return "#19A5EB";
+      case "finalizado": return "#80C26C";
+      case "cancelado": return "#C7C7C7";
+      default: return "#C89600";
     }
   };
 
@@ -84,16 +87,26 @@ export default function DriverTripCard({ trip, onClick }: Props) {
     <div className={styles.wrapper} onClick={() => onClick(trip)}>
       {/* LEFT STATUS BAR */}
       <div
-        className={`${styles.statusBar} ${getStatusColorClass()}`}
+        className={styles.statusBar}
+        style={{ backgroundColor: getStatusColor(trip.Estatus) }}
       />
 
       {/* CARD CONTENT */}
       <Card className={styles.card} appearance="subtle">
         <div className={styles.headerRow}>
           <Text weight="semibold">{trip.Cliente}</Text>
-          <Badge appearance="filled" color="brand">
+          <span
+            style={{
+              backgroundColor: getStatusColor(trip.Estatus),
+              color: "white",
+              padding: "2px 8px",
+              borderRadius: "4px",
+              fontSize: "12px",
+              fontWeight: "600",
+            }}
+          >
             {trip.Estatus}
-          </Badge>
+          </span>
         </div>
 
         <div className={styles.section}>

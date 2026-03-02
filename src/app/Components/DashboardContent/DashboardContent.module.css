@@ -1,7 +1,7 @@
 .createOrderButton {
   padding: 8px 16px;
-  background-color: #96781a;
-  color: white;
+  background-color: #96781a !important;
+  color: white !important;
   border: none;
   border-radius: 6px;
   font-size: 1rem;
@@ -15,7 +15,31 @@
 }
 
 .createOrderButton:hover {
-  background-color: #7a6115;
+  background-color: #7a6115 !important;
+  color: white !important;
+}
+
+.refreshButton {
+  padding: 8px 16px;
+  background-color: transparent;
+  color: #96781a;
+  border: 1px solid #96781a;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-raleway), Raleway, sans-serif;
+  transition: all 0.2s ease;
+  height: 40px; /* Match standard button height */
+}
+
+.refreshButton:hover {
+  background-color: #f9f6e8;
+  border-color: #7a6115;
+  color: #7a6115;
 }
 
 .dropdownMenu {

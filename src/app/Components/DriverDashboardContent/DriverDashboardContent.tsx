@@ -13,13 +13,10 @@ import { useIsMobile } from "@/app/hooks/useIsMobile";
 import styles from "./DriverDashboardContent.module.css";
 
 const STATUS_MAP: Record<number, string> = {
-  1: "Agendado",
-  2: "Por asignar",
-  3: "Próximo",
-  4: "En curso",
-  5: "Por pagar",
-  6: "Finalizado",
-  7: "Cancelado",
+  1: "Pendiente",
+  2: "En curso",
+  3: "Finalizado",
+  4: "Cancelado",
 };
 
 export default function DriverDashboardContent() {

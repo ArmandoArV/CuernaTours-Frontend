@@ -14,6 +14,7 @@ import {
   MenuList,
   MenuItem,
   MenuDivider,
+  tokens,
 } from "@fluentui/react-components";
 
 import {
@@ -22,6 +23,7 @@ import {
   EditRegular,
   MoneyRegular,
   EyeFilled,
+  DismissRegular,
 } from "@fluentui/react-icons";
 
 import { Pagination } from "@/app/PaginationComponent/PaginationComponent";
@@ -30,6 +32,11 @@ import AssignDriverModal from "@/app/Components/AssignDriverModal/AssignDriverMo
 import DriverPaymentModal from "@/app/Components/DriverPaymentModal/DriverPaymentModal";
 import { useUserRole } from "@/app/hooks/useUserRole";
 import { contractsService } from "@/services/api/contracts.service";
+import { 
+  showInputAlert, 
+  showSuccessAlert, 
+  showErrorAlert 
+} from "@/app/Utils/AlertUtil";
 
 export type TableComponentProps = {
   data: Array<{ [key: string]: any }>;
@@ -121,34 +128,19 @@ const TableComponent: React.FC<TableComponentProps> = ({
       case "agendado":
         return "#19A5EB";
       case "por asignar":
-        return "#F6573E";
+        return "#F86E24";
       case "proximo":
-        return "#EFCF5B";
+        return "#C89600";
       case "en curso":
         return "#4D5DBC";
-      case "por pagar":
-        return "#E53E7C";
+      case "pendiente":
+        return "#19A5EB"; // Mapping Pendiente to Agendado color as per user request
       case "finalizado":
-        return "#80C26C";
+        return "#80C26C"; 
+      case "cancelado":
+        return "#C7C7C7";
       default:
         return "#C7C7C7";
-    }
-  };
-
-  const getBadgeColor = (status: string) => {
-    if (!status) return "informative";
-
-    switch (status.toLowerCase()) {
-      case "agendado":
-        return "brand";
-      case "finalizado":
-        return "success";
-      case "por pagar":
-        return "warning";
-      case "cancelado":
-        return "danger";
-      default:
-        return "informative";
     }
   };
 
@@ -176,6 +168,33 @@ const TableComponent: React.FC<TableComponentProps> = ({
     } catch (err) {
       console.error("Error fetching contract details:", err);
       setSelectedRow(row);
+    }
+  };
+
+  const handleCancelContract = async (id: number) => {
+    const reason = await showInputAlert(
+      "¿Estás seguro de cancelar este contrato?",
+      "Esta acción no se puede deshacer. Por favor ingresa el motivo de la cancelación:",
+      "Motivo de cancelación",
+      "Escribe el motivo aquí...",
+      "Sí, cancelar contrato",
+      "No, mantener"
+    );
+
+    if (reason) {
+      try {
+        await contractsService.cancelContract(id, reason);
+        showSuccessAlert(
+          "Contrato cancelado", 
+          "El contrato ha sido cancelado exitosamente.", 
+          () => {
+             window.location.reload(); 
+          }
+        );
+      } catch (error) {
+        console.error("Error cancelling contract:", error);
+        showErrorAlert("Error", "No se pudo cancelar el contrato. Inténtalo de nuevo.");
+      }
     }
   };
 
@@ -251,12 +270,21 @@ const TableComponent: React.FC<TableComponentProps> = ({
                           }
                         >
                           {isStatusColumn ? (
-                            <Badge
-                              appearance="filled"
-                              color={getBadgeColor(value)}
+                            <span
+                              style={{
+                                backgroundColor: getStatusColor(value),
+                                color: "white",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                display: "inline-block",
+                                fontSize: "12px",
+                                fontWeight: "600",
+                                textAlign: "center",
+                                minWidth: "80px"
+                              }}
                             >
                               {value}
-                            </Badge>
+                            </span>
                           ) : (
                             value
                           )}
@@ -303,7 +331,11 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   icon={<PersonAddRegular />}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    setAssignRow(row);
+                                    if (row._trips && Array.isArray(row._trips) && row._trips.length > 0) {
+                                       setAssignRow(row._trips[0]);
+                                    } else {
+                                       setAssignRow(row);
+                                    }
                                     setIsAssignModalOpen(true);
                                   }}
                                 >
@@ -334,6 +366,21 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   }}
                                 >
                                   Pagar Chofer
+                                </MenuItem>
+
+                                <MenuDivider />
+
+                                <MenuItem
+                                  icon={<DismissRegular />}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (id) {
+                                      handleCancelContract(Number(id));
+                                    }
+                                  }}
+                                  style={{ color: tokens.colorPaletteRedForeground1 }}
+                                >
+                                  Cancelar Contrato
                                 </MenuItem>
                               </MenuList>
                             </MenuPopover>
