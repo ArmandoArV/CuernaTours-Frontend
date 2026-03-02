@@ -156,7 +156,7 @@ class TripsService {
     externalDriverId?: number | null
   ): Promise<ContractTrip> {
     // Check if a specific assign-resources endpoint exists, otherwise fallback to update
-    const endpoint = API_ENDPOINTS.TRIPS.ASSIGN_RESOURCES ? API_ENDPOINTS.TRIPS.ASSIGN_RESOURCES(tripId) : API_ENDPOINTS.TRIPS.BY_ID(tripId);
+    const endpoint = API_ENDPOINTS.TRIPS.ASSIGN_RESOURCES(tripId);
     
     const data: any = {};
     if (driverId !== undefined) data.driver_id = driverId;
@@ -166,10 +166,7 @@ class TripsService {
 
     // Use PUT if it's a standard update, or POST if it's a specific action
     // Assuming update (PUT) for generic ID endpoint, POST for action
-    const method = API_ENDPOINTS.TRIPS.ASSIGN_RESOURCES ? 'post' : 'put';
-    
-    // Explicitly use apiClient[method]
-    const response = await (apiClient as any)[method]<ContractTrip>(endpoint, data);
+    const response = await apiClient.post<ContractTrip>(endpoint, data);
     return validateResponse<ContractTrip>(response);
   }
 
