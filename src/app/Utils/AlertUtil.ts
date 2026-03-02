@@ -25,7 +25,7 @@ const defaultOptions = {
 export const showAlert = (options: AlertOptions) => {
   const { func, cancelFunc, ...swalOptions } = { ...defaultOptions, ...options };
   // Force a very high z-index and ensure it's not overridden
-  swalOptions.customClass = {
+  (swalOptions as any).customClass = {
     ...(swalOptions.customClass || {}),
     container: 'swal2-container-override'
   };
