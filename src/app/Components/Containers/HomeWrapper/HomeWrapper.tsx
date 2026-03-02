@@ -149,6 +149,7 @@ export default function HomeWrapper() {
               onClick={authenticateUser}
               className={styles["loginButton"]}
               type="submit"
+              appearance="primary"
             />
           </div>
           <div className={styles["forgotPassword"]}>

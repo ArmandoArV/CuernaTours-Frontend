@@ -33,7 +33,6 @@ export default function SelectComponent({
             : undefined
         }
         required={required}
-        htmlFor={id}
       >
         <Select
           value={value}

@@ -15,10 +15,7 @@ import {
 } from "@fluentui/react-icons";
 import Link from "next/link";
 import { showErrorAlert, showSuccessAlert } from "../../Utils/AlertUtil";
-import {
-  OrderFormData,
-  mapOrderFormToPayload,
-} from "@/app/Types/OrderTripTypes";
+import { OrderFormData } from "@/app/Types/OrderTripTypes";
 import { useOrderContext } from "@/app/Contexts/OrderContext";
 import { useRouter } from "next/navigation";
 import { referenceService, ApiError } from "@/services/api";
@@ -26,9 +23,7 @@ import {
   contractsService,
   ContractWithDetails,
 } from "@/services/api/contracts.service";
-import type {
-  PrefillableData,
-} from "@/services/api/reference.service";
+import type { PrefillableData } from "@/services/api/reference.service";
 import CountrySelect from "@/app/Components/CountrySelect/CountrySelect";
 import FormField from "@/app/Components/FormField/FormField";
 import { useOrderForm } from "@/app/hooks/useOrderForm";
@@ -49,10 +44,10 @@ export default function CreateOrderContent({
   const [prefillableData, setPrefillableData] =
     useState<PrefillableData | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
-  
+
   // Replaced with hook:
   // const [isClientModalOpen, setIsClientModalOpen] = useState(false);
-  
+
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [originalContactData, setOriginalContactData] = useState<any>(null);
 
@@ -91,30 +86,32 @@ export default function CreateOrderContent({
         ...prev,
         ...data,
       }));
-      
+
       // Update original contact data if not editing
       if (!isEditingContact) {
-         const contactData = {
-            nombreContacto: data.nombreContacto || "",
-            primerApellido: data.primerApellido || "",
-            segundoApellido: data.segundoApellido || "",
-            telefono: data.telefono || "",
-            correoElectronico: data.correoElectronico || "",
-            tieneWhatsapp: data.tieneWhatsapp || "No",
-          };
-          setOriginalContactData(contactData);
+        const contactData = {
+          nombreContacto: data.nombreContacto || "",
+          primerApellido: data.primerApellido || "",
+          segundoApellido: data.segundoApellido || "",
+          telefono: data.telefono || "",
+          correoElectronico: data.correoElectronico || "",
+          tieneWhatsapp: data.tieneWhatsapp || "No",
+        };
+        setOriginalContactData(contactData);
       }
     },
     onError: (error) => {
       console.error(error);
-    }
+    },
   });
 
   // Wrapper for handleClientSelect to match component signature
-  const handleClientSelect = (clientId: string, option?: SearchableSelectOption) => {
+  const handleClientSelect = (
+    clientId: string,
+    option?: SearchableSelectOption,
+  ) => {
     handleClientSelectHook(clientId, option);
   };
-
 
   // Fetch contract data on mount using /contracts/details/[id] endpoint
   useEffect(() => {
@@ -192,8 +189,8 @@ export default function CreateOrderContent({
 
     fetchContract();
   }, [contractId, setOrderData]);
-  const { requiredErrors, isValid, getMissingRequiredFields } = useOrderValidation(formData, showErrors);
-
+  const { requiredErrors, isValid, getMissingRequiredFields } =
+    useOrderValidation(formData, showErrors);
 
   const mergedErrors = {
     ...requiredErrors,
@@ -210,7 +207,6 @@ export default function CreateOrderContent({
     return phoneRegex.test(phone);
   };
 
-
   const handleNext = async () => {
     setShowErrors(true);
 
@@ -224,21 +220,25 @@ export default function CreateOrderContent({
     if (isEdit && contractId) {
       try {
         // Construct update payload
-        // Note: UpdateContractRequest only supports limited fields.
-        // We might need to handle commission separately if changed.
+        // Note: UpdateContractRequest only supports specific fields from the Contract table.
+        // Commission updates are not currently supported by the single update endpoint.
         const updatePayload: any = {
           payment_type_id: parseInt(formData.tipoPago),
           IVA: formData.aplicaIva === "Si",
           amount: parseFloat(formData.costoViaje),
           observations: formData.comentarios,
           internal_observations: formData.observacionesInternas,
-          coordinator_id: formData.coordinadorViaje ? parseInt(formData.coordinadorViaje) : undefined,
-          // client_id is usually not editable in update?
+          coordinator_id: formData.coordinadorViaje
+            ? parseInt(formData.coordinadorViaje)
+            : undefined,
         };
 
         await contractsService.update(parseInt(contractId), updatePayload);
+
+        // TODO: Implement commission update if backend supports it in the future
+
         showSuccessAlert("Éxito", "Contrato actualizado correctamente");
-        
+
         // Navigate back to contract details
         router.push(`/dashboard/order/${contractId}`);
       } catch (error) {
@@ -349,7 +349,6 @@ export default function CreateOrderContent({
   };
 
   // Removed local handleClientCreated as it's now in the hook
-
 
   useEffect(() => {
     const initializeForm = async () => {

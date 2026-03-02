@@ -7,33 +7,24 @@
 import { apiClient } from './ApiClient';
 import { API_ENDPOINTS } from '@/config/api.config';
 import { validateResponse } from './validators';
-import type { ApiResponse } from '@/app/backend_models/common_types/common.types';
-
-export interface DriverReceipt {
-  receipt_id: number;
-  driver_id: number;
-  trip_id?: number;
-  amount: number;
-  receipt_date: Date;
-  receipt_number?: string;
-  notes?: string;
-  created_at: Date;
-}
+import type { DriverReceipt } from '@/app/backend_models/payment.model';
 
 export interface CreateDriverReceiptRequest {
   driver_id: number;
-  trip_id?: number;
-  amount: number;
-  receipt_date: string;
-  receipt_number?: string;
+  contract_trip_id: number;
+  amount_received: number;
+  payment_method: 'cash' | 'card' | 'transfer';
+  received_date: string;
   notes?: string;
 }
 
 export interface UpdateDriverReceiptRequest {
-  amount?: number;
-  receipt_date?: string;
-  receipt_number?: string;
+  amount_received?: number;
+  payment_method?: 'cash' | 'card' | 'transfer';
+  received_date?: string;
   notes?: string;
+  verification_status?: 'pending' | 'verified' | 'discrepancy';
+  discrepancy_notes?: string;
 }
 
 class DriverReceiptsService {
@@ -55,6 +46,50 @@ class DriverReceiptsService {
   }
 
   /**
+   * Get unverified receipts
+   */
+  async getUnverified(): Promise<DriverReceipt[]> {
+    const response = await apiClient.get<DriverReceipt[]>(API_ENDPOINTS.DRIVER_RECEIPTS.UNVERIFIED);
+    return validateResponse<DriverReceipt[]>(response);
+  }
+
+  /**
+   * Get receipts by driver
+   */
+  async getByDriver(driverId: number): Promise<DriverReceipt[]> {
+    const endpoint = API_ENDPOINTS.DRIVER_RECEIPTS.BY_DRIVER(driverId);
+    const response = await apiClient.get<DriverReceipt[]>(endpoint);
+    return validateResponse<DriverReceipt[]>(response);
+  }
+
+  /**
+   * Get receipts by trip
+   */
+  async getByTrip(tripId: number): Promise<DriverReceipt[]> {
+    const endpoint = API_ENDPOINTS.DRIVER_RECEIPTS.BY_TRIP(tripId);
+    const response = await apiClient.get<DriverReceipt[]>(endpoint);
+    return validateResponse<DriverReceipt[]>(response);
+  }
+
+  /**
+   * Get receipts by status
+   */
+  async getByStatus(status: string): Promise<DriverReceipt[]> {
+    const endpoint = API_ENDPOINTS.DRIVER_RECEIPTS.BY_STATUS(status);
+    const response = await apiClient.get<DriverReceipt[]>(endpoint);
+    return validateResponse<DriverReceipt[]>(response);
+  }
+
+  /**
+   * Get receipt with details
+   */
+  async getWithDetails(receiptId: number): Promise<DriverReceipt> {
+    const endpoint = API_ENDPOINTS.DRIVER_RECEIPTS.DETAILS(receiptId);
+    const response = await apiClient.get<DriverReceipt>(endpoint);
+    return validateResponse<DriverReceipt>(response);
+  }
+
+  /**
    * Create new driver receipt
    */
   async create(data: CreateDriverReceiptRequest): Promise<DriverReceipt> {
@@ -71,6 +106,15 @@ class DriverReceiptsService {
   async update(receiptId: number, data: UpdateDriverReceiptRequest): Promise<DriverReceipt> {
     const endpoint = API_ENDPOINTS.DRIVER_RECEIPTS.BY_ID(receiptId);
     const response = await apiClient.patch<DriverReceipt>(endpoint, data);
+    return validateResponse<DriverReceipt>(response);
+  }
+
+  /**
+   * Verify receipt
+   */
+  async verify(receiptId: number): Promise<DriverReceipt> {
+    const endpoint = API_ENDPOINTS.DRIVER_RECEIPTS.VERIFY(receiptId);
+    const response = await apiClient.patch<DriverReceipt>(endpoint, {});
     return validateResponse<DriverReceipt>(response);
   }
 

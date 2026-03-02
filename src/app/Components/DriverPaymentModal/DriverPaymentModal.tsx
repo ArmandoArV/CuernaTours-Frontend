@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import DriverPaymentForm from "@/app/Components/forms/DriverPaymentForm";
 import { useDriverPaymentForm } from "@/app/hooks/useDriverPaymentForm";
 import { tripsService, usersService } from "@/services/api";
-import { paymentsService } from "@/services/api/payments.service";
+import { contractsService } from "@/services/api/contracts.service";
 import { ContractTrip } from "@/app/backend_models/trip.model";
 import { User } from "@/app/backend_models/user.model";
 import { showConfirmAlert, showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
@@ -117,7 +117,26 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
       async () => {
         try {
           setLoading(true);
-          await paymentsService.payDriver(paymentData);
+          const contractId = (tripData as any).contract_id;
+          if (!contractId) {
+             throw new Error("Contract ID not found for this trip");
+          }
+
+          const driverId = (tripData as any).driver_id;
+          const externalDriverId = (tripData as any).external_driver_id;
+          
+          if (!driverId && !externalDriverId) {
+             throw new Error("No driver assigned to this trip");
+          }
+
+          await contractsService.payDrivers(contractId, {
+            payments: [{
+                driver_id: driverId || externalDriverId,
+                driver_type: driverId ? 'internal' : 'external',
+                amount: parseFloat(formState.driverPayment)
+            }],
+            payment_date: new Date().toISOString()
+          });
           showSuccessAlert(
             "Pago registrado",
             "El pago del chofer se ha registrado exitosamente.",

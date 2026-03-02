@@ -62,7 +62,8 @@
 
 .inputField {
   margin-bottom: 15px;
-  width: 100%;
+  width: 385px;
+  height: 44px;
   border: var(--Text-ADADAD) 1px solid;
   border-radius: 5px;
   padding: 10px;
@@ -93,19 +94,23 @@
 }
 
 .loginButton {
-  width: 100%;
+  width: 130px !important;
+  height: 36px !important;
   font-size: 16px;
   padding: 2px;
-  background-color: var(--gold);
-  color: white;
+  background-color: var(--Main-96781A) !important;
+  color: white !important;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
-  width: 104px;
   gap: 8px;
   transition: background-color 0.3s ease;
-  font-family: var(--fontFamilyBase)
+  font-family: var(--fontFamilyBase);
+}
+
+.loginButton:hover {
+  background-color: var(--Main-96781A-hover, #7d6316) !important;
 }
 
 .forgotPassword {

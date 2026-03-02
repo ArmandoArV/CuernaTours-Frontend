@@ -1,39 +1,86 @@
-import { ApiClient, ApiError } from "./ApiClient";
+/**
+ * Contract Payments Service
+ * 
+ * Handles contract payment-related API calls (client payments)
+ */
 
-export interface DriverPaymentData {
-    tripId: string;
-    amount: number;
-    cashReceived: boolean;
-    cashAmount?: number;
+import { apiClient } from './ApiClient';
+import { API_ENDPOINTS } from '@/config/api.config';
+import { validateResponse } from './validators';
+import type { ContractPayment } from '@/app/backend_models/payment.model';
+
+export interface CreateContractPaymentRequest {
+  contract_id: number;
+  payment_amount: number;
+  payment_date: string;
+  payment_type_id: number;
+  reference_number?: string;
+  notes?: string;
+}
+
+export interface UpdateContractPaymentRequest {
+  payment_amount?: number;
+  payment_date?: string;
+  payment_type_id?: number;
+  reference_number?: string;
+  notes?: string;
+}
+
+export interface PaymentSummary {
+  contract_id: number;
+  total_amount: number;
+  total_paid: number;
+  remaining_amount: number;
+  payments: ContractPayment[];
 }
 
 class PaymentsService {
-    private apiClient: ApiClient;
+  /**
+   * Get payments by contract ID
+   */
+  async getByContract(contractId: number): Promise<ContractPayment[]> {
+    const endpoint = API_ENDPOINTS.CONTRACT_PAYMENTS.BASE(contractId);
+    const response = await apiClient.get<ContractPayment[]>(endpoint);
+    return validateResponse<ContractPayment[]>(response);
+  }
 
-    constructor() {
-        this.apiClient = new ApiClient();
-    }
+  /**
+   * Get payment summary
+   */
+  async getSummary(contractId: number): Promise<PaymentSummary> {
+    const endpoint = API_ENDPOINTS.CONTRACT_PAYMENTS.SUMMARY(contractId);
+    const response = await apiClient.get<PaymentSummary>(endpoint);
+    return validateResponse<PaymentSummary>(response);
+  }
 
-    async payDriver(paymentData: DriverPaymentData): Promise<any> {
-        try {
-            // Submit driver receipt
-            const receiptData = {
-                contract_trip_id: Number(paymentData.tripId),
-                payment_method: paymentData.cashReceived ? 'cash' : 'transfer',
-                amount_received: paymentData.cashReceived ? (paymentData.cashAmount || 0) : 0,
-                received_date: new Date().toISOString(),
-                notes: `Driver payment amount: $${paymentData.amount}`,
-            };
-            
-            const response = await this.apiClient.post(`/driver-receipts`, receiptData);
-            return response;
-        } catch (error) {
-            if (error instanceof ApiError) {
-                throw new Error(error.message);
-            }
-            throw new Error('An unexpected error occurred while processing driver payment.');
-        }
-    }
+  /**
+   * Create new contract payment
+   */
+  async create(contractId: number, data: Omit<CreateContractPaymentRequest, 'contract_id'>): Promise<ContractPayment> {
+    const endpoint = API_ENDPOINTS.CONTRACT_PAYMENTS.BASE(contractId);
+    const response = await apiClient.post<ContractPayment>(endpoint, data);
+    return validateResponse<ContractPayment>(response);
+  }
+
+  /**
+   * Update existing payment
+   */
+  async update(contractId: number, paymentId: number, data: UpdateContractPaymentRequest): Promise<ContractPayment> {
+    const endpoint = API_ENDPOINTS.CONTRACT_PAYMENTS.BY_ID(contractId, paymentId);
+    const response = await apiClient.put<ContractPayment>(endpoint, data);
+    return validateResponse<ContractPayment>(response);
+  }
+
+  /**
+   * Delete payment
+   */
+  async delete(contractId: number, paymentId: number): Promise<boolean> {
+    const endpoint = API_ENDPOINTS.CONTRACT_PAYMENTS.BY_ID(contractId, paymentId);
+    const response = await apiClient.delete<{ deleted: boolean }>(endpoint);
+    const data = validateResponse<{ deleted: boolean }>(response);
+    return data.deleted;
+  }
 }
 
+// Export singleton instance
 export const paymentsService = new PaymentsService();

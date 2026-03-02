@@ -74,9 +74,9 @@ export const API_ENDPOINTS = {
   
   // Contract Payment endpoints
   CONTRACT_PAYMENTS: {
-    BASE: '/contract-payments',
-    BY_CONTRACT: (contractId: number) => `/contract-payments/contract/${contractId}`,
-    BY_ID: (id: number) => `/contract-payments/${id}`,
+    BASE: (contractId: number) => `/contracts/${contractId}/payments`,
+    SUMMARY: (contractId: number) => `/contracts/${contractId}/payments/summary`,
+    BY_ID: (contractId: number, paymentId: number) => `/contracts/${contractId}/payments/${paymentId}`,
   },
   
   // Trip endpoints
@@ -186,6 +186,18 @@ export const API_ENDPOINTS = {
     BY_ID: (id: number) => `/notifications/${id}`,
   },
   
+  // Contract Template endpoints
+  CONTRACT_TEMPLATES: {
+    BASE: '/contract-templates',
+    DETAILS: '/contract-templates/details',
+    BY_ID: (id: number) => `/contract-templates/${id}`,
+    BY_CLIENT: (id: number) => `/contract-templates/client/${id}`,
+    BY_ORIGIN: (id: number) => `/contract-templates/origin/${id}`,
+    BY_DESTINATION: (id: number) => `/contract-templates/destination/${id}`,
+    BY_UNIT_TYPE: (type: string) => `/contract-templates/unit-type/${type}`,
+    BY_PAYMENT_TYPE: (id: number) => `/contract-templates/payment-type/${id}`,
+  },
+
   // Payment endpoints
   PAYMENTS: {
     BASE: '/payments',
@@ -205,6 +217,12 @@ export const API_ENDPOINTS = {
   DRIVER_RECEIPTS: {
     BASE: '/driver-receipts',
     BY_ID: (id: number) => `/driver-receipts/${id}`,
+    UNVERIFIED: '/driver-receipts/unverified',
+    BY_DRIVER: (id: number) => `/driver-receipts/driver/${id}`,
+    BY_TRIP: (id: number) => `/driver-receipts/trip/${id}`,
+    BY_STATUS: (status: string) => `/driver-receipts/status/${status}`,
+    DETAILS: (id: number) => `/driver-receipts/${id}/details`,
+    VERIFY: (id: number) => `/driver-receipts/${id}/verify`,
   },
   
   // System/Reference data endpoints

@@ -19,9 +19,17 @@ import type { ClientWithContacts as ClientWithContactsType } from './clients.ser
 export type { ClientWithContactsType as ClientWithContacts };
 
 // Prefillable data response
+export interface VehicleTypeReference {
+  vehicle_type_id: number;
+  name: string;
+  description?: string;
+  typical_capacity?: number;
+}
+
 export interface PrefillableData {
   drivers: DriverReference[];
   vehicles: VehicleReference[];
+  vehicle_types: VehicleTypeReference[];
   payment_types: PaymentTypeReference[];
   client_types: ClientTypeReference[];
   contract_statuses: ContractStatusReference[];
@@ -386,6 +394,16 @@ class ReferenceService {
     return clientTypes.map(type => ({
       value: type.client_type_id.toString(),
       label: type.name,
+    }));
+  }
+  /**
+   * Transform vehicle types for select dropdown
+   */
+  transformVehicleTypesForSelect(vehicleTypes: VehicleTypeReference[]): Array<{ value: string; label: string; capacity?: number }> {
+    return vehicleTypes.map(type => ({
+      value: type.vehicle_type_id.toString(),
+      label: type.name,
+      capacity: type.typical_capacity
     }));
   }
 }

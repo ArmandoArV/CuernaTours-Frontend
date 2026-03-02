@@ -438,6 +438,25 @@ export default function CreateTripContent({
       });
     }
     setIsEditingOrigen(true);
+    // If we are editing, we clear the ID to force sending the full address object
+    // effectively creating a new place or unlinking from the existing ID
+    // unless the user selects the place again.
+    // However, we want to keep the visual data.
+    // We will append a flag or handle this in the payload mapper if possible,
+    // but since we can't change the mapper easily to know about UI state,
+    // we simply prepend "MANUAL:" to the ID or clear it if it looks like an ID.
+    
+    // Actually, simply clearing the ID from origenNombreLugar (which holds the ID)
+    // and putting the Place Name there would be better, but we don't have the place name handy
+    // in tripFormData, only the ID.
+    // The PlaceSelector likely shows the name based on the ID.
+    
+    // For now, to satisfy "send correct information":
+    // If the user edits manually, we assume they are defining a CUSTOM place.
+    // We clear the ID so the backend receives the address fields.
+    if (tripFormData.origenNombreLugar && !isNaN(Number(tripFormData.origenNombreLugar))) {
+         setTripFormData(prev => ({ ...prev, origenNombreLugar: "" }));
+    }
   };
 
   const handleSaveOrigen = () => {
@@ -477,6 +496,10 @@ export default function CreateTripContent({
         });
     }
     setIsEditingDestino(true);
+    // Same logic as Origen: force new place definition by clearing ID
+    if (tripFormData.destinoNombreLugar && !isNaN(Number(tripFormData.destinoNombreLugar))) {
+         setTripFormData(prev => ({ ...prev, destinoNombreLugar: "" }));
+    }
   };
   
   const handleSaveDestino = () => {

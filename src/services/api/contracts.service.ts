@@ -90,6 +90,8 @@ export interface CreateContractWithTripsRequest {
       place_id?: number;
       name?: string;
       address?: string;
+      number?: string;
+      colonia?: string;
       city?: string;
       state?: string;
       zip_code?: string;
@@ -99,6 +101,8 @@ export interface CreateContractWithTripsRequest {
       place_id?: number;
       name?: string;
       address?: string;
+      number?: string;
+      colonia?: string;
       city?: string;
       state?: string;
       zip_code?: string;
@@ -397,6 +401,43 @@ class ContractsService {
     const endpoint = API_ENDPOINTS.CONTRACTS.COMPLETED || '/contracts/completed';
     const response = await apiClient.get<ContractWithDetails[]>(endpoint);
     return validateResponse<ContractWithDetails[]>(response);
+  }
+
+  /**
+   * Record money received from driver
+   */
+  async receiveMoneyFromDriver(
+    contractId: number,
+    data: { amount_received: number; received_date: string; notes?: string }
+  ): Promise<any> {
+    const endpoint = `/contracts/${contractId}/receive-money`;
+    const response = await apiClient.post<any>(endpoint, data);
+    return validateResponse<any>(response);
+  }
+
+  /**
+   * Pay drivers for a contract
+   */
+  async payDrivers(
+    contractId: number,
+    data: { payments: { driver_id: number; driver_type: 'internal' | 'external'; amount: number }[]; payment_date: string }
+  ): Promise<any> {
+    const endpoint = `/contracts/${contractId}/pay-drivers`;
+    const response = await apiClient.post<any>(endpoint, data);
+    return validateResponse<any>(response);
+  }
+
+  /**
+   * Get contracts for a driver (mobile dashboard)
+   */
+  async getDriverContracts(
+    driverId: number,
+    filter: 'upcoming' | 'historical' | 'all' = 'all',
+    historicalDays: number = 7
+  ): Promise<any> {
+    const endpoint = `/contracts/driver/${driverId}?filter=${filter}&historicalDays=${historicalDays}`;
+    const response = await apiClient.get<any>(endpoint);
+    return validateResponse<any>(response);
   }
 }
 

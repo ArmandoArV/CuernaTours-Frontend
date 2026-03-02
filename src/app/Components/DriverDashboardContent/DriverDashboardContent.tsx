@@ -116,7 +116,6 @@ export default function DriverDashboardContent() {
           enableSearch
           showActions
           onRowClick={handleRowClick}
-          onPayDriver={handleAddPayment}
           enablePagination
           itemsPerPage={10}
           currentPage={currentPage}

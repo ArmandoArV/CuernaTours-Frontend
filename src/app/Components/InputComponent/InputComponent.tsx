@@ -84,7 +84,6 @@ export default function InputComponent({
         }
         validationMessage={hasError ? errorMessage : undefined}
         validationState={hasError ? "error" : "none"}
-        htmlFor={id}
       >
         {type === "textarea" ? (
           <Textarea
@@ -100,7 +99,7 @@ export default function InputComponent({
         ) : (
           <Input
             ref={inputRef}
-            type={inputType}
+            type={inputType as "text" | "password" | "number" | "date" | "email" | "tel" | "url" | "search" | "time"}
             value={value}
             onChange={onChange}
             placeholder={placeholder}
