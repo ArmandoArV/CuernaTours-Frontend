@@ -33,6 +33,7 @@ import { useUserRole } from "@/app/hooks/useUserRole";
 import { useIsMobile } from "@/app/hooks/useIsMobile";
 import AssignDriverModal from "../AssignDriverModal/AssignDriverModal";
 import DriverPaymentModal from "../DriverPaymentModal/DriverPaymentModal";
+import ClientPaymentModal from "../ClientPaymentModal/ClientPaymentModal";
 import LoadingComponent from "../LoadingComponent/LoadingComponent";
 import ContractCard from "../ContractCard/ContractCard";
 import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
@@ -175,8 +176,10 @@ export default function DashboardContent() {
   const [isAssignDriverModalOpen, setIsAssignDriverModalOpen] = useState(false);
   const [isDriverPaymentModalOpen, setIsDriverPaymentModalOpen] =
     useState(false);
+  const [isClientPaymentModalOpen, setIsClientPaymentModalOpen] = useState(false);
   const [selectedTripData, setSelectedTripData] = useState<any>(null);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const [selectedContractId, setSelectedContractId] = useState<number | null>(null);
 
   // Date range filter states
   const [dateRangeStart, setDateRangeStart] = useState("");
@@ -353,6 +356,14 @@ export default function DashboardContent() {
     }
   };
 
+  const handleRegisterClientPayment = (row: any) => {
+    const id = row.contract_id || row.id;
+    if (id) {
+      setSelectedContractId(Number(id));
+      setIsClientPaymentModalOpen(true);
+    }
+  };
+
   const handleDriverAssignment= async (assignmentData: any) => {
     log.info("Driver assigned:", assignmentData);
     // Refresh table data after assignment
@@ -490,6 +501,7 @@ export default function DashboardContent() {
                   onEdit={handleEditOrder}
                   onAssignDriver={canAssignResources ? handleAssignDriver : undefined}
                   onPayDriver={hasFullAccess ? handlePayDriver : undefined}
+                  onRegisterPayment={hasFullAccess ? handleRegisterClientPayment : undefined}
                   onCancel={hasFullAccess ? handleCancelContract : undefined}
                 />
               ))
@@ -574,6 +586,16 @@ export default function DashboardContent() {
           setSelectedTripId(null);
         }}
         tripId={selectedTripId}
+      />
+
+      <ClientPaymentModal
+        isOpen={isClientPaymentModalOpen}
+        onClose={() => {
+          setIsClientPaymentModalOpen(false);
+          setSelectedContractId(null);
+        }}
+        contractId={selectedContractId}
+        onPaymentRegistered={fetchContracts}
       />
     </div>
   );

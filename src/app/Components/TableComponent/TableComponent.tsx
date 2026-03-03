@@ -24,12 +24,14 @@ import {
   MoneyRegular,
   EyeFilled,
   DismissRegular,
+  WalletRegular,
 } from "@fluentui/react-icons";
 
 import { Pagination } from "@/app/PaginationComponent/PaginationComponent";
 import DetailsPanel from "@/app/Components/DetailsPanel/DetailsPanel";
 import AssignDriverModal from "@/app/Components/AssignDriverModal/AssignDriverModal";
 import DriverPaymentModal from "@/app/Components/DriverPaymentModal/DriverPaymentModal";
+import ClientPaymentModal from "@/app/Components/ClientPaymentModal/ClientPaymentModal";
 import { useUserRole } from "@/app/hooks/useUserRole";
 import { contractsService } from "@/services/api/contracts.service";
 import { 
@@ -85,6 +87,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentTripId, setPaymentTripId] = useState<number | null>(null);
+
+  const [isClientPaymentModalOpen, setIsClientPaymentModalOpen] = useState(false);
+  const [clientPaymentContractId, setClientPaymentContractId] = useState<number | null>(null);
 
   const activePage =
     currentPage !== undefined ? currentPage : internalCurrentPage;
@@ -342,6 +347,20 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   Pagar Chofer
                                 </MenuItem>
 
+                                <MenuItem
+                                  icon={<WalletRegular />}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const contractId = row.contract_id || id;
+                                    if (contractId) {
+                                      setClientPaymentContractId(Number(contractId));
+                                      setIsClientPaymentModalOpen(true);
+                                    }
+                                  }}
+                                >
+                                  Registrar Pago
+                                </MenuItem>
+
                                 <MenuDivider />
 
                                 <MenuItem
@@ -409,6 +428,15 @@ const TableComponent: React.FC<TableComponentProps> = ({
           setPaymentTripId(null);
         }}
         tripId={paymentTripId !== null ? String(paymentTripId) : null}
+      />
+
+      <ClientPaymentModal
+        isOpen={isClientPaymentModalOpen}
+        onClose={() => {
+          setIsClientPaymentModalOpen(false);
+          setClientPaymentContractId(null);
+        }}
+        contractId={clientPaymentContractId}
       />
     </div>
   );

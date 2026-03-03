@@ -15,6 +15,7 @@ import {
   MoneyRegular,
   EyeFilled,
   DismissRegular,
+  WalletRegular,
 } from "@fluentui/react-icons";
 import DetailsPanel from "@/app/Components/DetailsPanel/DetailsPanel";
 import { contractsService } from "@/services/api/contracts.service";
@@ -27,6 +28,7 @@ interface ContractCardProps {
   onEdit?: (contract: any) => void;
   onAssignDriver?: (contract: any) => void;
   onPayDriver?: (contract: any) => void;
+  onRegisterPayment?: (contract: any) => void;
   onViewDetails?: (contract: any) => void;
   onCancel?: (contract: any) => void;
   showActions?: boolean;
@@ -112,6 +114,7 @@ export default function ContractCard({
   onEdit,
   onAssignDriver,
   onPayDriver,
+  onRegisterPayment,
   onViewDetails,
   onCancel,
   showActions = true,
@@ -278,7 +281,20 @@ export default function ContractCard({
                     onPayDriver(contract);
                   }}
                 >
-                  Pagar
+                  Pagar Chofer
+                </Button>
+              )}
+              {onRegisterPayment && (
+                <Button
+                  appearance="subtle"
+                  size="small"
+                  icon={<WalletRegular />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRegisterPayment(contract);
+                  }}
+                >
+                  Registrar Pago
                 </Button>
               )}
               {onCancel && (
