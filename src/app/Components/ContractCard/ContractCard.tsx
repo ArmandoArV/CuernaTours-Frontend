@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import {
   Card,
   Text,
@@ -12,14 +13,24 @@ import {
   PersonAddRegular,
   EditRegular,
   MoneyRegular,
+  EyeFilled,
+  DismissRegular,
 } from "@fluentui/react-icons";
+import DetailsPanel from "@/app/Components/DetailsPanel/DetailsPanel";
+import { contractsService } from "@/services/api/contracts.service";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("ContractCard");
 
 interface ContractCardProps {
   contract: any;
   onEdit?: (contract: any) => void;
   onAssignDriver?: (contract: any) => void;
   onPayDriver?: (contract: any) => void;
+  onViewDetails?: (contract: any) => void;
+  onCancel?: (contract: any) => void;
   showActions?: boolean;
+  showViewDetails?: boolean;
 }
 
 const useStyles = makeStyles({
@@ -121,13 +132,50 @@ export default function ContractCard({
   onEdit,
   onAssignDriver,
   onPayDriver,
+  onViewDetails,
+  onCancel,
   showActions = true,
+  showViewDetails = false,
 }: ContractCardProps) {
   const styles = useStyles();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [detailsData, setDetailsData] = useState<any>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
   const status = contract["Estatus"] || "";
   const statusColor = getStatusColor(status);
   const isPaid = contract["Estado de Pago"] === "Pagado";
+
+  const handleViewDetails = async () => {
+    // If there's a navigation handler (admin/maestro), use it
+    if (onViewDetails) {
+      onViewDetails(contract);
+      return;
+    }
+
+    // Otherwise toggle inline details (chofer)
+    if (isExpanded) {
+      setIsExpanded(false);
+      return;
+    }
+
+    setIsExpanded(true);
+    setDetailsLoading(true);
+
+    const id = contract.contract_id || contract.id;
+    if (id) {
+      try {
+        const data = await contractsService.getContractDetails(Number(id));
+        setDetailsData(data);
+      } catch (err) {
+        log.error("Error fetching contract details:", err);
+        setDetailsData(contract);
+      }
+    } else {
+      setDetailsData(contract);
+    }
+    setDetailsLoading(false);
+  };
 
   return (
     <div className={styles.wrapper}>
@@ -196,10 +244,24 @@ export default function ContractCard({
         </div>
 
         {/* Action Buttons */}
-        {showActions && (
+        {(showActions || showViewDetails) && (
           <>
             <Divider />
             <div className={styles.actionsRow}>
+              {/* Ver Detalles for all roles */}
+              {showViewDetails && (
+                <Button
+                  appearance="subtle"
+                  size="small"
+                  icon={<EyeFilled />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewDetails();
+                  }}
+                >
+                  Ver Detalles
+                </Button>
+              )}
               {onAssignDriver && (
                 <Button
                   appearance="subtle"
@@ -239,7 +301,29 @@ export default function ContractCard({
                   Pagar
                 </Button>
               )}
+              {onCancel && (
+                <Button
+                  appearance="subtle"
+                  size="small"
+                  icon={<DismissRegular />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCancel(contract);
+                  }}
+                  style={{ color: tokens.colorPaletteRedForeground1 }}
+                >
+                  Cancelar
+                </Button>
+              )}
             </div>
+          </>
+        )}
+
+        {/* Inline Details Panel (for Chofer role) */}
+        {isExpanded && (
+          <>
+            <Divider />
+            <DetailsPanel data={detailsData} loading={detailsLoading} />
           </>
         )}
       </Card>

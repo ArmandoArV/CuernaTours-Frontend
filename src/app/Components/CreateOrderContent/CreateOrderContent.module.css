@@ -327,13 +327,13 @@
 /* Align radio groups horizontally with consistent label width */
 .radioGroupHorizontal {
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
 
 /* Give both label columns the same width */
 .radioGroupHorizontal .radioLabelHorizontal {
-  width: 10rem; /* adjust this width as needed */
   text-align: left;
   flex-shrink: 0;
 }
@@ -344,10 +344,6 @@
   flex-direction: row;
   align-items: center;
   gap: 1.5rem;
-}
-
-.radioGroupHorizontal .radioLabelHorizontal {
-  width: 9rem;
 }
 
 /* Tablet and desktop styles for error messages */

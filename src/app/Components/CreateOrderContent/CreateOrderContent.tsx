@@ -258,8 +258,7 @@ export default function CreateOrderContent({
     }
   };
   const handleCancel = () => {
-    // Handle cancel logic
-    log.debug("Cancel clicked");
+    router.push("/dashboard");
   };
 
   const fetchPrefillableData = useCallback(async () => {

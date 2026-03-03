@@ -36,6 +36,11 @@ import ContractCard from "../ContractCard/ContractCard";
 import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
 import styles from "./DashboardContent.module.css";
 import { Logger } from "@/app/Utils/Logger";
+import {
+  showInputAlert,
+  showSuccessAlert,
+  showErrorAlert,
+} from "@/app/Utils/AlertUtil";
 
 const log = Logger.getLogger("DashboardContent");
 
@@ -163,7 +168,7 @@ function transformApiData(apiData: any[]): any[] {
 }
 export default function DashboardContent() {
   const router = useRouter();
-  const { hasFullAccess, canCreateOrders, canAssignResources } = useUserRole();
+  const { hasFullAccess, canCreateOrders, canAssignResources, isChofer } = useUserRole();
   const isMobile = useIsMobile();
   const [currentPage, setCurrentPage] = useState(1);
   const [contractsData, setContractsData] = useState<any[]>([]);
@@ -423,6 +428,43 @@ export default function DashboardContent() {
     setSelectedTripData(null);
   };
 
+  // Navigate to details page (admin/maestro)
+  const handleViewDetails = (row: any) => {
+    const id = row.contract_id || row.id;
+    if (id) {
+      router.push(`/dashboard/trips/${id}`);
+    }
+  };
+
+  // Cancel contract handler
+  const handleCancelContract = async (row: any) => {
+    const id = row.contract_id || row.id;
+    if (!id) return;
+
+    const reason = await showInputAlert(
+      "¿Estás seguro de cancelar este contrato?",
+      "Esta acción no se puede deshacer. Por favor ingresa el motivo de la cancelación:",
+      "Motivo de cancelación",
+      "Escribe el motivo aquí...",
+      "Sí, cancelar contrato",
+      "No, mantener"
+    );
+
+    if (reason) {
+      try {
+        await contractsService.cancelContract(Number(id), reason);
+        showSuccessAlert(
+          "Contrato cancelado",
+          "El contrato ha sido cancelado exitosamente.",
+          () => { window.location.reload(); }
+        );
+      } catch (error) {
+        log.error("Error cancelling contract:", error);
+        showErrorAlert("Error", "No se pudo cancelar el contrato. Inténtalo de nuevo.");
+      }
+    }
+  };
+
   if (loading) {
     return <LoadingComponent message="Cargando Contratos..." />;
   }
@@ -504,9 +546,12 @@ export default function DashboardContent() {
                   key={contract.contract_id || idx}
                   contract={contract}
                   showActions={canAssignResources || hasFullAccess}
+                  showViewDetails={true}
+                  onViewDetails={!isChofer ? handleViewDetails : undefined}
                   onEdit={handleEditOrder}
                   onAssignDriver={canAssignResources ? handleAssignDriver : undefined}
                   onPayDriver={hasFullAccess ? handlePayDriver : undefined}
+                  onCancel={hasFullAccess ? handleCancelContract : undefined}
                 />
               ))
             )}

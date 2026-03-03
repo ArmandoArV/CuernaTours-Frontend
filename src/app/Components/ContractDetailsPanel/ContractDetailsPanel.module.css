@@ -319,10 +319,22 @@
 @media (max-width: 1024px) {
   .contractGrid {
     grid-template-columns: repeat(2, 1fr);
+    padding-right: 0;
+  }
+
+  .tripDates {
+    position: static;
+    margin-top: 1.5rem;
   }
 
   .servicesSection {
     grid-template-columns: 1fr;
+  }
+
+  .servicesLeft {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: auto;
   }
 
   .servicesMiddle {
@@ -331,11 +343,6 @@
     border-top: 1px solid #eee;
     border-bottom: 1px solid #eee;
   }
-
-  .servicesLeft {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
 }
 
 @media (max-width: 600px) {
@@ -343,11 +350,30 @@
     grid-template-columns: 1fr;
   }
 
+  .contractCard {
+    padding: 1rem;
+  }
+
   .title {
     font-size: 1.4rem;
   }
 
   .container {
-    padding: 16px;
+    padding: 12px;
+  }
+
+  .servicesLeft {
+    padding: 1rem;
+    justify-content: center;
+  }
+
+  .servicesMiddle,
+  .servicesRight {
+    padding: 1rem;
+  }
+
+  .dateBlock {
+    width: 70px;
+    padding: 0.5rem;
   }
 }

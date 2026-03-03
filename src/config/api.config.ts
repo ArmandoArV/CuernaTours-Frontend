@@ -55,7 +55,7 @@ export const API_ENDPOINTS = {
     BASE: '/contracts',
     CREATE: '/contracts/create',
     CREATE_WITH_TRIPS: '/contracts/create-with-trips',
-    UPDATE: (id: number) => `/contracts/update/${id}`,
+    UPDATE: (id: number) => `/contracts/${id}`,
     BY_ID: (id: number) => `/contracts/${id}`,
     DETAILS: (id: number) => `/contracts/details/${id}`,
     ALL_DETAILS: '/contracts/details',

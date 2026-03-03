@@ -1608,16 +1608,8 @@ export default function CreateTripContent({
                         >
                           Unidad {index + 1}: {typeLabel}
                         </span>
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "1rem",
-                            width: "100%",
-                            alignItems: "flex-end",
-                            marginTop: "0.75rem",
-                          }}
-                        >
-                          <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className={styles.unitAssignmentRow}>
+                          <div>
                             <SelectComponent
                               label="Chofer"
                               options={[
@@ -1631,7 +1623,7 @@ export default function CreateTripContent({
                               className={styles.input}
                             />
                           </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
+                          <div>
                             <SelectComponent
                               label="Unidad"
                               options={[
@@ -1645,7 +1637,7 @@ export default function CreateTripContent({
                               className={styles.input}
                             />
                           </div>
-                          <div style={{ flex: 1.5, minWidth: 0 }}>
+                          <div>
                             <InputComponent
                               type="text"
                               value={asgn.notes}
