@@ -145,11 +145,12 @@ export default function CreatePlaceModal({
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
-        <button className={styles.closeButton} onClick={handleClose} disabled={isSubmitting}>
-          ×
-        </button>
-
-        <h2 className={styles.modalTitle}>Crear Nuevo Lugar</h2>
+        <div className={styles.modalHeader}>
+          <h2 className={styles.modalTitle}>Crear Nuevo Lugar</h2>
+          <button className={styles.closeButton} onClick={handleClose} disabled={isSubmitting}>
+            ×
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.section}>
@@ -157,31 +158,33 @@ export default function CreatePlaceModal({
             
             <InputComponent
               type="text"
-              label="Nombre del Lugar *"
+              label="Nombre del Lugar"
+              required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Ej: Hotel Marriott, Aeropuerto Internacional, etc."
               disabled={isSubmitting}
-              containerClassName={errors.name ? styles.fieldError : ''}
+              hasError={!!errors.name}
+              errorMessage={errors.name}
             />
-            {errors.name && <span className={styles.errorText}>{errors.name}</span>}
           </div>
 
           <div className={styles.section}>
             <h3 className={styles.sectionTitle}>Dirección</h3>
             
-            <div className={styles.row}>
+            <div className={styles.rowAddress}>
               <div className={styles.fieldLarge}>
                 <InputComponent
                   type="text"
-                  label="Calle *"
+                  label="Calle"
+                  required
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   placeholder="Nombre de la calle"
                   disabled={isSubmitting}
-                  containerClassName={errors.address ? styles.fieldError : ''}
+                  hasError={!!errors.address}
+                  errorMessage={errors.address}
                 />
-                {errors.address && <span className={styles.errorText}>{errors.address}</span>}
               </div>
 
               <div className={styles.fieldSmall}>
@@ -209,27 +212,29 @@ export default function CreatePlaceModal({
               <div className={styles.field}>
                 <InputComponent
                   type="text"
-                  label="Ciudad *"
+                  label="Ciudad"
+                  required
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                   placeholder="Ciudad"
                   disabled={isSubmitting}
-                  containerClassName={errors.city ? styles.fieldError : ''}
+                  hasError={!!errors.city}
+                  errorMessage={errors.city}
                 />
-                {errors.city && <span className={styles.errorText}>{errors.city}</span>}
               </div>
 
               <div className={styles.field}>
                 <InputComponent
                   type="text"
-                  label="Estado *"
+                  label="Estado"
+                  required
                   value={formData.state}
                   onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                   placeholder="Estado"
                   disabled={isSubmitting}
-                  containerClassName={errors.state ? styles.fieldError : ''}
+                  hasError={!!errors.state}
+                  errorMessage={errors.state}
                 />
-                {errors.state && <span className={styles.errorText}>{errors.state}</span>}
               </div>
             </div>
 

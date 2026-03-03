@@ -17,12 +17,16 @@ export default function SelectComponent({
   style = {},
   containerClassName = "",
   containerStyle = {},
+  hasError = false,
+  errorMessage = "",
 }: SelectTypes & {
   labelClassName?: string;
   labelStyle?: React.CSSProperties;
   style?: React.CSSProperties;
   containerClassName?: string;
   containerStyle?: React.CSSProperties;
+  hasError?: boolean;
+  errorMessage?: string;
 }) {
   return (
     <div className={containerClassName} style={containerStyle}>
@@ -33,6 +37,8 @@ export default function SelectComponent({
             : undefined
         }
         required={required}
+        validationMessage={hasError ? errorMessage : undefined}
+        validationState={hasError ? "error" : "none"}
       >
         <Select
           value={value}

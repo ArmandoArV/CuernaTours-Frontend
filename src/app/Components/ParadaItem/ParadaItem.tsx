@@ -58,7 +58,8 @@ export default function ParadaItem({
           type="text"
           value={parada.calle}
           onChange={(e) => onChange(parada.id, "calle", e.target.value)}
-          label={<p>Calle <strong style={{ color: "red" }}>*</strong></p>}
+          label="Calle"
+          required
           containerClassName={styles.streetInputContainer}
         />
         <InputComponent
@@ -94,14 +95,16 @@ export default function ParadaItem({
           type="text"
           value={parada.ciudad}
           onChange={(e) => onChange(parada.id, "ciudad", e.target.value)}
-          label={<p>Ciudad <strong style={{ color: "red" }}>*</strong></p>}
+          label="Ciudad"
+          required
           className={styles.input}
         />
         <InputComponent
           type="text"
           value={parada.estado}
           onChange={(e) => onChange(parada.id, "estado", e.target.value)}
-          label={<p>Estado <strong style={{ color: "red" }}>*</strong></p>}
+          label="Estado"
+          required
           className={styles.input}
         />
       </div>

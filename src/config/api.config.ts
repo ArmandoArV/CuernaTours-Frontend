@@ -190,18 +190,6 @@ export const API_ENDPOINTS = {
     BY_ID: (id: number) => `/notifications/${id}`,
   },
   
-  // Contract Template endpoints
-  CONTRACT_TEMPLATES: {
-    BASE: '/contract-templates',
-    DETAILS: '/contract-templates/details',
-    BY_ID: (id: number) => `/contract-templates/${id}`,
-    BY_CLIENT: (id: number) => `/contract-templates/client/${id}`,
-    BY_ORIGIN: (id: number) => `/contract-templates/origin/${id}`,
-    BY_DESTINATION: (id: number) => `/contract-templates/destination/${id}`,
-    BY_UNIT_TYPE: (type: string) => `/contract-templates/unit-type/${type}`,
-    BY_PAYMENT_TYPE: (id: number) => `/contract-templates/payment-type/${id}`,
-  },
-
   // Payment endpoints
   PAYMENTS: {
     BASE: '/payments',

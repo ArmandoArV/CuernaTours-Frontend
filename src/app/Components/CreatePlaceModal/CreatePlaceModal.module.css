@@ -25,10 +25,14 @@
   padding: 2rem;
 }
 
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
 .closeButton {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
   background: none;
   border: none;
   font-size: 2rem;
@@ -36,13 +40,14 @@
   cursor: pointer;
   line-height: 1;
   padding: 0;
-  width: 2rem;
-  height: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 0.375rem;
   transition: background-color 0.2s, color 0.2s;
+  flex-shrink: 0;
 }
 
 .closeButton:hover {
@@ -59,7 +64,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   color: #1f2937;
-  margin-bottom: 1.5rem;
+  margin: 0;
 }
 
 .form {
@@ -84,22 +89,27 @@
 }
 
 .row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  gap: 1rem;
+}
+
+.rowAddress {
+  display: flex;
   gap: 1rem;
 }
 
 .field {
   flex: 1;
+  min-width: 0;
 }
 
 .fieldLarge {
   flex: 3;
+  min-width: 0;
 }
 
 .fieldSmall {
-  flex: 1;
-  min-width: 6rem;
+  flex: 0 0 7rem;
 }
 
 .fieldError {
@@ -113,6 +123,28 @@
   margin-top: 0.25rem;
 }
 
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.checkbox input[type="checkbox"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .modalActions {
   display: flex;
   justify-content: flex-end;
@@ -123,28 +155,29 @@
 }
 
 .cancelButton {
-  background-color: transparent;
-  border: 1px solid #96781a;
-  color: #96781a;
+  background-color: transparent !important;
+  border: 2px solid #96781a !important;
+  color: #96781a !important;
+  font-weight: 600;
 }
 
 .cancelButton:hover {
-  background-color: #e5e7eb;
+  background-color: rgba(150, 120, 26, 0.08) !important;
 }
 
 .submitButton {
-  background-color: var(--Main-96781A);
-  color: white;
-  border: none;
+  background-color: var(--Main-96781A) !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600;
 }
 
 .submitButton:hover {
-  background-color: #7c5f14;
-  transform: scale(1.02);
+  background-color: #7c5f14 !important;
 }
 
 .submitButton:disabled {
-  background-color: #9ca3af;
+  background-color: #9ca3af !important;
   cursor: not-allowed;
 }
 
@@ -167,16 +200,48 @@
 }
 
 @media (max-width: 768px) {
-  .modal {
-    padding: 1.5rem;
-    max-height: 95vh;
+  .modalOverlay {
+    padding: 0;
+    align-items: flex-end;
   }
 
-  .row {
-    grid-template-columns: 1fr;
+  .modal {
+    padding: 1.25rem;
+    max-height: 95vh;
+    border-radius: 0.75rem 0.75rem 0 0;
+    max-width: 100%;
+  }
+
+  .modalTitle {
+    font-size: 1.25rem;
+  }
+
+  .row,
+  .rowAddress {
+    flex-direction: column;
   }
 
   .fieldSmall {
+    flex: unset;
     width: 100%;
+  }
+
+  .fieldLarge {
+    flex: unset;
+    width: 100%;
+  }
+
+  .section {
+    padding: 0.75rem;
+  }
+
+  .modalActions {
+    flex-direction: column-reverse;
+  }
+
+  .modalActions > * {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
   }
 }

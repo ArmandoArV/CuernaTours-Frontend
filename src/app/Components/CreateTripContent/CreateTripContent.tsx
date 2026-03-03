@@ -16,6 +16,7 @@ import {
   Save24Regular,
 } from "@fluentui/react-icons";
 import DatePickerComponent from "../DatePickerComponent/DatePickerComponent";
+import { Field } from "@fluentui/react-components";
 import Link from "next/link";
 import { showErrorAlert, showSuccessAlert } from "@/app/Utils/AlertUtil";
 import {
@@ -882,9 +883,6 @@ export default function CreateTripContent({
             <h1 className={styles.title}>
               {isEdit ? "Editar viaje" : "Crear viaje"}
             </h1>
-            <p className={styles.subtitle} style={{ color: "red" }}>
-              Campos obligatorios <strong style={{ color: "red" }}>* </strong>
-            </p>
           </div>
         </div>
         <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
@@ -915,6 +913,7 @@ export default function CreateTripContent({
               value={String(tripFormData.idaHora ?? "")}
               onChange={handleTripInputChange("idaHora")}
               label="Hora"
+              required
               className={styles.input}
             />
             <InputComponent
@@ -922,6 +921,7 @@ export default function CreateTripContent({
               value={String(tripFormData.idaMinutos ?? "")}
               onChange={handleTripInputChange("idaMinutos")}
               label="Minutos"
+              required
               className={styles.input}
             />
             <SelectComponent
@@ -938,11 +938,8 @@ export default function CreateTripContent({
               type="number"
               value={String(tripFormData.idaPasajeros ?? "")}
               onChange={handleTripInputChange("idaPasajeros")}
-              label={
-                <p>
-                  Pasajeros <strong style={{ color: "red" }}>*</strong>
-                </p>
-              }
+              label="Pasajeros"
+              required
               className={styles.input}
               hasError={fieldErrors.idaPasajeros}
               errorMessage={
@@ -1008,11 +1005,8 @@ export default function CreateTripContent({
               value={tripFormData.origenCalle || ""}
               onChange={handleTripInputChange("origenCalle")}
               disabled={!isEditingOrigen}
-              label={
-                <p>
-                  Calle <strong style={{ color: "red" }}>*</strong>
-                </p>
-              }
+              label="Calle"
+              required
               containerClassName={styles.streetInputContainer}
               hasError={fieldErrors.origenCalle}
               errorMessage={
@@ -1024,11 +1018,8 @@ export default function CreateTripContent({
               value={tripFormData.origenNumero || ""}
               onChange={handleTripInputChange("origenNumero")}
               disabled={!isEditingOrigen}
-              label={
-                <p>
-                  Número <strong style={{ color: "red" }}>*</strong>
-                </p>
-              }
+              label="Número"
+              required
               containerClassName={styles.numberInputContainer}
               hasError={fieldErrors.origenNumero}
               errorMessage={
@@ -1042,11 +1033,8 @@ export default function CreateTripContent({
               value={tripFormData.origenColonia || ""}
               onChange={handleTripInputChange("origenColonia")}
               disabled={!isEditingOrigen}
-              label={
-                <p>
-                  Colonia <strong style={{ color: "red" }}>*</strong>
-                </p>
-              }
+              label="Colonia"
+              required
               className={styles.input}
               containerClassName={styles.streetInputContainer}
               hasError={fieldErrors.origenColonia}
@@ -1059,11 +1047,8 @@ export default function CreateTripContent({
               value={tripFormData.origenCodigoPostal || ""}
               onChange={handleTripInputChange("origenCodigoPostal")}
               disabled={!isEditingOrigen}
-              label={
-                <p>
-                  Código Postal <strong style={{ color: "red" }}>*</strong>
-                </p>
-              }
+              label="Código Postal"
+              required
               className={styles.input}
               containerClassName={styles.numberInputContainer}
               hasError={fieldErrors.origenCodigoPostal}
@@ -1080,11 +1065,8 @@ export default function CreateTripContent({
               value={tripFormData.origenCiudad || ""}
               onChange={handleTripInputChange("origenCiudad")}
               disabled={!isEditingOrigen}
-              label={
-                <p>
-                  Ciudad <strong style={{ color: "red" }}>*</strong>
-                </p>
-              }
+              label="Ciudad"
+              required
               className={styles.input}
               hasError={fieldErrors.origenCiudad}
               errorMessage={
@@ -1096,11 +1078,8 @@ export default function CreateTripContent({
               value={tripFormData.origenEstado || ""}
               onChange={handleTripInputChange("origenEstado")}
               disabled={!isEditingOrigen}
-              label={
-                <p>
-                  Estado <strong style={{ color: "red" }}>*</strong>
-                </p>
-              }
+              label="Estado"
+              required
               className={styles.input}
               hasError={fieldErrors.origenEstado}
               errorMessage={
@@ -1110,10 +1089,7 @@ export default function CreateTripContent({
           </div>
 
           {/* Es un vuelo radio buttons */}
-          <div className={styles.buttonGroup}>
-            <label className={styles.radioLabel}>
-              ¿Es un vuelo? <strong style={{ color: "red" }}>*</strong>
-            </label>
+          <Field label="¿Es un vuelo?" required>
             <div className={styles.radioOptions}>
               <label className={styles.radioOption}>
                 <input
@@ -1136,7 +1112,7 @@ export default function CreateTripContent({
                 No
               </label>
             </div>
-          </div>
+          </Field>
 
           {tripFormData.origenEsVuelo && (
             <div className={styles.section}>
@@ -1144,11 +1120,8 @@ export default function CreateTripContent({
                 type="text"
                 value={tripFormData.origenNumeroVuelo || ""}
                 onChange={handleTripInputChange("origenNumeroVuelo")}
-                label={
-                  <p>
-                    Número de vuelo <strong style={{ color: "red" }}>*</strong>
-                  </p>
-                }
+                label="Número de vuelo"
+              required
                 className={styles.input}
               />
               <InputComponent
@@ -1173,7 +1146,7 @@ export default function CreateTripContent({
               <InputComponent
                 type="textarea"
                 value={tripFormData.origenNotas || ""}
-                {...handleTripInputChange("origenNotas")}
+                onChange={handleTripInputChange("origenNotas")}
                 label="Notas adicionales"
                 className={styles.textarea}
               />
@@ -1242,11 +1215,8 @@ export default function CreateTripContent({
               value={tripFormData.destinoCalle || ""}
               onChange={handleTripInputChange("destinoCalle")}
               disabled={!isEditingDestino}
-              label={
-                <p>
-                  Calle <strong style={{ color: "red" }}>*</strong>
-                </p>
-              }
+              label="Calle"
+              required
               containerClassName={styles.streetInputContainer}
               hasError={fieldErrors.destinoCalle}
               errorMessage={
@@ -1258,11 +1228,8 @@ export default function CreateTripContent({
               value={tripFormData.destinoNumero || ""}
               onChange={handleTripInputChange("destinoNumero")}
               disabled={!isEditingDestino}
-              label={
-                <p>
-                  Número <strong style={{ color: "red" }}>*</strong>
-                </p>
-              }
+              label="Número"
+              required
               containerClassName={styles.numberInputContainer}
               hasError={fieldErrors.destinoNumero}
               errorMessage={
@@ -1276,11 +1243,8 @@ export default function CreateTripContent({
               value={tripFormData.destinoColonia || ""}
               onChange={handleTripInputChange("destinoColonia")}
               disabled={!isEditingDestino}
-              label={
-                <p>
-                  Colonia <strong style={{ color: "red" }}>*</strong>
-                </p>
-              }
+              label="Colonia"
+              required
               className={styles.input}
               containerClassName={styles.streetInputContainer}
               hasError={fieldErrors.destinoColonia}
@@ -1293,11 +1257,8 @@ export default function CreateTripContent({
               value={tripFormData.destinoCodigoPostal || ""}
               onChange={handleTripInputChange("destinoCodigoPostal")}
               disabled={!isEditingDestino}
-              label={
-                <p>
-                  Código Postal <strong style={{ color: "red" }}>*</strong>
-                </p>
-              }
+              label="Código Postal"
+              required
               className={styles.input}
               containerClassName={styles.numberInputContainer}
               hasError={fieldErrors.destinoCodigoPostal}
@@ -1314,11 +1275,8 @@ export default function CreateTripContent({
               value={tripFormData.destinoCiudad || ""}
               onChange={handleTripInputChange("destinoCiudad")}
               disabled={!isEditingDestino}
-              label={
-                <p>
-                  Ciudad <strong style={{ color: "red" }}>*</strong>
-                </p>
-              }
+              label="Ciudad"
+              required
               className={styles.input}
               hasError={fieldErrors.destinoCiudad}
               errorMessage={
@@ -1330,11 +1288,8 @@ export default function CreateTripContent({
               value={tripFormData.destinoEstado || ""}
               onChange={handleTripInputChange("destinoEstado")}
               disabled={!isEditingDestino}
-              label={
-                <p>
-                  Estado <strong style={{ color: "red" }}>*</strong>
-                </p>
-              }
+              label="Estado"
+              required
               className={styles.input}
               hasError={fieldErrors.destinoEstado}
               errorMessage={
@@ -1362,11 +1317,8 @@ export default function CreateTripContent({
           </div>
 
           <div className={styles.section}>
-            <div className={styles.buttonGroup}>
+            <Field label="Tipo de viaje" required>
               <div className={styles.radioOptions}>
-                <label className={styles.radioLabel}>
-                  Tipo de viaje<strong style={{ color: "red" }}>*</strong>
-                </label>
                 <label className={styles.radioOption}>
                   <input
                     type="radio"
@@ -1398,7 +1350,7 @@ export default function CreateTripContent({
                   Redondo
                 </label>
               </div>
-            </div>
+            </Field>
           </div>
 
           {tripFormData.tipoViaje === "redondo" && (
@@ -1409,7 +1361,7 @@ export default function CreateTripContent({
               <div className={styles.section}>
                 <DatePickerComponent
                   id="regresoFecha"
-                  label="Fecha de regreso *"
+                  label="Fecha de regreso"
                   value={tripFormData.regresoFecha || ""}
                   onChange={(value) => {
                     log.debug("Return date changed:", value);
@@ -1426,6 +1378,7 @@ export default function CreateTripContent({
                   value={String(tripFormData.regresoHora ?? "")}
                   onChange={handleTripInputChange("regresoHora")}
                   label="Hora"
+                  required
                   className={styles.input}
                 />
                 <InputComponent
@@ -1433,6 +1386,7 @@ export default function CreateTripContent({
                   value={String(tripFormData.regresoMinutos ?? "")}
                   onChange={handleTripInputChange("regresoMinutos")}
                   label="Minutos"
+                  required
                   className={styles.input}
                 />
                 <SelectComponent
@@ -1586,26 +1540,9 @@ export default function CreateTripContent({
                     return (
                       <div
                         key={asgn.id}
-                        style={{
-                          borderRadius: 8,
-                          padding: "1rem 1.5rem",
-                          marginBottom: "0.75rem",
-                          backgroundColor: "#f9fafb",
-                          border: "1px solid #e5e7eb",
-                        }}
+                        className={styles.assignmentCard}
                       >
-                        <span
-                          style={{
-                            fontSize: "0.85rem",
-                            fontWeight: 600,
-                            color: "#1a2e47",
-                            marginBottom: "0.75rem",
-                            padding: "4px 8px",
-                            backgroundColor: "#e8edf2",
-                            borderRadius: 4,
-                            display: "inline-block",
-                          }}
-                        >
+                        <span className={styles.assignmentBadge}>
                           Unidad {index + 1}: {typeLabel}
                         </span>
                         <div className={styles.unitAssignmentRow}>

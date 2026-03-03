@@ -82,13 +82,14 @@ export default function DatePickerComponent({
       <Field
         label={label}
         required={required}
+        validationMessage={hasError ? errorMessage : undefined}
+        validationState={hasError ? "error" : "none"}
       >
         <DatePicker
           value={selectedDate}
           minDate={today}
           placeholder={placeholder}
           disabled={disabled}
-          // Restricted dates are passed to the calendar slot so the internal Calendar marks them disabled
           calendar={{ restrictedDates }}
           onSelectDate={(date: Date | null | undefined) => {
             if (date && date >= today) {
@@ -100,9 +101,6 @@ export default function DatePickerComponent({
           parseDateFromString={(str: string) => parseDDMMYYYYToDate(str)}
         />
       </Field>
-      {hasError && errorMessage && (
-        <span className={styles.errorMessage}>{errorMessage}</span>
-      )}
     </div>
   );
 }

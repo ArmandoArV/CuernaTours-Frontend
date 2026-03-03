@@ -20,7 +20,3 @@ export * from './users.service';
 export * from './notifications.service';
 export * from './files.service';
 export * from './spendings.service';
-export * from './driver-receipts.service';
-export * from './agreements.service';
-export * from './contract-templates.service';
-export * from './driver-payments.service';

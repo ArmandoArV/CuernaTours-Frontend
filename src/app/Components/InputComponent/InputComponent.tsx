@@ -11,6 +11,7 @@ type Props = Partial<InputTypes> & {
   containerStyle?: React.CSSProperties;
   hasError?: boolean;
   errorMessage?: string;
+  required?: boolean;
 };
 
 export default function InputComponent({
@@ -32,6 +33,7 @@ export default function InputComponent({
   containerStyle = {},
   hasError = false,
   errorMessage = "",
+  required = false,
 }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -82,13 +84,22 @@ export default function InputComponent({
             ? { children: label, className: labelClassName, style: labelStyle }
             : undefined
         }
+        required={required}
         validationMessage={hasError ? errorMessage : undefined}
         validationState={hasError ? "error" : "none"}
       >
         {type === "textarea" ? (
           <Textarea
             value={value}
-            onChange={onChange as any}
+            onChange={(ev, data) => {
+              if (onChange) {
+                const syntheticEvent = {
+                  ...ev,
+                  target: { ...ev.target, value: data.value },
+                } as unknown as React.ChangeEvent<HTMLInputElement>;
+                onChange(syntheticEvent);
+              }
+            }}
             placeholder={placeholder}
             disabled={disabled}
             id={id}

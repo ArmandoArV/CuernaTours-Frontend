@@ -8,6 +8,7 @@ import SearchableSelectComponent, {
 } from "@/app/Components/SearchableSelectComponent/SearchableSelectComponent";
 import CreateClientModal from "../CreateClientModal/CreateClientModal";
 import ButtonComponent from "@/app/Components/ButtonComponent/ButtonComponent";
+import { Field } from "@fluentui/react-components";
 import {
   ArrowLeftFilled,
   Edit24Regular,
@@ -25,7 +26,6 @@ import {
 } from "@/services/api/contracts.service";
 import type { PrefillableData } from "@/services/api/reference.service";
 import CountrySelect from "@/app/Components/CountrySelect/CountrySelect";
-import FormField from "@/app/Components/FormField/FormField";
 import { useOrderForm } from "@/app/hooks/useOrderForm";
 import { useOrderValidation } from "@/app/hooks/useOrderValidation";
 import { Logger } from "@/app/Utils/Logger";
@@ -427,9 +427,6 @@ export default function CreateOrderContent({
                 ? "Editar contrato de orden #" + contractId
                 : "Crear contrato de orden"}
             </h1>
-            <p className={styles.subtitle} style={{ color: "red" }}>
-              Campos obligatorios <strong style={{ color: "red" }}>* </strong>
-            </p>
           </div>
         </div>
         <form className={styles.form}>
@@ -442,13 +439,12 @@ export default function CreateOrderContent({
               label="Empresa o cliente"
               placeholder="Buscar cliente..."
               required={true}
+              hasError={!!mergedErrors.empresa}
+              errorMessage={mergedErrors.empresa}
               createButtonText="Crear Nuevo Cliente"
               noResultsText="No se encontraron clientes"
               loadingText="Buscando..."
             />
-            {mergedErrors.empresa && (
-              <p className={styles.requiredLabel}>{mergedErrors.empresa}</p>
-            )}
           </div>
 
           <div className={styles.contactSection}>
@@ -488,32 +484,28 @@ export default function CreateOrderContent({
 
           <div className={styles.row}>
             <div className={styles.col}>
-              <FormField
+              <InputComponent
+                type="text"
+                {...input("nombreContacto")}
                 label="Nombre del contacto"
                 required
-                error={mergedErrors.nombreContacto}
-              >
-                <InputComponent
-                  type="text"
-                  {...input("nombreContacto")}
-                  disabled={!isEditingContact}
-                  className={styles.input}
-                />
-              </FormField>
+                disabled={!isEditingContact}
+                className={styles.input}
+                hasError={!!mergedErrors.nombreContacto}
+                errorMessage={mergedErrors.nombreContacto}
+              />
             </div>
             <div className={styles.col}>
-              <FormField
+              <InputComponent
+                type="text"
+                {...input("primerApellido")}
                 label="Primer apellido"
                 required
-                error={mergedErrors.primerApellido}
-              >
-                <InputComponent
-                  type="text"
-                  {...input("primerApellido")}
-                  disabled={!isEditingContact}
-                  className={styles.input}
-                />
-              </FormField>
+                disabled={!isEditingContact}
+                className={styles.input}
+                hasError={!!mergedErrors.primerApellido}
+                errorMessage={mergedErrors.primerApellido}
+              />
             </div>
             <div className={styles.col}>
               <InputComponent
@@ -542,23 +534,22 @@ export default function CreateOrderContent({
                   type="text"
                   {...input("telefono")}
                   label="Teléfono"
+                  required
                   placeholder=""
                   disabled={!isEditingContact}
-                  className={`${styles.input} ${
-                    showErrors && mergedErrors.telefono ? styles.inputError : ""
-                  }`}
+                  className={styles.input}
+                  hasError={showErrors && !!mergedErrors.telefono}
+                  errorMessage={mergedErrors.telefono}
                 />
               </div>
-              {showErrors && mergedErrors.telefono && (
-                <p className={styles.errorMessage}>{mergedErrors.telefono}</p>
-              )}
             </div>
             <div className={styles.col}>
-              <div className={styles.radioGroup}>
-                <label className={styles.radioLabel}>
-                  ¿Tiene WhatsApp?
-                  <strong style={{ color: "red" }}> *</strong>
-                </label>
+              <Field
+                label="¿Tiene WhatsApp?"
+                required
+                validationMessage={mergedErrors.tieneWhatsapp}
+                validationState={mergedErrors.tieneWhatsapp ? "error" : "none"}
+              >
                 <div className={styles.radioOptions}>
                   <label className={styles.radioOption}>
                     <input
@@ -581,12 +572,7 @@ export default function CreateOrderContent({
                     No
                   </label>
                 </div>
-                {mergedErrors.tieneWhatsapp && (
-                  <p className={styles.requiredLabel}>
-                    {mergedErrors.tieneWhatsapp}
-                  </p>
-                )}
-              </div>
+              </Field>
             </div>
             <div className={styles.col}>
               <InputComponent
@@ -595,17 +581,10 @@ export default function CreateOrderContent({
                 label="Correo electrónico"
                 placeholder=""
                 disabled={!isEditingContact}
-                className={`${styles.input} ${
-                  showErrors && mergedErrors.correoElectronico
-                    ? styles.inputError
-                    : ""
-                }`}
+                className={styles.input}
+                hasError={showErrors && !!mergedErrors.correoElectronico}
+                errorMessage={mergedErrors.correoElectronico}
               />
-              {showErrors && mergedErrors.correoElectronico && (
-                <p className={styles.errorMessage}>
-                  {mergedErrors.correoElectronico}
-                </p>
-              )}
             </div>
           </div>
 
@@ -634,19 +613,20 @@ export default function CreateOrderContent({
               label="Tipo de pago"
               placeholder="Seleccione..."
               required
+              hasError={!!mergedErrors.tipoPago}
+              errorMessage={mergedErrors.tipoPago}
               className={styles.select}
             />
-            {mergedErrors.tipoPago && (
-              <p className={styles.requiredLabel}>{mergedErrors.tipoPago}</p>
-            )}
           </div>
 
           <div className={styles.row}>
             <div className={styles.col}>
-              <div className={styles.radioGroupHorizontal}>
-                <label className={styles.radioLabelHorizontal}>
-                  ¿Aplica IVA? <strong style={{ color: "red" }}>*</strong>
-                </label>
+              <Field
+                label="¿Aplica IVA?"
+                required
+                validationMessage={mergedErrors.aplicaIva}
+                validationState={mergedErrors.aplicaIva ? "error" : "none"}
+              >
                 <div className={styles.radioOptions}>
                   <label className={styles.radioOption}>
                     <input
@@ -667,36 +647,28 @@ export default function CreateOrderContent({
                     No
                   </label>
                 </div>
-                {mergedErrors.aplicaIva && (
-                  <p className={styles.requiredLabel}>
-                    {mergedErrors.aplicaIva}
-                  </p>
-                )}
-              </div>
+              </Field>
             </div>
             <div className={styles.col}>
-              <FormField
+              <InputComponent
+                type="text"
+                {...input("costoViaje")}
                 label="Costo del viaje"
                 required
-                error={mergedErrors.costoViaje}
-              >
-                <InputComponent
-                  type="text"
-                  {...input("costoViaje")}
-                  className={styles.input}
-                />
-              </FormField>
-              {showErrors && mergedErrors.costoViaje && (
-                <p className={styles.errorMessage}>{mergedErrors.costoViaje}</p>
-              )}
+                className={styles.input}
+                hasError={!!mergedErrors.costoViaje}
+                errorMessage={mergedErrors.costoViaje}
+              />
             </div>
           </div>
 
           <div className={styles.section}>
-            <div className={styles.radioGroupHorizontal}>
-              <label className={styles.radioLabelHorizontal}>
-                ¿Lleva comisión? <strong style={{ color: "red" }}>*</strong>
-              </label>
+            <Field
+              label="¿Lleva comisión?"
+              required
+              validationMessage={mergedErrors.llevaComision}
+              validationState={mergedErrors.llevaComision ? "error" : "none"}
+            >
               <div className={styles.radioOptions}>
                 <label className={styles.radioOption}>
                   <input
@@ -717,41 +689,39 @@ export default function CreateOrderContent({
                   No
                 </label>
               </div>
-              {mergedErrors.llevaComision && (
-                <p className={styles.requiredLabel}>
-                  {mergedErrors.llevaComision}
-                </p>
-              )}
-            </div>
+            </Field>
           </div>
 
           {/* Conditional commission fields */}
           {formData.llevaComision === "Si" && (
             <>
               <div className={styles.section}>
-                <FormField
+                <InputComponent
+                  type="text"
+                  {...input("nombreRecibeComision")}
                   label="Nombre de quien recibe la comisión"
                   required
-                  error={mergedErrors.nombreRecibeComision}
-                >
-                  <InputComponent
-                    type="text"
-                    {...input("nombreRecibeComision")}
-                    className={styles.input}
-                  />
-                </FormField>
-                {showErrors && mergedErrors.nombreRecibeComision && (
-                  <p className={styles.errorMessage}>
-                    {mergedErrors.nombreRecibeComision}
-                  </p>
-                )}
+                  className={styles.input}
+                  hasError={!!mergedErrors.nombreRecibeComision}
+                  errorMessage={mergedErrors.nombreRecibeComision}
+                />
               </div>
 
               <div className={styles.section}>
-                <div className={styles.radioGroup}>
-                  <label className={styles.radioLabel}>
-                    Tipo de comisión <strong style={{ color: "red" }}>*</strong>
-                  </label>
+                <Field
+                  label="Tipo de comisión"
+                  required
+                  validationMessage={
+                    (touchedFields.has("tipoComision") && !formData.tipoComision)
+                      ? "Este campo es obligatorio"
+                      : mergedErrors.tipoComision
+                  }
+                  validationState={
+                    (touchedFields.has("tipoComision") && !formData.tipoComision) || mergedErrors.tipoComision
+                      ? "error"
+                      : "none"
+                  }
+                >
                   <div className={styles.radioOptions}>
                     <label className={styles.radioOption}>
                       <input
@@ -774,18 +744,7 @@ export default function CreateOrderContent({
                       Arreglada
                     </label>
                   </div>
-                  {touchedFields.has("tipoComision") &&
-                    !formData.tipoComision && (
-                      <p className={styles.requiredLabel}>
-                        Este campo es obligatorio
-                      </p>
-                    )}
-                  {showErrors && mergedErrors.tipoComision && (
-                    <p className={styles.errorMessage}>
-                      {mergedErrors.tipoComision}
-                    </p>
-                  )}
-                </div>
+                </Field>
               </div>
 
               <div className={styles.row}>
@@ -815,26 +774,21 @@ export default function CreateOrderContent({
                           { value: "20", label: "20%" },
                         ]}
                         label="Porcentaje (%)"
+                        required
                         placeholder="Seleccione..."
                         className={styles.input}
                       />
                     </div>
                     <div className={styles.col}>
-                      <FormField
+                      <InputComponent
+                        type="text"
+                        {...input("nombreRecibeComision")}
                         label="Nombre de quien recibe la comisión"
                         required
-                        error={mergedErrors.nombreRecibeComision}
-                      >
-                        <InputComponent
-                          {...input("nombreRecibeComision")}
-                          className={styles.input}
-                        />
-                      </FormField>
-                      {showErrors && mergedErrors.nombreRecibeComision && (
-                        <p className={styles.errorMessage}>
-                          {mergedErrors.nombreRecibeComision}
-                        </p>
-                      )}
+                        className={styles.input}
+                        hasError={!!mergedErrors.nombreRecibeComision}
+                        errorMessage={mergedErrors.nombreRecibeComision}
+                      />
                     </div>
                   </>
                 )}
@@ -843,18 +797,12 @@ export default function CreateOrderContent({
                     <InputComponent
                       {...input("montoArreglado")}
                       label="Monto de la comisión ($)"
+                      required
                       placeholder=""
-                      className={`${styles.input} ${
-                        showErrors && mergedErrors.montoArreglado
-                          ? styles.inputError
-                          : ""
-                      }`}
+                      className={styles.input}
+                      hasError={showErrors && !!mergedErrors.montoArreglado}
+                      errorMessage={mergedErrors.montoArreglado}
                     />
-                    {showErrors && mergedErrors.montoArreglado && (
-                      <p className={styles.errorMessage}>
-                        {mergedErrors.montoArreglado}
-                      </p>
-                    )}
                   </div>
                 )}
               </div>
