@@ -37,8 +37,11 @@ import {
   showSuccessAlert, 
   showErrorAlert 
 } from "@/app/Utils/AlertUtil";
+import { Logger } from "@/app/Utils/Logger";
 
-export type TableComponentProps = {
+const log = Logger.getLogger("TableComponent");
+
+export type TableComponentProps= {
   data: Array<{ [key: string]: any }>;
   columns: string[];
   showActions?: boolean;
@@ -166,7 +169,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
       );
       setSelectedRow(contractData);
     } catch (err) {
-      console.error("Error fetching contract details:", err);
+      log.error("Error fetching contract details:", err);
       setSelectedRow(row);
     }
   };
@@ -192,7 +195,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
           }
         );
       } catch (error) {
-        console.error("Error cancelling contract:", error);
+        log.error("Error cancelling contract:", error);
         showErrorAlert("Error", "No se pudo cancelar el contrato. Inténtalo de nuevo.");
       }
     }

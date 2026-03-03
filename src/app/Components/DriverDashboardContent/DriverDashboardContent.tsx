@@ -11,6 +11,9 @@ import { useDriverId } from "@/app/hooks/useDriverId";
 import { useDriverTrips } from "@/app/hooks/useDriverTrips";
 import { useIsMobile } from "@/app/hooks/useIsMobile";
 import styles from "./DriverDashboardContent.module.css";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("DriverDashboardContent");
 
 const STATUS_MAP: Record<number, string> = {
   1: "Pendiente",
@@ -27,7 +30,7 @@ export default function DriverDashboardContent() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const handleRowClick = (row: any) => {
-    console.log("Row clicked:", row);
+    log.info("Row clicked:", row);
   };
 
   const handleAddPayment = () => {

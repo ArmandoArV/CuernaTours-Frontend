@@ -10,7 +10,11 @@ import { Button, Input, Text, Field } from "@fluentui/react-components";
 import { EyeRegular, EyeOffRegular } from "@fluentui/react-icons";
 import { makeStyles, shorthands } from "@fluentui/react-components";
 import Image from "next/image";
-const useFluentOverrides = makeStyles({
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("PasswordRecoveryPage");
+
+const useFluentOverrides= makeStyles({
   inputRoot: {
     backgroundColor: "#f3f3f3",
     border: "1px solid #d1d1d1",
@@ -74,7 +78,7 @@ export default function PasswordRecoveryPage() {
         );
       }
     } catch (error) {
-      console.error("Error validating token:", error);
+      log.error("Error validating token:", error);
       setTokenValid(false);
 
       showErrorAlert(
@@ -123,7 +127,7 @@ export default function PasswordRecoveryPage() {
         },
       );
     } catch (error) {
-      console.error("Error resetting password:", error);
+      log.error("Error resetting password:", error);
       if (error instanceof ApiError) {
         showErrorAlert(
           "Error",

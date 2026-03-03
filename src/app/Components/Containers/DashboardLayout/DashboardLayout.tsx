@@ -12,7 +12,11 @@ import {
   AppsListFilled
 } from "@fluentui/react-icons";
 import styles from "./DashboardLayout.module.css";
-export interface DashboardLayoutProps {
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("DashboardLayout");
+
+export interface DashboardLayoutProps{
   children: React.ReactNode;
   userIsAdmin?: boolean;
   userIsOwner?: boolean;
@@ -33,11 +37,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   ];
 
   const handleNotificationClick = () => {
-    console.log("Notifications clicked");
+    log.info("Notifications clicked");
   };
 
   const handleUserMenuClick = () => {
-    console.log("User menu clicked");
+    log.info("User menu clicked");
   };
 
   return (

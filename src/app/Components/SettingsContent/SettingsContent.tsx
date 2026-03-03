@@ -1,5 +1,8 @@
 "use client";
 import { useState } from "react";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("SettingsContent");
 
 export default function SettingsContent() {
   const [allowRegistration, setAllowRegistration] = useState(true);
@@ -10,7 +13,7 @@ export default function SettingsContent() {
 
   const handleSaveSettings = () => {
     // Here you would save the settings to your backend
-    console.log("Saving settings:", {
+    log.info("Saving settings:", {
       allowRegistration,
       emailNotifications,
       maintenanceMode,

@@ -1,6 +1,9 @@
 import { useState, useCallback } from "react";
 import { referenceService } from "@/services/api";
 import { SearchableSelectOption } from "@/app/Components/SearchableSelectComponent/SearchableSelectComponent";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("usePlaceSelection");
 
 interface UsePlaceSelectionProps {
   onPlaceSelect: (
@@ -35,7 +38,7 @@ export function usePlaceSelection({
           data: place,
         }));
       } catch (error) {
-        console.error("Error searching places:", error);
+        log.error("Error searching places:", error);
         return [];
       }
     },

@@ -7,6 +7,9 @@ import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import InputComponent from "../InputComponent/InputComponent";
 import { showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
 import { authService } from "@/services/api";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("ForgotPasswordModal");
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -49,7 +52,7 @@ export default function ForgotPasswordModal({
         handleClose();
       }, 2000);
     } catch (error) {
-      console.error("Error requesting password reset:", error);
+      log.error("Error requesting password reset:", error);
       showErrorAlert(
         "Error",
         "No se pudo procesar la solicitud. Por favor, intenta nuevamente."

@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { getCookie } from "@/app/Utils/CookieUtil";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("useDriverId");
 
 type UseDriverIdReturn = {
   driverId: number | null;
@@ -47,7 +50,7 @@ export function useDriverId(): UseDriverIdReturn {
 
       setDriverId(numericId);
     } catch (err) {
-      console.error("Error parsing user cookie:", err);
+      log.error("Error parsing user cookie:", err);
       setError("Error al obtener datos del usuario");
     } finally {
       setLoading(false);

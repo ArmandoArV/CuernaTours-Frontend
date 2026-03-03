@@ -30,8 +30,11 @@ import {
 } from "@/services/api/reference.service";
 import { tripsService } from "@/services/api/trips.service";
 import { showSuccessAlert, showErrorAlert, showConfirmAlert } from "@/app/Utils/AlertUtil";
+import { Logger } from "@/app/Utils/Logger";
 
-interface AssignDriverModalProps {
+const log = Logger.getLogger("AssignDriverModal");
+
+interface AssignDriverModalProps{
   isOpen: boolean;
   onClose: () => void;
   tripData: ContractTrip | TripCollection | TripData | null;
@@ -161,14 +164,14 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
       // If tripData passed as prop already has enriched details (origin object, etc), use it
       // Otherwise fetch from API
       if (tripData && (tripData as any).origin && (tripData as any).destination) {
-         console.log("Using provided enriched trip data");
+         log.debug("Using provided enriched trip data");
          data = tripData;
       } else {
-         console.log("Fetching trip data from API");
+         log.debug("Fetching trip data from API");
          data = await tripsService.getById(id);
       }
       
-      console.log("Trip Data Loaded:", data);
+      log.debug("Trip Data Loaded:", data);
       
       setFullTripData(data);
       
@@ -188,7 +191,7 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
          currentVehicleId = (data as any).vehicle.vehicle_id || (data as any).vehicle.id;
       }
       
-      console.log("Extracted IDs - Driver:", currentDriverId, "Vehicle:", currentVehicleId);
+      log.debug("Extracted IDs - Driver:", currentDriverId, "Vehicle:", currentVehicleId);
 
       // Set Driver State
       if (currentDriverId) {
@@ -208,7 +211,7 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
         setVehicleId(currentVehicleId.toString());
       }
     } catch (error) {
-      console.error("Error loading trip:", error);
+      log.error("Error loading trip:", error);
       showErrorAlert("Error", "No se pudo cargar la información del viaje.");
     } finally {
       setIsLoading(false);
@@ -233,7 +236,7 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
         if (v) setPlate(v.license_plate || v.placa || "");
       }
     } catch (error) {
-      console.error("Error loading references:", error);
+      log.error("Error loading references:", error);
     }
   };
 
@@ -259,7 +262,7 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
   const handleSave = async () => {
     const id = getTripId();
     if (!id) {
-      console.error("No trip ID found for assignment");
+      log.error("No trip ID found for assignment");
       return;
     }
 
@@ -280,14 +283,14 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
         }
     }
     
-    console.log("Showing confirmation alert...");
+    log.debug("Showing confirmation alert...");
 
     showConfirmAlert(
       "Confirmar Asignación",
       "¿Está seguro de asignar este chofer al viaje?",
       "Asignar",
       async () => {
-        console.log("Confirmation accepted, saving...");
+        log.debug("Confirmation accepted, saving...");
         setIsSaving(true);
         try {
           if (driverType === "internal") {
@@ -296,7 +299,7 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
               parseInt(driverId),
               parseInt(vehicleId)
             );
-            console.log("Assignment result:", result);
+            log.info("Assignment result:", result);
           } else {
              // ... external driver logic ...
              showErrorAlert("Aviso", "La asignación de choferes externos requiere endpoints adicionales.");
@@ -308,7 +311,7 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
             onClose();
           });
         } catch (error: any) {
-          console.error("Error assigning driver:", error);
+          log.error("Error assigning driver:", error);
           showErrorAlert("Error", error.message || "No se pudo asignar el chofer.");
         } finally {
           setIsSaving(false);

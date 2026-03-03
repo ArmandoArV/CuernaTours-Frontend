@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Combobox,
   Option,
@@ -13,6 +13,10 @@ import type {
   OptionOnSelectData,
   SelectionEvents,
 } from "@fluentui/react-combobox";
+import { Logger } from "@/app/Utils/Logger";
+import { useDebounce } from "@/app/Utils/debounce";
+
+const log = Logger.getLogger("SearchableSelectComponent");
 
 export interface SearchableSelectOption {
   value: string;
@@ -69,18 +73,10 @@ export default function SearchableSelectComponent({
   const [isOpen, setIsOpen] = useState(false);
   const [searchPerformed, setSearchPerformed] = useState(false);
 
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
-
-  /* ---------------------------------------
-     Sync external value
-  --------------------------------------- */
   useEffect(() => {
     setSelectedValue(value || undefined);
   }, [value]);
 
-  /* ---------------------------------------
-     Debounced Search
-  --------------------------------------- */
   const performSearch = useCallback(
     async (query: string) => {
       try {
@@ -89,7 +85,7 @@ export default function SearchableSelectComponent({
         setOptions(results);
         setSearchPerformed(true);
       } catch (err) {
-        console.error("Search error:", err);
+        log.error("Search error:", err);
         setOptions([]);
         setSearchPerformed(true);
       } finally {
@@ -99,24 +95,21 @@ export default function SearchableSelectComponent({
     [onSearch],
   );
 
+  const debouncedSearch = useDebounce((query: string) => {
+    if (query.length === 0) {
+      setOptions([]);
+      setSearchPerformed(false);
+      return;
+    }
+    performSearch(query);
+  }, debounceMs);
+
   const handleInputChange: React.FormEventHandler<HTMLInputElement> = (
     event,
   ) => {
     const newValue = event.currentTarget.value;
     setInputValue(newValue);
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      const query = newValue.trim();
-
-      if (query.length === 0) {
-        setOptions([]);
-        setSearchPerformed(false);
-        return;
-      }
-
-      performSearch(query);
-    }, debounceMs);
+    debouncedSearch(newValue.trim());
   };
 
   /* ---------------------------------------
@@ -126,9 +119,11 @@ export default function SearchableSelectComponent({
     setIsOpen(data.open);
 
     if (data.open) {
-      await performSearch(inputValue.trim());
+      const query = inputValue.trim();
+      if (query.length > 0) {
+        await performSearch(query);
+      }
     } else {
-      // Reset when closing
       setSearchPerformed(false);
     }
   };

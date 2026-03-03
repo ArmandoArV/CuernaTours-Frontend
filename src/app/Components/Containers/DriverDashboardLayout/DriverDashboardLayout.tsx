@@ -10,8 +10,11 @@ import {
   MoneyFilled
 } from "@fluentui/react-icons";
 import styles from "../DashboardLayout/DashboardLayout.module.css";
+import { Logger } from "@/app/Utils/Logger";
 
-export interface DriverDashboardLayoutProps {
+const log = Logger.getLogger("DriverDashboardLayout");
+
+export interface DriverDashboardLayoutProps{
   children: React.ReactNode;
 }
 
@@ -26,11 +29,11 @@ const DriverDashboardLayout: React.FC<DriverDashboardLayoutProps> = ({
   ];
 
   const handleNotificationClick = () => {
-    console.log("Notifications clicked");
+    log.info("Notifications clicked");
   };
 
   const handleUserMenuClick = () => {
-    console.log("User menu clicked");
+    log.info("User menu clicked");
   };
 
   return (

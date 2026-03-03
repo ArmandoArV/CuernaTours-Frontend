@@ -1,5 +1,8 @@
 // Contract-related interfaces and classes
 import { TripData, Trip, TripCollection } from "./TripTypes";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("ContractTypes");
 
 export interface ContractStatus {
   id: number;
@@ -402,7 +405,7 @@ export class ContractService {
       const data: ContractResponse = await response.json();
       return ContractService.fromApiResponse(data);
     } catch (error) {
-      console.error("Error fetching contract:", error);
+      log.error("Error fetching contract:", error);
       throw error;
     }
   }

@@ -4,6 +4,10 @@
  * Centralized configuration for API requests
  */
 
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("ApiConfig");
+
 export interface ApiConfig {
   baseUrl: string;
   timeout: number;
@@ -16,7 +20,7 @@ const getBaseUrl = (): string => {
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
   
   if (!envUrl) {
-    console.warn('NEXT_PUBLIC_API_URL not set, using default');
+    log.warn('NEXT_PUBLIC_API_URL not set, using default');
     return 'http://localhost:3001';
   }
   

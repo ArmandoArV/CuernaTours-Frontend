@@ -24,7 +24,11 @@ import {
   NETWORK_ERROR_MESSAGE,
   SERVER_ERROR_MESSAGE,
 } from "@/config/api.config";
-const SPENDING_CATEGORIES = [
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("CreateSpendingContent");
+
+const SPENDING_CATEGORIES= [
   { value: "gas", label: "Gasolina" },
   { value: "casetas", label: "Casetas" },
   { value: "alimentacion", label: "Alimentación" },
@@ -91,7 +95,7 @@ export default function CreateSpendingContent() {
             () => router.push("/chofer/gastos"),
           );
         } catch (error: any) {
-          console.error("Spending creation error:", error);
+          log.error("Spending creation error:", error);
 
           const errorMessage =
             error?.message || NETWORK_ERROR_MESSAGE || SERVER_ERROR_MESSAGE;

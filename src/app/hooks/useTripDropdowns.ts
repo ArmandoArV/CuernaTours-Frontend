@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { referenceService } from "@/services/api";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("useTripDropdowns");
 
 export function useTripDropdowns() {
   const [lugares, setLugares] = useState<
@@ -21,7 +24,7 @@ export function useTripDropdowns() {
       const lugarOptions = referenceService.transformPlacesForSelect(data);
       setLugares(lugarOptions);
     } catch (error) {
-      console.error("Error fetching lugares:", error);
+      log.error("Error fetching lugares:", error);
     }
   }, []);
 
@@ -31,7 +34,7 @@ export function useTripDropdowns() {
       const choferOptions = referenceService.transformDriversForSelect(data);
       setChoferes(choferOptions);
     } catch (error) {
-      console.error("Error fetching choferes:", error);
+      log.error("Error fetching choferes:", error);
     }
   }, []);
 
@@ -41,7 +44,7 @@ export function useTripDropdowns() {
       const unidadOptions = referenceService.transformVehiclesForSelect(data);
       setUnidades(unidadOptions);
     } catch (error) {
-      console.error("Error fetching unidades:", error);
+      log.error("Error fetching unidades:", error);
     }
   }, []);
 
@@ -53,7 +56,7 @@ export function useTripDropdowns() {
         setTiposUnidad(options);
       }
     } catch (error) {
-      console.error("Error fetching tipos de unidad:", error);
+      log.error("Error fetching tipos de unidad:", error);
     }
   }, []);
 

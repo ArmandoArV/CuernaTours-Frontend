@@ -6,8 +6,11 @@ import { contractsService, ApiError } from "@/services/api";
 import { useUserRole } from "@/app/hooks/useUserRole";
 import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
 import styles from "./HistoricalContent.module.css";
+import { Logger } from "@/app/Utils/Logger";
 
-// Status mapping based on provided ids
+const log = Logger.getLogger("HistoricalContent");
+
+// Status mappingbased on provided ids
 const STATUS_MAP: Record<number, string> = {
   1: "Pendiente",
   2: "En curso",
@@ -74,7 +77,7 @@ export default function HistoricalContent() {
         setContractsData(data);
         setError(null);
       } catch (err) {
-        console.error("Error fetching contracts:", err);
+        log.error("Error fetching contracts:", err);
 
         if (err instanceof ApiError) {
           setError(err.message);
@@ -159,11 +162,11 @@ export default function HistoricalContent() {
   const handleFiltersChange = (
     activeFilters: Record<string, string | string[]>
   ) => {
-    console.log("Filtros aplicados:", activeFilters);
+    log.debug("Filtros aplicados:", activeFilters);
   };
 
   const handleSearch = (searchTerm: string) => {
-    console.log("Búsqueda:", searchTerm);
+    log.debug("Búsqueda:", searchTerm);
   };
 
   if (error) {

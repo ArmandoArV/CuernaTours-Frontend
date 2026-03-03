@@ -10,6 +10,9 @@ import Link from "next/link";
 import { showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
 import { useRouter } from "next/navigation";
 import { authService, ApiError } from "@/services/api";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("HomeWrapper");
 
 export default function HomeWrapper() {
   const router = useRouter();
@@ -78,7 +81,7 @@ export default function HomeWrapper() {
       // Redirect to dashboard immediately without waiting for alert
       router.push("/dashboard");
     } catch (error) {
-      console.error("Error during authentication:", error);
+      log.error("Error during authentication:", error);
       
       if (error instanceof ApiError) {
         let errorTitle = "Error de autenticación";

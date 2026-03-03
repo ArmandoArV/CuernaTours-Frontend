@@ -1,6 +1,9 @@
 import { useState, useCallback } from "react";
 import { referenceService } from "@/services/api";
 import { SearchableSelectOption } from "@/app/Components/SearchableSelectComponent/SearchableSelectComponent";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("useParadas");
 
 export interface Parada {
   id: string;
@@ -72,7 +75,7 @@ export function useParadas(initialParadas: Parada[] = []) {
             ),
           );
         } catch (error) {
-          console.error("Error fetching place details:", error);
+          log.error("Error fetching place details:", error);
         }
       }
     },

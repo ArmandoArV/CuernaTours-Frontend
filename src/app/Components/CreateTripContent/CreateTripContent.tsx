@@ -40,6 +40,9 @@ import { usePlaceSelection } from "@/app/hooks/usePlaceSelection";
 import { useParadas, Parada } from "@/app/hooks/useParadas";
 import { useUnidades } from "@/app/hooks/useUnidades";
 import UnidadItem from "../UnidadItem/UnidadItem";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("CreateTripContent");
 
 interface CreateTripContentProps {
   contractId?: string;
@@ -339,7 +342,7 @@ export default function CreateTripContent({
                 origenEstado: originPlace.state || "",
               };
             } catch (e) {
-              console.error("Error fetching origin place:", e);
+              log.error("Error fetching origin place:", e);
               origenData = { origenNombreLugar: trip.origin.id.toString() };
             }
           }
@@ -360,7 +363,7 @@ export default function CreateTripContent({
                 destinoEstado: destPlace.state || "",
               };
             } catch (e) {
-              console.error("Error fetching destination place:", e);
+              log.error("Error fetching destination place:", e);
               destinoData = {
                 destinoNombreLugar: trip.destination.id.toString(),
               };
@@ -430,7 +433,7 @@ export default function CreateTripContent({
           } as TripFormData);
         }
       } catch (err) {
-        console.error("Error fetching trip data:", err);
+        log.error("Error fetching trip data:", err);
       } finally {
         setIsLoadingTrip(false);
       }
@@ -622,8 +625,8 @@ export default function CreateTripContent({
 
   // Load data and sync with context
   useEffect(() => {
-    console.log("CreateTripContent - OrderData:", orderData);
-    console.log("CreateTripContent - TripData:", tripData);
+    log.debug("CreateTripContent - OrderData:", orderData);
+    log.debug("CreateTripContent - TripData:", tripData);
 
     const checkOrderData = () => {
       const localStorageData =
@@ -636,7 +639,7 @@ export default function CreateTripContent({
         (orderData.empresa || orderData.nombreContacto || orderData.costoViaje);
 
       if (!hasOrderData) {
-        console.log("No order data found, redirecting...");
+        log.debug("No order data found, redirecting...");
         showErrorAlert(
           "Error",
           "No se encontraron datos del pedido. Redirigiendo...",
@@ -647,7 +650,7 @@ export default function CreateTripContent({
         return;
       }
 
-      console.log("Order data validation passed, proceeding...");
+      log.debug("Order data validation passed, proceeding...");
     };
 
     const timeoutId = setTimeout(checkOrderData, 500);
@@ -666,7 +669,7 @@ export default function CreateTripContent({
 
   // Debug effect to monitor form data changes
   useEffect(() => {
-    console.log("Current tripFormData:", tripFormData);
+    log.debug("Current tripFormData:", tripFormData);
   }, [tripFormData]);
 
   const handleCancel = () => {
@@ -829,10 +832,10 @@ export default function CreateTripContent({
           }),
           send_notification: sendNotification,
         };
-        console.log("Contract payload:", contractPayload);
+        log.debug("Contract payload:", contractPayload);
 
         const result = await contractsService.create(contractPayload);
-        console.log("Contract created:", result);
+        log.debug("Contract created:", result);
 
         showSuccessAlert("Éxito", "Contrato y viaje creados correctamente");
 
@@ -846,7 +849,7 @@ export default function CreateTripContent({
         router.push("/dashboard");
       }
     } catch (error) {
-      console.error("Error creating contract and trip:", error);
+      log.error("Error creating contract and trip:", error);
 
       if (error instanceof ApiError) {
         showErrorAlert("Error", error.message);
@@ -894,7 +897,7 @@ export default function CreateTripContent({
               label="Fecha"
               value={tripFormData.idaFecha || ""}
               onChange={(value) => {
-                console.log("Date changed:", value);
+                log.debug("Date changed:", value);
                 setTripFormData((prev) => ({
                   ...prev,
                   idaFecha: value,
@@ -1409,7 +1412,7 @@ export default function CreateTripContent({
                   label="Fecha de regreso *"
                   value={tripFormData.regresoFecha || ""}
                   onChange={(value) => {
-                    console.log("Return date changed:", value);
+                    log.debug("Return date changed:", value);
                     setTripFormData((prev) => ({
                       ...prev,
                       regresoFecha: value,

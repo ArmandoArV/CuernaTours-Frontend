@@ -24,6 +24,9 @@ import {
 } from "@/services/api/contracts.service";
 import type { PrefillableData } from "@/services/api/reference.service";
 import CountrySelect from "@/app/Components/CountrySelect/CountrySelect";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("EditOrderContent");
 
 interface EditOrderContentProps {
   contractId: string;
@@ -100,7 +103,7 @@ export default function EditOrderContent({
                 primaryContact.is_whatsapp_available ? "Si" : "No";
             }
           } catch (clientErr) {
-            console.error("Error fetching client details:", clientErr);
+            log.error("Error fetching client details:", clientErr);
           }
         }
 
@@ -115,7 +118,7 @@ export default function EditOrderContent({
           ...updatedFormData,
         } as OrderFormData);
       } catch (err: any) {
-        console.error("Error fetching contract:", err);
+        log.error("Error fetching contract:", err);
         setContractError(
           err?.message || "Error al cargar los datos del contrato",
         );
@@ -316,7 +319,7 @@ export default function EditOrderContent({
 
   const handleNext = () => {
     if (validateForm()) {
-      console.log("Saving form data to context:", formData);
+      log.debug("Saving form data to context:", formData);
       // Update context with current form data
       setOrderData(formData);
 
@@ -338,7 +341,7 @@ export default function EditOrderContent({
       const data = await referenceService.getPrefillableData();
       setPrefillableData(data);
     } catch (error) {
-      console.error("Error fetching prefillable data:", error);
+      log.error("Error fetching prefillable data:", error);
       if (error instanceof ApiError) {
         showErrorAlert(
           "Error",
@@ -362,7 +365,7 @@ export default function EditOrderContent({
         data: client,
       }));
     } catch (error) {
-      console.error("Error searching clients:", error);
+      log.error("Error searching clients:", error);
       return [];
     }
   };
@@ -371,20 +374,20 @@ export default function EditOrderContent({
     clientId: string,
     option?: SearchableSelectOption,
   ) => {
-    console.log("handleClientSelect called with:", { clientId, option });
+    log.debug("handleClientSelect called with:", { clientId, option });
 
     // Auto-fill contact information if available
     if (option?.data) {
       try {
-        console.log("Fetching client details for ID:", clientId);
+        log.debug("Fetching client details for ID:", clientId);
         const clientDetails = await referenceService.getClientById(
           parseInt(clientId),
         );
-        console.log("Client details received:", clientDetails);
+        log.debug("Client details received:", clientDetails);
 
         const primaryContact =
           clientDetails.primary_contact || clientDetails.contacts?.[0];
-        console.log("Primary contact:", primaryContact);
+        log.debug("Primary contact:", primaryContact);
 
         if (primaryContact) {
           const contactData = {
@@ -421,7 +424,7 @@ export default function EditOrderContent({
           setIsEditingContact(false);
         }
       } catch (error) {
-        console.error("Error fetching client details:", error);
+        log.error("Error fetching client details:", error);
         setFormData((prev) => ({
           ...prev,
           empresa: clientId,
@@ -494,7 +497,7 @@ export default function EditOrderContent({
         "Los cambios en los datos del contacto se han guardado localmente. Se actualizarán al guardar el contrato.",
       );
     } catch (error) {
-      console.error("Error saving contact:", error);
+      log.error("Error saving contact:", error);
       showErrorAlert(
         "Error",
         "No se pudieron guardar los cambios. Intente nuevamente.",

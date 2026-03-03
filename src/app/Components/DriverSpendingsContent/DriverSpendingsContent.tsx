@@ -10,6 +10,9 @@ import DriverSpendingsCard from "@/app/Components/DriverSpendingsCard/DriverSpen
 import { useIsMobile } from "@/app/hooks/useIsMobile";
 import styles from "./DriverSpendingsContent.module.css";
 import { useDriverId } from "@/app/hooks/useDriverId";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("DriverSpendingsContent");
 
 export default function DriverSpendingsContent() {
   const router = useRouter();
@@ -48,7 +51,7 @@ export default function DriverSpendingsContent() {
   };
 
   const handleRowClick = (row: any) => {
-    console.log("Clicked spending:", row);
+    log.debug("Clicked spending:", row);
   };
 
   const filterConfigs: FilterConfig[] = [

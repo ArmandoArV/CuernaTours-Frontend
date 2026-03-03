@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { getCookie } from "@/app/Utils/CookieUtil";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("useUserRole");
 
 /**
  * User role types
@@ -63,10 +66,10 @@ export function useUserRole(): UserRoleInfo {
           const userRoleId = userData.roleId || userData.role_id || null;
           setRoleId(userRoleId);
         } else {
-          console.log("⚠️ No user cookie found");
+          log.warn("No user cookie found");
         }
       } catch (error) {
-        console.error("Error loading user role:", error);
+        log.error("Error loading user role:", error);
         setRoleId(null);
       } finally {
         setIsLoading(false);

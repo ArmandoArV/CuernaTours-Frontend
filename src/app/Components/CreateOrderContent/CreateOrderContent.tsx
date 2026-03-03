@@ -28,6 +28,9 @@ import CountrySelect from "@/app/Components/CountrySelect/CountrySelect";
 import FormField from "@/app/Components/FormField/FormField";
 import { useOrderForm } from "@/app/hooks/useOrderForm";
 import { useOrderValidation } from "@/app/hooks/useOrderValidation";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("CreateOrderContent");
 import { useClientSelection } from "@/app/hooks/useClientSelection";
 
 interface CreateOrderContentProps {
@@ -101,7 +104,7 @@ export default function CreateOrderContent({
       }
     },
     onError: (error) => {
-      console.error(error);
+      log.error("Order form error:", error);
     },
   });
 
@@ -163,7 +166,7 @@ export default function CreateOrderContent({
                 primaryContact.is_whatsapp_available ? "Si" : "No";
             }
           } catch (clientErr) {
-            console.error("Error fetching client details:", clientErr);
+            log.error("Error fetching client details:", clientErr);
           }
         }
 
@@ -178,7 +181,7 @@ export default function CreateOrderContent({
           ...updatedFormData,
         } as OrderFormData);
       } catch (err: any) {
-        console.error("Error fetching contract:", err);
+        log.error("Error fetching contract:", err);
         setContractError(
           err?.message || "Error al cargar los datos del contrato",
         );
@@ -246,7 +249,7 @@ export default function CreateOrderContent({
         // Navigate back to contract details
         router.push(`/dashboard/order/${contractId}`);
       } catch (error) {
-        console.error("Error updating contract:", error);
+        log.error("Error updating contract:", error);
         showErrorAlert("Error", "Error al actualizar el contrato");
       }
     } else {
@@ -256,7 +259,7 @@ export default function CreateOrderContent({
   };
   const handleCancel = () => {
     // Handle cancel logic
-    console.log("Cancel clicked");
+    log.debug("Cancel clicked");
   };
 
   const fetchPrefillableData = useCallback(async () => {
@@ -265,7 +268,7 @@ export default function CreateOrderContent({
       const data = await referenceService.getPrefillableData();
       setPrefillableData(data);
     } catch (error) {
-      console.error("Error fetching prefillable data:", error);
+      log.error("Error fetching prefillable data:", error);
       if (error instanceof ApiError) {
         showErrorAlert(
           "Error",
@@ -334,7 +337,7 @@ export default function CreateOrderContent({
         "Los cambios en los datos del contacto se han guardado localmente. Se actualizarán al crear el contrato.",
       );
     } catch (error) {
-      console.error("Error saving contact:", error);
+      log.error("Error saving contact:", error);
       showErrorAlert(
         "Error",
         "No se pudieron guardar los cambios. Intente nuevamente.",
@@ -399,7 +402,7 @@ export default function CreateOrderContent({
 
   // Also sync when formData changes
   useEffect(() => {
-    console.log("CreateOrderContent - FormData changed:", formData);
+    log.debug("CreateOrderContent - FormData changed:", formData);
   }, [formData]);
 
   // Function to check if all required fields are filled

@@ -1,5 +1,8 @@
 "use client";
 import TableComponent from "../TableComponent/TableComponent";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("UsersContent");
 
 export default function UsersContent() {
   // Users management data
@@ -41,12 +44,12 @@ export default function UsersContent() {
   const usersColumns = ["ID", "Nombre", "Email", "Rol", "Estado", "Fecha Registro"];
 
   const handleViewUser = (rowData: any) => {
-    console.log("Ver usuario:", rowData);
+    log.debug("Ver usuario:", rowData);
     alert(`Ver detalles del usuario: ${rowData["Nombre"]}`);
   };
 
   const handleEditUser = (rowData: any) => {
-    console.log("Editar usuario:", rowData);
+    log.debug("Editar usuario:", rowData);
     alert(`Editar usuario: ${rowData["Nombre"]}`);
   };
 

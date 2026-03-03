@@ -29,6 +29,9 @@ import { contractsService, ContractWithDetails } from "@/services/api/contracts.
 import { ContractTrip } from "@/app/backend_models/trip.model";
 import { User } from "@/app/backend_models/user.model";
 import { showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("DriverPaymentModal");
 
 interface DriverPaymentModalProps {
   isOpen: boolean;
@@ -149,7 +152,7 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
       }
       
     } catch (err: any) {
-      console.error("Error loading data:", err);
+      log.error("Error loading data:", err);
       setError(err.message || "Error al cargar los datos del viaje");
     } finally {
       setLoading(false);
@@ -252,7 +255,7 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
       });
 
     } catch (err: any) {
-      console.error("Error saving payment:", err);
+      log.error("Error saving payment:", err);
       showErrorAlert("Error", err.message || "No se pudo registrar el pago.");
     } finally {
       setLoading(false);

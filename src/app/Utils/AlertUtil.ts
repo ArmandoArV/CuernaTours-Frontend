@@ -1,5 +1,8 @@
 import Swal, { SweetAlertIcon } from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("AlertUtil");
 
 export type AlertOptions = {
   title: string;
@@ -37,7 +40,7 @@ export const showAlert = (options: AlertOptions) => {
       cancelFunc();
     }
   }).catch(error => {
-    console.error("SweetAlert2 failed to fire:", error);
+    log.error("SweetAlert2 failed to fire:", error);
   });
 };
 

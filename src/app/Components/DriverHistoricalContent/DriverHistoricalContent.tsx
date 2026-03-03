@@ -8,6 +8,9 @@ import { getCookie } from "@/app/Utils/CookieUtil";
 import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
 import LoadingComponent from "@/app/Components/LoadingComponent/LoadingComponent";
 import styles from "./DriverHistoricalContent.module.css";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("DriverHistoricalContent");
 
 // Status mapping
 const STATUS_MAP: Record<number, string> = {
@@ -83,17 +86,17 @@ export default function DriverHistoricalContent() {
         if (userId) {
           setDriverId(userId);
         } else {
-          console.error("No user ID found in cookie");
+          log.error("No user ID found in cookie");
           setError("No se pudo identificar el usuario");
           setLoading(false);
         }
       } else {
-        console.error("No user cookie found");
+        log.error("No user cookie found");
         setError("Sesión no encontrada");
         setLoading(false);
       }
     } catch (error) {
-      console.error("Error getting user data:", error);
+      log.error("Error getting user data:", error);
       setError("Error al obtener datos del usuario");
       setLoading(false);
     }
@@ -110,7 +113,7 @@ export default function DriverHistoricalContent() {
         setContractsData(data);
         setError(null);
       } catch (err) {
-        console.error("Error fetching historical trips:", err);
+        log.error("Error fetching historical trips:", err);
         
         if (err instanceof ApiError) {
           setError(err.message);
@@ -164,11 +167,11 @@ export default function DriverHistoricalContent() {
   const handleFiltersChange = (
     activeFilters: Record<string, string | string[]>
   ) => {
-    console.log("Filtros aplicados:", activeFilters);
+    log.debug("Filtros aplicados:", activeFilters);
   };
 
   const handleSearch = (searchTerm: string) => {
-    console.log("Búsqueda:", searchTerm);
+    log.debug("Búsqueda:", searchTerm);
   };
 
   if (error) {

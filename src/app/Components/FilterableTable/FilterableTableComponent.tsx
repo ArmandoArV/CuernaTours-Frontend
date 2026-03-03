@@ -9,6 +9,9 @@ import FilterComponent, {
 } from "../FilterComponent";
 import SearchComponent from "../SearchComponent/SearchComponent";
 import styles from "./FilterableTableComponent.module.css";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("FilterableTableComponent");
 
 interface FilterableTableProps extends Omit<TableComponentProps, "data"> {
   originalData: Array<{ [key: string]: any }>;
@@ -50,14 +53,15 @@ const FilterableTableComponent: React.FC<FilterableTableProps> = ({
 
       // Create filters for common columns
       Object.keys(sampleRow).forEach((key) => {
-        const uniqueValues = Array.from(
+        const uniqueValues: string[] = Array.from(
           new Set(
             originalData
-              .map((row) => row[key])
+              .map((row: Record<string, any>) => row[key])
               .filter(
-                (value) =>
+                (value: any) =>
                   value !== null && value !== undefined && value !== "",
-              ),
+              )
+              .map((v: any) => String(v)),
           ),
         );
 
@@ -261,7 +265,7 @@ export const FilterableTableExample: React.FC = () => {
       enablePagination={true}
       itemsPerPage={5}
       showActions={true}
-      onFiltersChange={(filters) => console.log("Filters changed:", filters)}
+      onFiltersChange={(filters) => log.debug("Filters changed:", filters)}
     />
   );
 };

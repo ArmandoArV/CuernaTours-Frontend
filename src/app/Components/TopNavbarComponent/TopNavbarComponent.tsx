@@ -18,6 +18,9 @@ import {
   showErrorAlert,
 } from "@/app/Utils/AlertUtil";
 import { authService } from "@/services/api";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("TopNavbarComponent");
 
 const TopNavbarComponent: React.FC<TopNavbarProps> = ({
   userInfo: propsUserInfo,
@@ -80,14 +83,14 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
             username: userData.username,
           });
 
-          console.log("User info set in state:", {
+          log.debug("User info set in state:", {
             name: formattedName,
             role: userRole,
             avatar: userData.picture_url || userData.avatar || null,
           });
         }
       } catch (error) {
-        console.error("Error parsing user data from cookie:", error);
+        log.error("Error parsing user data from cookie:", error);
         // Fallback to props if cookie parsing fails
         if (propsUserInfo) {
           setUserInfo(propsUserInfo);
@@ -186,7 +189,7 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
           // 1️⃣ Call backend logout (optional safety)
           await authService.logout();
         } catch (error) {
-          console.error("Backend logout error:", error);
+          log.error("Backend logout error:", error);
         }
 
         // 2️⃣ ALWAYS clear client session locally

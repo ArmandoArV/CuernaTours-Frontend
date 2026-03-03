@@ -11,8 +11,11 @@ import {
 } from "@/services/api/reference.service";
 import { ApiError } from "@/services/api/ApiError";
 import { showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
+import { Logger } from "@/app/Utils/Logger";
 
-interface CreateClientModalProps {
+const log = Logger.getLogger("CreateClientModal");
+
+interface CreateClientModalProps{
   isOpen: boolean;
   onClose: () => void;
   onClientCreated: (
@@ -152,7 +155,7 @@ export default function CreateClientModal({
       setErrors({});
       onClose();
     } catch (error) {
-      console.error("Error creating client:", error);
+      log.error("Error creating client:", error);
       if (error instanceof ApiError) {
         showErrorAlert("Error", error.message);
       } else {

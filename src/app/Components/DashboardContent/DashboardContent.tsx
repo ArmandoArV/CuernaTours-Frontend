@@ -35,8 +35,11 @@ import LoadingComponent from "../LoadingComponent/LoadingComponent";
 import ContractCard from "../ContractCard/ContractCard";
 import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
 import styles from "./DashboardContent.module.css";
+import { Logger } from "@/app/Utils/Logger";
 
-// Status mapping based on provided ids
+const log = Logger.getLogger("DashboardContent");
+
+// Status mappingbased on provided ids
 const STATUS_MAP: Record<number, string> = {
   1: "Pendiente",
   2: "En curso",
@@ -210,7 +213,7 @@ export default function DashboardContent() {
       setContractsData(data);
       setError(null);
     } catch (err) {
-      console.error("Error fetching contracts:", err);
+      log.error("Error fetching contracts:", err);
 
       if (err instanceof ApiError) {
         setError(err.message);
@@ -360,7 +363,7 @@ export default function DashboardContent() {
   }, [sampleData, mobileColumnFilters]);
 
   const handleSearch = (searchTerm: string) => {
-    console.log("Búsqueda:", searchTerm);
+    log.debug("Búsqueda:", searchTerm);
   };
 
   const handleButtonClick = () => {
@@ -391,7 +394,7 @@ export default function DashboardContent() {
       setSelectedTripData(tripToAssign);
       setIsAssignDriverModalOpen(true);
     } else {
-      console.warn("No trips found in contract");
+      log.warn("No trips found in contract");
     }
   };
 
@@ -403,18 +406,18 @@ export default function DashboardContent() {
       setSelectedTripId(tripId ? String(tripId) : null);
       setIsDriverPaymentModalOpen(true);
     } else {
-      console.warn("No trips found in contract");
+      log.warn("No trips found in contract");
     }
   };
 
-  const handleDriverAssignment = async (assignmentData: any) => {
-    console.log("Driver assigned:", assignmentData);
+  const handleDriverAssignment= async (assignmentData: any) => {
+    log.info("Driver assigned:", assignmentData);
     // Refresh table data after assignment
     try {
       const data = await contractsService.getAll();
       setContractsData(data);
     } catch (err) {
-      console.error("Error refreshing contracts:", err);
+      log.error("Error refreshing contracts:", err);
     }
     setIsAssignDriverModalOpen(false);
     setSelectedTripData(null);

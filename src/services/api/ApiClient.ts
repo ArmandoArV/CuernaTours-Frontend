@@ -5,6 +5,7 @@
  */
 
 import { apiConfig, API_ENDPOINTS, HTTP_STATUS, REQUEST_TIMEOUT_MESSAGE, NETWORK_ERROR_MESSAGE } from '@/config/api.config';
+import { Logger } from '@/app/Utils/Logger';
 import { 
   ApiError, 
   NetworkError, 
@@ -145,15 +146,19 @@ export class ApiClient {
   /**
    * Log request/response for debugging
    */
+  private static readonly logger = Logger.getLogger('ApiClient');
+
   private log(type: 'request' | 'response' | 'error', data: any): void {
     if (!this.enableLogging) return;
 
-    const timestamp = new Date().toISOString();
-    const emoji = type === 'request' ? '🚀' : type === 'response' ? '✅' : '❌';
-    
-    console.group(`${emoji} API ${type.toUpperCase()} - ${timestamp}`);
-    console.log(data);
-    console.groupEnd();
+    const log = ApiClient.logger;
+    if (type === 'error') {
+      log.error(`API ${type.toUpperCase()}`, data);
+    } else {
+      log.group(`API ${type.toUpperCase()}`, () => {
+        log.info('Details', data);
+      });
+    }
   }
 
   /**

@@ -18,6 +18,9 @@ import {
 } from "@fluentui/react-icons";
 import styles from "./TripsContent.module.css";
 import { Contract } from "@/app/Types/ContractTypes";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("TripsContent");
 
 // Status mapping
 const STATUS_MAP: Record<number, string> = {
@@ -94,9 +97,9 @@ export default function TripsContent({ contractId }: TripsContentProps) {
         );
         setContractData(data);
         setError(null);
-        console.log("Fetched contract data:", data);
+        log.debug("Fetched contract data:", data);
       } catch (err) {
-        console.error("Error fetching contract data:", err);
+        log.error("Error fetching contract data:", err);
         setError(
           err instanceof Error ? err.message : "Error al cargar los datos",
         );
@@ -124,7 +127,7 @@ export default function TripsContent({ contractId }: TripsContentProps) {
   };
 
   const handleDriverAssignment = async (assignmentData: any) => {
-    console.log("Driver assigned:", assignmentData);
+    log.debug("Driver assigned:", assignmentData);
     // Refresh contract data
     try {
       const data = await contractsService.getContractDetails(
@@ -132,7 +135,7 @@ export default function TripsContent({ contractId }: TripsContentProps) {
       );
       setContractData(data);
     } catch (err) {
-      console.error("Error refreshing contract:", err);
+      log.error("Error refreshing contract:", err);
     }
     setIsAssignDriverModalOpen(false);
     setSelectedTripData(null);

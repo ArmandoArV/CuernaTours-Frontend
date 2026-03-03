@@ -33,6 +33,9 @@ import {
   tripsService,
   ApiError,
 } from "@/services/api";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("EditTripContent");
 
 interface EditTripContentProps {
   contractId: string;
@@ -186,7 +189,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
         data: place,
       }));
     } catch (error) {
-      console.error("Error searching places:", error);
+      log.error("Error searching places:", error);
       return [];
     }
   };
@@ -221,7 +224,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
         // Mark all auto-filled fields as touched
         Object.keys(updates).forEach((key) => handleFieldTouch(key));
       } catch (error) {
-        console.error("Error fetching place details:", error);
+        log.error("Error fetching place details:", error);
       }
     }
   };
@@ -295,7 +298,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
       const lugarOptions = referenceService.transformPlacesForSelect(data);
       setLugares(lugarOptions);
     } catch (error) {
-      console.error("Error fetching lugares:", error);
+      log.error("Error fetching lugares:", error);
     }
   }, []);
 
@@ -305,7 +308,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
       const choferOptions = referenceService.transformDriversForSelect(data);
       setChoferes(choferOptions);
     } catch (error) {
-      console.error("Error fetching choferes:", error);
+      log.error("Error fetching choferes:", error);
     }
   }, []);
 
@@ -315,7 +318,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
       const unidadOptions = referenceService.transformVehiclesForSelect(data);
       setUnidades(unidadOptions);
     } catch (error) {
-      console.error("Error fetching unidades:", error);
+      log.error("Error fetching unidades:", error);
     }
   }, []);
 
@@ -327,7 +330,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
         setTiposUnidad(options);
       }
     } catch (error) {
-      console.error("Error fetching tipos de unidad:", error);
+      log.error("Error fetching tipos de unidad:", error);
     }
   }, []);
 
@@ -397,7 +400,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
         "Los cambios en el origen se han guardado localmente.",
       );
     } catch (error) {
-      console.error("Error saving origin:", error);
+      log.error("Error saving origin:", error);
       showErrorAlert(
         "Error",
         "No se pudieron guardar los cambios. Intente nuevamente.",
@@ -480,7 +483,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
         "Los cambios en el destino se han guardado localmente.",
       );
     } catch (error) {
-      console.error("Error saving destination:", error);
+      log.error("Error saving destination:", error);
       showErrorAlert(
         "Error",
         "No se pudieron guardar los cambios. Intente nuevamente.",
@@ -549,7 +552,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
         "Los cambios en los datos del viaje se han guardado localmente.",
       );
     } catch (error) {
-      console.error("Error saving trip data:", error);
+      log.error("Error saving trip data:", error);
       showErrorAlert(
         "Error",
         "No se pudieron guardar los cambios. Intente nuevamente.",
@@ -602,7 +605,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
         "Los cambios en la asignación se han guardado localmente.",
       );
     } catch (error) {
-      console.error("Error saving assignment:", error);
+      log.error("Error saving assignment:", error);
       showErrorAlert(
         "Error",
         "No se pudieron guardar los cambios. Intente nuevamente.",
@@ -622,8 +625,8 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
 
   // Load data and sync with context
   useEffect(() => {
-    console.log("EditTripContent - OrderData:", orderData);
-    console.log("EditTripContent - TripData:", tripData);
+    log.debug("EditTripContent - OrderData:", orderData);
+    log.debug("EditTripContent - TripData:", tripData);
 
     const fetchTripData = async () => {
       try {
@@ -633,12 +636,12 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
         const contractData = await contractsService.getContractDetails(
           parseInt(contractId),
         );
-        console.log("Contract data with trips:", contractData);
+        log.debug("Contract data with trips:", contractData);
 
         // If there are trips, populate the form with the first trip's data
         if (contractData.trips && contractData.trips.length > 0) {
           const trip = contractData.trips[0];
-          console.log("First trip data:", trip);
+          log.debug("First trip data:", trip);
 
           // Parse the service date
           let idaFechaFormatted = "";
@@ -687,7 +690,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
                 origenEstado: originPlace.state || "",
               };
             } catch (e) {
-              console.error("Error fetching origin place:", e);
+              log.error("Error fetching origin place:", e);
               origenData = { origenNombreLugar: trip.origin.id.toString() };
             }
           }
@@ -707,7 +710,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
                 destinoEstado: destPlace.state || "",
               };
             } catch (e) {
-              console.error("Error fetching destination place:", e);
+              log.error("Error fetching destination place:", e);
               destinoData = {
                 destinoNombreLugar: trip.destination.id.toString(),
               };
@@ -777,7 +780,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
           });
         }
       } catch (err) {
-        console.error("Error fetching trip data:", err);
+        log.error("Error fetching trip data:", err);
       } finally {
         setIsLoadingTrip(false);
       }
@@ -789,7 +792,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
         (orderData.empresa || orderData.nombreContacto || orderData.costoViaje);
 
       if (!hasOrderData) {
-        console.log("No order data found, redirecting...");
+        log.debug("No order data found, redirecting...");
         showErrorAlert(
           "Error",
           "No se encontraron datos del pedido. Redirigiendo...",
@@ -800,7 +803,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
         return;
       }
 
-      console.log("Order data validation passed, proceeding...");
+      log.debug("Order data validation passed, proceeding...");
     };
 
     const timeoutId = setTimeout(checkOrderData, 500);
@@ -905,7 +908,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
           : undefined,
       };
 
-      console.log("Update payload:", updatePayload);
+      log.debug("Update payload:", updatePayload);
 
       await contractsService.update(parseInt(contractId), updatePayload);
 
@@ -913,7 +916,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
       clearData();
       router.back();
     } catch (error) {
-      console.error("Error updating contract:", error);
+      log.error("Error updating contract:", error);
 
       if (error instanceof ApiError) {
         showErrorAlert("Error", error.message);
@@ -1540,7 +1543,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
               label="Fecha de ida"
               value={tripFormData.idaFecha || ""}
               onChange={(value) => {
-                console.log("Date changed:", value);
+                log.debug("Date changed:", value);
                 setTripFormData((prev) => ({
                   ...prev,
                   idaFecha: value,
@@ -1619,7 +1622,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
                   label="Fecha de regreso"
                   value={tripFormData.regresoFecha || ""}
                   onChange={(value) => {
-                    console.log("Return date changed:", value);
+                    log.debug("Return date changed:", value);
                     setTripFormData((prev) => ({
                       ...prev,
                       regresoFecha: value,

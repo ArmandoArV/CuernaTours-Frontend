@@ -1,6 +1,9 @@
 import { useState, useCallback } from "react";
 import { referenceService } from "@/services/api";
 import { SearchableSelectOption } from "@/app/Components/SearchableSelectComponent/SearchableSelectComponent";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("useClientSelection");
 
 interface UseClientSelectionProps {
   onClientSelect: (data: any) => void;
@@ -23,7 +26,7 @@ export function useClientSelection({
           data: client,
         }));
       } catch (error) {
-        console.error("Error searching clients:", error);
+        log.error("Error searching clients:", error);
         return [];
       }
     },
@@ -69,7 +72,7 @@ export function useClientSelection({
           });
         }
       } catch (error) {
-        console.error("Error fetching client details:", error);
+        log.error("Error fetching client details:", error);
         // Fallback
         onClientSelect({
           empresa: clientId,

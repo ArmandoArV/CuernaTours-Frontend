@@ -13,8 +13,11 @@ import { authService, ApiError } from "@/services/api";
 import LoadingComponent from "../LoadingComponent/LoadingComponent";
 import { getCookie } from "@/app/Utils/CookieUtil";
 import { UserRole } from "@/app/hooks/useUserRole";
+import { Logger } from "@/app/Utils/Logger";
 
-const useLoadingStyles = makeStyles({
+const log = Logger.getLogger("AuthComponent");
+
+const useLoadingStyles= makeStyles({
   container: {
     display: 'flex',
     justifyContent: 'center',
@@ -76,7 +79,7 @@ export default function AuthComponent({ children }: AuthRouteProps) {
               const userData = JSON.parse(userCookie);
               userRole = userData.roleId || userData.role_id || null;
             } catch (e) {
-              console.error("Error parsing user cookie:", e);
+              log.error("Error parsing user cookie:", e);
             }
           }
           
@@ -101,7 +104,7 @@ export default function AuthComponent({ children }: AuthRouteProps) {
           router.push("/");
         }
       } catch (error) {
-        console.error("Token validation error (token expired or invalid):", error);
+        log.error("Token validation error (token expired or invalid):", error);
         
         // If response fails, token is expired or invalid - clear session and redirect to login
         authService.clearSession();

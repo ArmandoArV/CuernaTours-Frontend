@@ -10,6 +10,9 @@ import { validateResponse, isUser } from "./validators";
 import { setCookie, deleteCookie } from "@/app/Utils/CookieUtil";
 import type { ApiResponse } from "@/app/backend_models/common_types/common.types";
 import type { User, SimpleUser } from "@/app/backend_models/user.model";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("AuthService");
 
 export interface LoginRequest {
   email: string;
@@ -43,9 +46,9 @@ class AuthService {
       { skipAuth: true }
     );
 
-    console.log("=== LOGIN DEBUG ===");
-    console.log("1. Raw API response:", response);
-    console.log("2. Response structure check:", {
+    log.debug("=== LOGIN DEBUG ===");
+    log.debug("1. Raw API response:", response);
+    log.debug("2. Response structure check:", {
       hasSuccess: "success" in response,
       hasData: "data" in response,
       dataType: typeof response.data,
@@ -54,17 +57,17 @@ class AuthService {
 
     const data = validateResponse<LoginResponse>(response);
 
-    console.log("3. After validateResponse:", data);
-    console.log("4. Data.user object:", data.user);
-    console.log(
+    log.debug("3. After validateResponse:", data);
+    log.debug("4. Data.user object:", data.user);
+    log.debug(
       "5. Data.user keys:",
       data.user ? Object.keys(data.user) : null
     );
-    console.log("6. Data.user values:", JSON.stringify(data.user, null, 2));
+    log.debug("6. Data.user values:", JSON.stringify(data.user, null, 2));
 
     // Prepare complete user data for cookie storage
     const userData = this.prepareUserDataForStorage(data.user, email);
-    console.log(
+    log.debug(
       "7. Prepared user data for storage:",
       JSON.stringify(userData, null, 2)
     );
@@ -90,9 +93,9 @@ class AuthService {
 
     // Store the complete user data with all necessary fields
     if (userData) {
-      console.log("8. Storing complete user data in cookie:", userData);
+      log.debug("8. Storing complete user data in cookie:", userData);
       const userDataString = JSON.stringify(userData);
-      console.log("9. Cookie string to be stored:", userDataString);
+      log.debug("9. Cookie string to be stored:", userDataString);
 
       setCookie("user", userDataString, {
         expires: 7,
@@ -108,14 +111,14 @@ class AuthService {
           .find((row) => row.startsWith("user="));
         if (storedCookie) {
           const cookieValue = decodeURIComponent(storedCookie.split("=")[1]);
-          console.log("10. Verified cookie after storage:", cookieValue);
-          console.log("11. Parsed cookie:", JSON.parse(cookieValue));
+          log.debug("10. Verified cookie after storage:", cookieValue);
+          log.debug("11. Parsed cookie:", JSON.parse(cookieValue));
         } else {
-          console.error("WARNING: User cookie was not set!");
+          log.error("WARNING: User cookie was not set!");
         }
       }, 100);
     } else {
-      console.error("WARNING: userData is null, not storing cookie");
+      log.error("WARNING: userData is null, not storing cookie");
     }
 
     return data;
@@ -127,11 +130,11 @@ class AuthService {
    */
   private prepareUserDataForStorage(user: any, email: string): any {
     if (!user) {
-      console.error("prepareUserDataForStorage: user is null or undefined");
+      log.error("prepareUserDataForStorage: user is null or undefined");
       return null;
     }
 
-    console.log("prepareUserDataForStorage input:", {
+    log.debug("prepareUserDataForStorage input:", {
       user: JSON.stringify(user),
       userKeys: Object.keys(user),
       hasIat: "iat" in user,
@@ -152,7 +155,7 @@ class AuthService {
       "exp" in user ||
       ("userId" in user && !("user_id" in user))
     ) {
-      console.warn(
+      log.warn(
         "JWT payload detected - skipping storage. Use this only for token validation."
       );
       return null;
@@ -203,7 +206,7 @@ class AuthService {
       status: user.status,
     };
 
-    console.log(
+    log.debug(
       "prepareUserDataForStorage output:",
       JSON.stringify(userData, null, 2)
     );
@@ -219,7 +222,7 @@ class AuthService {
       await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT);
     } catch (error) {
       // Log error but continue with local cleanup
-      console.error("Logout API call failed:", error);
+      log.error("Logout API call failed:", error);
     } finally {
       // Always clear local tokens
       this.clearSession();
@@ -300,7 +303,7 @@ class AuthService {
         return JSON.parse(userValue);
       }
     } catch (error) {
-      console.error("Error getting user from cookie:", error);
+      log.error("Error getting user from cookie:", error);
     }
     return null;
   }

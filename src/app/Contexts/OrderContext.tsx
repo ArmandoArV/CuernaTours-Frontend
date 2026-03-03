@@ -6,6 +6,9 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("OrderContext");
 
 // Types
 interface OrderFormData {
@@ -207,7 +210,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch (error) {
-      console.error("Error loading data from localStorage:", error);
+      log.error("Error loading data from localStorage:", error);
     }
   };
 

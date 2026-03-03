@@ -7,8 +7,11 @@ import InputComponent from '../InputComponent/InputComponent';
 import { referenceService } from '@/services/api/reference.service';
 import { ApiError } from '@/services/api/ApiError';
 import { showSuccessAlert, showErrorAlert } from '@/app/Utils/AlertUtil';
+import { Logger } from "@/app/Utils/Logger";
 
-interface CreatePlaceModalProps {
+const log = Logger.getLogger("CreatePlaceModal");
+
+interface CreatePlaceModalProps{
   isOpen: boolean;
   onClose: () => void;
   onPlaceCreated: (placeId: number, placeName: string, placeData?: any) => void;
@@ -112,7 +115,7 @@ export default function CreatePlaceModal({
       setErrors({});
       onClose();
     } catch (error) {
-      console.error('Error creating place:', error);
+      log.error('Error creating place:', error);
       if (error instanceof ApiError) {
         showErrorAlert('Error', error.message);
       } else {

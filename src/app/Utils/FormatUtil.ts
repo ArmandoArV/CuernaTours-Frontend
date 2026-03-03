@@ -1,3 +1,7 @@
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("FormatUtil");
+
 // Utility functions for formatting data
 
 /**
@@ -26,7 +30,7 @@ export const formatDateStandard = (date: string | Date | null | undefined): stri
 
     return `${day}/${month}/${year}`;
   } catch (error) {
-    console.error("Error formatting date:", error);
+    log.error("Error formatting date:", error);
     return "";
   }
 };
@@ -53,7 +57,7 @@ export const formatDateTimeStandard = (date: string | Date | null | undefined): 
 
     return `${dateStr} ${hours}:${minutes}`;
   } catch (error) {
-    console.error("Error formatting date-time:", error);
+    log.error("Error formatting date-time:", error);
     return "";
   }
 };
