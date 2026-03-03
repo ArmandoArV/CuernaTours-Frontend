@@ -11,26 +11,31 @@ import type { ApiResponse } from '@/app/backend_models/common_types/common.types
 
 export interface Spending {
   spending_id: number;
-  amount: number;
-  spending_date: Date;
-  category: string;
-  description?: string;
-  created_by: number;
-  created_at: Date;
+  spending_type?: string;
+  spending_amount: number;
+  driver_id: number;
+  contract_id?: number;
+  vehicle_id?: number;
+  submitted_at: Date;
+  approved_status: 'approved' | 'pending' | 'denied';
+  approved_by_id?: number;
+  payment_status: 'pending' | 'paid';
+  comments?: string;
 }
 
 export interface CreateSpendingRequest {
-  amount: number;
-  spending_date: string;
-  category: string;
-  description?: string;
+  spending_type?: string;
+  spending_amount: number;
+  driver_id: number;
+  contract_id?: number;
+  vehicle_id?: number;
+  comments?: string;
 }
 
 export interface UpdateSpendingRequest {
-  amount?: number;
-  spending_date?: string;
-  category?: string;
-  description?: string;
+  spending_type?: string;
+  spending_amount?: number;
+  comments?: string;
 }
 
 export interface SpendingFile {
@@ -46,6 +51,15 @@ class SpendingsService {
    */
   async getAll(): Promise<Spending[]> {
     const response = await apiClient.get<Spending[]>(API_ENDPOINTS.SPENDINGS.BASE);
+    return validateResponse<Spending[]>(response);
+  }
+
+  /**
+   * Get all spendings for a specific driver
+   */
+  async getByDriver(driverId: number): Promise<Spending[]> {
+    const endpoint = API_ENDPOINTS.SPENDINGS.BY_DRIVER(driverId);
+    const response = await apiClient.get<Spending[]>(endpoint);
     return validateResponse<Spending[]>(response);
   }
 

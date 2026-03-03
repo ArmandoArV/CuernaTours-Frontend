@@ -31,11 +31,16 @@ export interface DriverPayment {
 
 export interface DriverSpending {
   spending_id: number;
+  spending_type?: string;
+  spending_amount: number;
   driver_id: number;
-  amount: number;
-  spending_date: Date;
-  category: string;
-  description?: string;
+  contract_id?: number;
+  vehicle_id?: number;
+  submitted_at: Date;
+  approved_status: 'approved' | 'pending' | 'denied';
+  approved_by_id?: number;
+  payment_status: 'pending' | 'paid';
+  comments?: string;
 }
 
 export interface CreateDriverPaymentRequest {

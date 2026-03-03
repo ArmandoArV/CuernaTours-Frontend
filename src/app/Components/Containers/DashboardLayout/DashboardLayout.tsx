@@ -6,15 +6,8 @@ import TopNavbarComponent from "../../TopNavbarComponent/TopNavbarComponent";
 import {
   HomeFilled,
   HistoryFilled,
-  PersonCircleFilled,
-  PersonAccountsFilled,
-  SettingsFilled,
-  AppsListFilled
 } from "@fluentui/react-icons";
 import styles from "./DashboardLayout.module.css";
-import { Logger } from "@/app/Utils/Logger";
-
-const log = Logger.getLogger("DashboardLayout");
 
 export interface DashboardLayoutProps{
   children: React.ReactNode;
@@ -28,38 +21,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   userIsOwner = false,
 }) => {
   const lateralNavItems: LateralNavbarType[] = [
-    { title: "Inicio", link: "/dashboard", icon: <HomeFilled /> }, // Visible to all
-    {
-      title: "Historial",
-      link: "/dashboard/historical",
-      icon: <HistoryFilled />,
-    }, // Visible to all
+    { title: "Inicio", link: "/dashboard", icon: <HomeFilled /> },
+    { title: "Historial", link: "/dashboard/historical", icon: <HistoryFilled /> },
   ];
-
-  const handleNotificationClick = () => {
-    log.info("Notifications clicked");
-  };
-
-  const handleUserMenuClick = () => {
-    log.info("User menu clicked");
-  };
 
   return (
     <div className={styles.dashboardLayout}>
-      <TopNavbarComponent
-        title="CuernaTours"
-        userInfo={{
-          name: "John Doe",
-          role: userIsOwner
-            ? "Propietario"
-            : userIsAdmin
-            ? "Administrador"
-            : "Usuario",
-        }}
-        onNotificationClick={handleNotificationClick}
-        onUserMenuClick={handleUserMenuClick}
-        notificationCount={3}
-      />
+      <TopNavbarComponent />
       <LateralNavbarComponent
         items={lateralNavItems}
         userIsAdmin={userIsAdmin}

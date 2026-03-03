@@ -1,6 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
-import Link from "next/link";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -8,140 +7,76 @@ import {
   PersonRegular,
   ArrowExitFilled,
 } from "@fluentui/react-icons";
-import { TopNavbarProps, TopNavbarItem } from "../../Types/TopNavbarType";
+import {
+  Menu,
+  MenuTrigger,
+  MenuPopover,
+  MenuList,
+  MenuItem,
+  MenuDivider,
+} from "@fluentui/react-components";
 import styles from "./TopNavbar.module.css";
 import { getCookie, deleteCookie } from "@/app/Utils/CookieUtil";
 import { formatPersonName } from "@/app/Utils/FormatUtil";
-import {
-  showConfirmAlert,
-  showSuccessAlert,
-  showErrorAlert,
-} from "@/app/Utils/AlertUtil";
+import { showConfirmAlert } from "@/app/Utils/AlertUtil";
 import { authService } from "@/services/api";
 import { Logger } from "@/app/Utils/Logger";
 
 const log = Logger.getLogger("TopNavbarComponent");
 
-const TopNavbarComponent: React.FC<TopNavbarProps> = ({
-  userInfo: propsUserInfo,
-  onUserMenuClick,
+interface TopNavbarComponentProps {
+  className?: string;
+}
+
+const TopNavbarComponent: React.FC<TopNavbarComponentProps> = ({
   className = "",
 }) => {
   const router = useRouter();
-  const [openDropdown, setOpenDropdown] = useState<number | null>(null);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState<any>(propsUserInfo);
-  const dropdownRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const userMenuRef = useRef<HTMLDivElement | null>(null);
+  const [userInfo, setUserInfo] = useState<any>(null);
 
-  // Load user information from cookies
   useEffect(() => {
-    const loadUserInfo = () => {
-      try {
-        const userCookie = getCookie("user");
-        if (userCookie) {
-          const userData = JSON.parse(userCookie);
+    try {
+      const userCookie = getCookie("user");
+      if (userCookie) {
+        const userData = JSON.parse(userCookie);
 
-          // Use display_name as the primary name source
-          const displayName =
-            userData.display_name ||
-            `${userData.name || ""} ${userData.first_lastname || userData.lastname || ""}`.trim() ||
-            userData.username ||
-            userData.email?.split("@")[0] ||
-            "Usuario";
+        const displayName =
+          userData.display_name ||
+          `${userData.name || ""} ${userData.first_lastname || userData.lastname || ""}`.trim() ||
+          userData.username ||
+          userData.email?.split("@")[0] ||
+          "Usuario";
 
-          // Apply Camel Case formatting to the name
-          const formattedName = formatPersonName(displayName);
+        const formattedName = formatPersonName(displayName);
 
-          // Map role based on roleId or existing role data
-          const getRoleName = (roleId: number) => {
-            const roleMap: { [key: number]: string } = {
-              1: "Maestro",
-              2: "Administrador",
-              3: "Chofer",
-              4: "Oficina",
-            };
-            return roleMap[roleId] || "Usuario";
+        const getRoleName = (roleId: number) => {
+          const roleMap: { [key: number]: string } = {
+            1: "Maestro",
+            2: "Administrador",
+            3: "Chofer",
+            4: "Oficina",
           };
+          return roleMap[roleId] || "Usuario";
+        };
 
-          const userRole =
-            userData.role?.name ||
-            userData.role ||
-            (userData.role_id
-              ? getRoleName(userData.role_id)
-              : userData.roleId
-                ? getRoleName(userData.roleId)
-                : "Usuario");
+        const userRole =
+          userData.role?.name ||
+          userData.role ||
+          (userData.role_id
+            ? getRoleName(userData.role_id)
+            : userData.roleId
+              ? getRoleName(userData.roleId)
+              : "Usuario");
 
-          setUserInfo({
-            name: formattedName,
-            role: userRole,
-            avatar: userData.picture_url || userData.avatar || null,
-            email: userData.email || "",
-            userId: userData.user_id || userData.userId,
-            roleId: userData.role_id || userData.roleId,
-            username: userData.username,
-          });
-
-          log.debug("User info set in state:", {
-            name: formattedName,
-            role: userRole,
-            avatar: userData.picture_url || userData.avatar || null,
-          });
-        }
-      } catch (error) {
-        log.error("Error parsing user data from cookie:", error);
-        // Fallback to props if cookie parsing fails
-        if (propsUserInfo) {
-          setUserInfo(propsUserInfo);
-        }
+        setUserInfo({
+          name: formattedName,
+          role: userRole,
+          avatar: userData.picture_url || userData.avatar || null,
+        });
       }
-    };
-
-    loadUserInfo();
-  }, [propsUserInfo]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (openDropdown !== null) {
-        const dropdownElement = dropdownRefs.current[openDropdown];
-        if (
-          dropdownElement &&
-          !dropdownElement.contains(event.target as Node)
-        ) {
-          setOpenDropdown(null);
-        }
-      }
-
-      // Close user menu when clicking outside
-      if (
-        isUserMenuOpen &&
-        userMenuRef.current &&
-        !userMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsUserMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [openDropdown, isUserMenuOpen]);
-
-  // Close user menu when navigating to a new route
-  useEffect(() => {
-    const handleRouteChange = () => {
-      setIsUserMenuOpen(false);
-    };
-
-    // Listen for route changes
-    window.addEventListener("popstate", handleRouteChange);
-
-    return () => {
-      window.removeEventListener("popstate", handleRouteChange);
-    };
+    } catch (error) {
+      log.error("Error parsing user data from cookie:", error);
+    }
   }, []);
 
   const getUserInitials = (name: string) => {
@@ -153,52 +88,32 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
       .substring(0, 2);
   };
 
-  const handleUserMenuClick = () => {
-    setIsUserMenuOpen(!isUserMenuOpen);
-    if (onUserMenuClick) {
-      onUserMenuClick();
-    }
-  };
-
   const handleProfileClick = () => {
-    setIsUserMenuOpen(false);
-    // Navigate to profile page using Next.js router
     router.push("/profile");
   };
 
   const clearAllCookies = () => {
-    // Clear all authentication-related cookies
     deleteCookie("user", { path: "/" });
     deleteCookie("accessToken", { path: "/" });
     deleteCookie("token", { path: "/" });
     deleteCookie("auth", { path: "/" });
     deleteCookie("session", { path: "/" });
-
-    // Clear user info state
     setUserInfo(null);
   };
-  const handleLogoutClick = () => {
-    setIsUserMenuOpen(false);
 
+  const handleLogoutClick = () => {
     showConfirmAlert(
       "Cerrar Sesión",
       "¿Estás seguro de que quieres cerrar sesión?",
       "Sí, cerrar sesión",
       async () => {
         try {
-          // 1️⃣ Call backend logout (optional safety)
           await authService.logout();
         } catch (error) {
           log.error("Backend logout error:", error);
         }
-
-        // 2️⃣ ALWAYS clear client session locally
         clearAllCookies();
-
-        // 3️⃣ Force navigation without history
         router.replace("/");
-
-        // 4️⃣ Force full reload to reset state (important)
         setTimeout(() => {
           window.location.reload();
         }, 50);
@@ -212,42 +127,49 @@ const TopNavbarComponent: React.FC<TopNavbarProps> = ({
 
       <div className={styles.rightSection}>
         {userInfo && (
-          <div className={styles.userMenuContainer} ref={userMenuRef}>
-            <div className={styles.userSection} onClick={handleUserMenuClick}>
-              <div className={styles.userAvatar}>
-                {userInfo.avatar ? (
-                  <Image
-                    src={userInfo.avatar}
-                    alt={userInfo.name}
-                    width={32}
-                    height={32}
-                    className={styles.userAvatar}
-                  />
-                ) : (
-                  getUserInitials(userInfo.name)
-                )}
+          <Menu>
+            <MenuTrigger disableButtonEnhancement>
+              <div className={styles.userSection}>
+                <div className={styles.userAvatar}>
+                  {userInfo.avatar ? (
+                    <Image
+                      src={userInfo.avatar}
+                      alt={userInfo.name}
+                      width={32}
+                      height={32}
+                      className={styles.avatarImage}
+                    />
+                  ) : (
+                    getUserInitials(userInfo.name)
+                  )}
+                </div>
+                <div className={styles.userInfo}>
+                  <p className={styles.userName}>{userInfo.name}</p>
+                  {userInfo.role && (
+                    <p className={styles.userRole}>{userInfo.role}</p>
+                  )}
+                </div>
+                <ChevronDown20Regular />
               </div>
-              <div className={styles.userInfo}>
-                <p className={styles.userName}>{userInfo.name}</p>
-                {userInfo.role && (
-                  <p className={styles.userRole}>{userInfo.role}</p>
-                )}
-              </div>
-              <ChevronDown20Regular />
-            </div>
-
-            {isUserMenuOpen && (
-              <div className={styles.userDropdown}>
-                <div
-                  className={styles.dropdownItem}
+            </MenuTrigger>
+            <MenuPopover>
+              <MenuList>
+                <MenuItem
+                  icon={<PersonRegular />}
+                  onClick={handleProfileClick}
+                >
+                  Mi Perfil
+                </MenuItem>
+                <MenuDivider />
+                <MenuItem
+                  icon={<ArrowExitFilled />}
                   onClick={handleLogoutClick}
                 >
-                  <ArrowExitFilled className={styles.dropdownIcon} />
                   Cerrar Sesión
-                </div>
-              </div>
-            )}
-          </div>
+                </MenuItem>
+              </MenuList>
+            </MenuPopover>
+          </Menu>
         )}
       </div>
     </nav>

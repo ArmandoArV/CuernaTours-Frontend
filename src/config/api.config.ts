@@ -201,6 +201,7 @@ export const API_ENDPOINTS = {
   SPENDINGS: {
     BASE: '/spendings',
     BY_ID: (id: number) => `/spendings/${id}`,
+    BY_DRIVER: (driverId: number) => `/spendings/driver/${driverId}/with-files`,
     FILES: (spendingId: number) => `/spending-files/${spendingId}`,
     UPLOAD_FILE: '/spending-files',
   },

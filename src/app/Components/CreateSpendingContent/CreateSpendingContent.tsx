@@ -20,6 +20,7 @@ import {
 import styles from "./CreateSpendingContent.module.css";
 import { useCreateSpendingForm } from "@/app/hooks/useCreateSpendingForm";
 import { spendingsService } from "@/services/api/spendings.service";
+import { useDriverId } from "@/app/hooks/useDriverId";
 import {
   NETWORK_ERROR_MESSAGE,
   SERVER_ERROR_MESSAGE,
@@ -42,6 +43,7 @@ export default function CreateSpendingContent() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const { driverId, error: driverError, loading: driverLoading } = useDriverId();
 
   const {
     category,
@@ -71,11 +73,16 @@ export default function CreateSpendingContent() {
         setLoading(true);
 
         try {
+          if (!driverId) {
+            showErrorAlert("Error", "No se pudo identificar al usuario");
+            return;
+          }
+
           const payload = {
-            amount: Number(amount),
-            spending_date: new Date().toISOString(), // ISO format for backend
-            category: category === "otro" ? customCategory : category,
-            description,
+            spending_amount: Number(amount),
+            spending_type: category === "otro" ? customCategory : category,
+            driver_id: driverId,
+            comments: description,
           };
 
           // 1️⃣ Create spending

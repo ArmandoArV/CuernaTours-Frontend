@@ -53,8 +53,47 @@
     align-items: stretch;
   }
 
+  .headerMobile {
+    gap: 0.75rem;
+  }
+
   .createButton {
     width: 100%;
     justify-content: center;
   }
+}
+
+.mobileFilters {
+  margin-bottom: 16px;
+}
+
+.mobileFilterContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobileFilters :global(.ms-Stack) > :global(.ms-Stack):first-child {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.mobileFilters :global(.ms-Stack) > :global(.ms-Stack):first-child > :global(.ms-StackItem) {
+  min-width: unset !important;
+  max-width: unset !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.mobileFilters :global(.ms-Dropdown) {
+  min-width: unset !important;
+  width: 100% !important;
+}
+
+.mobileFilters :global(.ms-ComboBox-container) {
+  min-width: unset !important;
+  width: 100% !important;
 }

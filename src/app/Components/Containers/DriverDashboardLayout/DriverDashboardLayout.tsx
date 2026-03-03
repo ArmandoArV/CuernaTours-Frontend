@@ -10,9 +10,6 @@ import {
   MoneyFilled
 } from "@fluentui/react-icons";
 import styles from "../DashboardLayout/DashboardLayout.module.css";
-import { Logger } from "@/app/Utils/Logger";
-
-const log = Logger.getLogger("DriverDashboardLayout");
 
 export interface DriverDashboardLayoutProps{
   children: React.ReactNode;
@@ -28,26 +25,9 @@ const DriverDashboardLayout: React.FC<DriverDashboardLayoutProps> = ({
     { title: "Perfil", link: "/profile", icon: <PersonCircleFilled /> },
   ];
 
-  const handleNotificationClick = () => {
-    log.info("Notifications clicked");
-  };
-
-  const handleUserMenuClick = () => {
-    log.info("User menu clicked");
-  };
-
   return (
     <div className={styles.dashboardLayout}>
-      <TopNavbarComponent
-        title="CuernaTours - Chofer"
-        userInfo={{
-          name: "Chofer",
-          role: "Chofer",
-        }}
-        onNotificationClick={handleNotificationClick}
-        onUserMenuClick={handleUserMenuClick}
-        notificationCount={3}
-      />
+      <TopNavbarComponent />
       <LateralNavbarComponent
         items={lateralNavItems}
         userIsAdmin={false}
