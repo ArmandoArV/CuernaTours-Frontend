@@ -6,6 +6,8 @@ import TopNavbarComponent from "../../TopNavbarComponent/TopNavbarComponent";
 import {
   HomeFilled,
   HistoryFilled,
+  PeopleFilled,
+  MoneyFilled,
 } from "@fluentui/react-icons";
 import styles from "./DashboardLayout.module.css";
 
@@ -23,6 +25,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const lateralNavItems: LateralNavbarType[] = [
     { title: "Inicio", link: "/dashboard", icon: <HomeFilled /> },
     { title: "Historial", link: "/dashboard/historical", icon: <HistoryFilled /> },
+    { title: "Gastos", link: "/gastos", icon: <MoneyFilled /> },
+    { title: "Usuarios", link: "/users", icon: <PeopleFilled />, isAdmin: true },
   ];
 
   return (

@@ -39,7 +39,7 @@ const SPENDING_CATEGORIES= [
   { value: "otro", label: "Otro" },
 ];
 
-export default function CreateSpendingContent() {
+export default function CreateSpendingContent({ backRoute = "/chofer/gastos" }: { backRoute?: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -99,7 +99,7 @@ export default function CreateSpendingContent() {
           showSuccessAlert(
             "Gasto Registrado",
             "El gasto fue registrado correctamente",
-            () => router.push("/chofer/gastos"),
+            () => router.push(backRoute),
           );
         } catch (error: any) {
           log.error("Spending creation error:", error);

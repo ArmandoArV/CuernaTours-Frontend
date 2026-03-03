@@ -37,7 +37,7 @@ function transformSpendingsData(spendings: any[]): any[] {
   }));
 }
 
-export default function DriverSpendingsContent() {
+export default function DriverSpendingsContent({ createRoute = "/chofer/gastos/crear" }: { createRoute?: string }) {
   const router = useRouter();
   const isMobile = useIsMobile();
   const { driverId, error: driverError, loading: driverLoading } = useDriverId();
@@ -53,7 +53,7 @@ export default function DriverSpendingsContent() {
   const spendingsData = useMemo(() => transformSpendingsData(rawSpendings), [rawSpendings]);
 
   const handleCreateSpending = () => {
-    router.push("/chofer/gastos/crear");
+    router.push(createRoute);
   };
 
   const handleRowClick = (_row: any) => {

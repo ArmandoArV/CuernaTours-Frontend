@@ -102,6 +102,24 @@ class SpendingsService {
   }
 
   /**
+   * Approve a spending
+   */
+  async approve(spendingId: number, approvedById: number, comments?: string): Promise<Spending> {
+    const endpoint = API_ENDPOINTS.SPENDINGS.APPROVE(spendingId);
+    const response = await apiClient.post<Spending>(endpoint, { approved_by_id: approvedById, comments });
+    return validateResponse<Spending>(response);
+  }
+
+  /**
+   * Deny a spending
+   */
+  async deny(spendingId: number, approvedById: number, comments?: string): Promise<Spending> {
+    const endpoint = API_ENDPOINTS.SPENDINGS.DENY(spendingId);
+    const response = await apiClient.post<Spending>(endpoint, { approved_by_id: approvedById, comments });
+    return validateResponse<Spending>(response);
+  }
+
+  /**
    * Upload file for spending
    */
   async uploadFile(spendingId: number, file: File): Promise<SpendingFile> {
