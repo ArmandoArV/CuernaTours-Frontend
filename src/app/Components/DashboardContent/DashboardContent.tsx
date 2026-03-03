@@ -25,7 +25,8 @@ import {
   MoneyRegular,
 } from "@fluentui/react-icons";
 import { useRouter } from "next/navigation";
-import { contractsService, ApiError } from "@/services/api";
+import { contractsService } from "@/services/api";
+import { useAsyncData } from "@/app/hooks/useAsyncData";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import { useUserRole } from "@/app/hooks/useUserRole";
 import { useIsMobile } from "@/app/hooks/useIsMobile";
@@ -41,16 +42,9 @@ import {
   showSuccessAlert,
   showErrorAlert,
 } from "@/app/Utils/AlertUtil";
+import { CONTRACT_STATUS_MAP } from "@/app/Utils/statusUtils";
 
 const log = Logger.getLogger("DashboardContent");
-
-// Status mappingbased on provided ids
-const STATUS_MAP: Record<number, string> = {
-  1: "Pendiente",
-  2: "En curso",
-  3: "Finalizado",
-  4: "Cancelado",
-};
 
 // ✅ Prevent UTC parsing problems
 const parseLocalDate = (dateStr: string) => {
@@ -89,7 +83,7 @@ function transformApiData(apiData: any[]): any[] {
       const contractStatusId =
         contract.contract_status_id || contract.status?.id;
       const contractStatus =
-        STATUS_MAP[contractStatusId] ||
+        CONTRACT_STATUS_MAP[contractStatusId] ||
         contract.contract_status_name ||
         contract.status?.name ||
         "";
@@ -171,9 +165,10 @@ export default function DashboardContent() {
   const { hasFullAccess, canCreateOrders, canAssignResources, isChofer } = useUserRole();
   const isMobile = useIsMobile();
   const [currentPage, setCurrentPage] = useState(1);
-  const [contractsData, setContractsData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: contractsData, loading, error, setData: setContractsData, refresh: fetchContracts } = useAsyncData(
+    () => contractsService.getAll(),
+    [] as any[],
+  );
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -209,33 +204,6 @@ export default function DashboardContent() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showDropdown]);
-
-  // Fetch data from API
-  const fetchContracts = async () => {
-    try {
-      setLoading(true);
-      const data = await contractsService.getAll();
-      setContractsData(data);
-      setError(null);
-    } catch (err) {
-      log.error("Error fetching contracts:", err);
-
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      }
-
-      // Fallback to empty array in case of error
-      setContractsData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchContracts();
-  }, []);
 
   // Transform API data for the table
   const transformedData = transformApiData(contractsData);

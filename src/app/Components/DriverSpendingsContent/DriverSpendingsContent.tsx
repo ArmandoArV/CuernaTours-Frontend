@@ -50,8 +50,8 @@ export default function DriverSpendingsContent() {
     router.push("/chofer/gastos/crear");
   };
 
-  const handleRowClick = (row: any) => {
-    log.debug("Clicked spending:", row);
+  const handleRowClick = (_row: any) => {
+    // TODO: Navigate to spending details when available
   };
 
   const filterConfigs: FilterConfig[] = [

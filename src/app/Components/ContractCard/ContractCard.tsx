@@ -105,27 +105,7 @@ const useStyles = makeStyles({
   },
 });
 
-const getStatusColor = (status: string) => {
-  const key = (status || "").toLowerCase();
-  switch (key) {
-    case "pendiente":
-      return "#19A5EB";
-    case "en curso":
-      return "#4D5DBC";
-    case "finalizado":
-      return "#80C26C";
-    case "cancelado":
-      return "#C7C7C7";
-    case "agendado":
-      return "#19A5EB";
-    case "por asignar":
-      return "#F86E24";
-    case "proximo":
-      return "#C89600";
-    default:
-      return "#C89600";
-  }
-};
+import { getStatusColor } from "@/app/Utils/statusUtils";
 
 export default function ContractCard({
   contract,

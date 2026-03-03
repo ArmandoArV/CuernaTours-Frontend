@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { contractsService, tripsService } from "@/services/api";
+import { useAsyncData } from "@/app/hooks/useAsyncData";
 import LoadingComponent from "@/app/Components/LoadingComponent/LoadingComponent";
 import ButtonComponent from "@/app/Components/ButtonComponent/ButtonComponent";
 import { useUserRole } from "@/app/hooks/useUserRole";
@@ -19,25 +20,18 @@ import {
 import styles from "./TripsContent.module.css";
 import { Contract } from "@/app/Types/ContractTypes";
 import { Logger } from "@/app/Utils/Logger";
+import { CONTRACT_STATUS_MAP, getStatusColor } from "@/app/Utils/statusUtils";
 
 const log = Logger.getLogger("TripsContent");
 
-// Status mapping
-const STATUS_MAP: Record<number, string> = {
-  1: "Pendiente",
-  2: "En curso",
-  3: "Finalizado",
-  4: "Cancelado",
-};
-
 const STATUS_COLORS: Record<string, string> = {
-  Pendiente: "#19A5EB", // Mapping Pendiente to Agendado color as per user request
-  Agendado: "#19A5EB",
-  "Por asignar": "#F86E24",
-  Próximo: "#C89600",
-  "En curso": "#4D5DBC",
-  Finalizado: "#80C26C",
-  Cancelado: "#C7C7C7",
+  Pendiente: getStatusColor("Pendiente"),
+  Agendado: getStatusColor("Agendado"),
+  "Por asignar": getStatusColor("Por asignar"),
+  Próximo: getStatusColor("Próximo"),
+  "En curso": getStatusColor("En curso"),
+  Finalizado: getStatusColor("Finalizado"),
+  Cancelado: getStatusColor("Cancelado"),
 };
 
 interface TripsContentProps {
@@ -48,9 +42,11 @@ export default function TripsContent({ contractId }: TripsContentProps) {
   const router = useRouter();
   const { canAssignResources, isChofer } = useUserRole();
 
-  const [contractData, setContractData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: contractData, loading, error, setData: setContractData } = useAsyncData(
+    () => contractsService.getContractDetails(Number(contractId)),
+    null as any,
+    [contractId],
+  );
   const [expandedTrip, setExpandedTrip] = useState<number | null>(null);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
@@ -85,31 +81,6 @@ export default function TripsContent({ contractId }: TripsContentProps) {
       };
     }
   }, [openDropdown]);
-
-  useEffect(() => {
-    const fetchContractData = async () => {
-      if (!contractId) return;
-
-      try {
-        setLoading(true);
-        const data = await contractsService.getContractDetails(
-          Number(contractId),
-        );
-        setContractData(data);
-        setError(null);
-        log.debug("Fetched contract data:", data);
-      } catch (err) {
-        log.error("Error fetching contract data:", err);
-        setError(
-          err instanceof Error ? err.message : "Error al cargar los datos",
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchContractData();
-  }, [contractId]);
 
   const handleEditTrip = (tripId: number) => {
     router.push(`/dashboard/order/${contractId}?tripId=${tripId}`);
@@ -196,7 +167,7 @@ export default function TripsContent({ contractId }: TripsContentProps) {
 
   const trips = contractData?.trips || [];
   const contractStatus =
-    STATUS_MAP[contractData?.contract_status_id] ||
+    CONTRACT_STATUS_MAP[contractData?.contract_status_id] ||
     contractData?.contract_status_name ||
     "";
 

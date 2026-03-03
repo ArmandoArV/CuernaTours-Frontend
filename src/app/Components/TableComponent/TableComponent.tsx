@@ -38,6 +38,7 @@ import {
   showErrorAlert 
 } from "@/app/Utils/AlertUtil";
 import { Logger } from "@/app/Utils/Logger";
+import { getStatusColor } from "@/app/Utils/statusUtils";
 
 const log = Logger.getLogger("TableComponent");
 
@@ -116,36 +117,6 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
   const getStatusFromRow = (row: any) =>
     row.Estatus || row.status || row.estatus || "";
-
-  const getStatusColor = (statusValue: string): string => {
-    if (!statusValue) return "#C7C7C7";
-
-    const key = statusValue
-      .toString()
-      .trim()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
-
-    switch (key) {
-      case "agendado":
-        return "#19A5EB";
-      case "por asignar":
-        return "#F86E24";
-      case "proximo":
-        return "#C89600";
-      case "en curso":
-        return "#4D5DBC";
-      case "pendiente":
-        return "#19A5EB"; // Mapping Pendiente to Agendado color as per user request
-      case "finalizado":
-        return "#80C26C"; 
-      case "cancelado":
-        return "#C7C7C7";
-      default:
-        return "#C7C7C7";
-    }
-  };
 
   const handleRowToggle = async (row: any, rowIndex: number) => {
     if (selectedRowIndex === rowIndex) {

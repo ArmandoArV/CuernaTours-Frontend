@@ -9,6 +9,7 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
+import { getStatusColor } from "@/app/Utils/statusUtils";
 
 interface Props {
   trip: any;
@@ -68,20 +69,6 @@ const useStyles = makeStyles({
 
 export default function DriverTripCard({ trip, onClick }: Props) {
   const styles = useStyles();
-
-  const getStatusColor = (status: string) => {
-    const key = (status || "").toLowerCase();
-    switch (key) {
-      case "agendado": return "#19A5EB";
-      case "por asignar": return "#F86E24";
-      case "proximo": return "#C89600";
-      case "en curso": return "#4D5DBC";
-      case "pendiente": return "#19A5EB";
-      case "finalizado": return "#80C26C";
-      case "cancelado": return "#C7C7C7";
-      default: return "#C89600";
-    }
-  };
 
   return (
     <div className={styles.wrapper} onClick={() => onClick(trip)}>

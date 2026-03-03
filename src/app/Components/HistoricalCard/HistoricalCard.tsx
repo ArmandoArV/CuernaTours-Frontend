@@ -66,17 +66,7 @@ const useStyles = makeStyles({
   },
 });
 
-const getStatusColor = (status: string) => {
-  const key = (status || "").toLowerCase();
-  switch (key) {
-    case "finalizado":
-      return "#80C26C";
-    case "cancelado":
-      return "#C7C7C7";
-    default:
-      return "#C89600";
-  }
-};
+import { getStatusColor } from "@/app/Utils/statusUtils";
 
 export default function HistoricalCard({ trip, onViewDetails }: HistoricalCardProps) {
   const styles = useStyles();

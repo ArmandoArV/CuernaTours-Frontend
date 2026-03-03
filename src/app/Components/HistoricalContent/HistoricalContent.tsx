@@ -1,10 +1,11 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import FilterableTableComponent from "../FilterableTable/FilterableTableComponent";
 import FilterComponent, { FilterConfig, FilterPresets } from "../FilterComponent";
 import { ArrowClockwiseRegular } from "@fluentui/react-icons";
-import { contractsService, ApiError } from "@/services/api";
+import { contractsService } from "@/services/api";
+import { useAsyncData } from "@/app/hooks/useAsyncData";
 import { useUserRole } from "@/app/hooks/useUserRole";
 import { useIsMobile } from "@/app/hooks/useIsMobile";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
@@ -13,16 +14,9 @@ import LoadingComponent from "../LoadingComponent/LoadingComponent";
 import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
 import styles from "./HistoricalContent.module.css";
 import { Logger } from "@/app/Utils/Logger";
+import { CONTRACT_STATUS_MAP } from "@/app/Utils/statusUtils";
 
 const log = Logger.getLogger("HistoricalContent");
-
-// Status mapping based on provided ids
-const STATUS_MAP: Record<number, string> = {
-  1: "Pendiente",
-  2: "En curso",
-  3: "Finalizado",
-  4: "Cancelado",
-};
 
 // Function to transform API data to table format (historical trips from finished/cancelled contracts)
 function transformHistoricalData(apiData: any[]): any[] {
@@ -37,7 +31,7 @@ function transformHistoricalData(apiData: any[]): any[] {
   historicalContracts.forEach((contract) => {
     const contractStatusId = contract.contract_status_id || contract.status?.id;
     const contractStatus =
-      STATUS_MAP[contractStatusId] ||
+      CONTRACT_STATUS_MAP[contractStatusId] ||
       contract.contract_status_name ||
       contract.status?.name ||
       "";
@@ -73,35 +67,11 @@ export default function HistoricalContent() {
   const isMobile = useIsMobile();
   const { hasFullAccess } = useUserRole();
   const [currentPage, setCurrentPage] = useState(1);
-  const [contractsData, setContractsData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: contractsData, loading, error, refresh: fetchContracts } = useAsyncData(
+    () => contractsService.getAll(),
+    [] as any[],
+  );
   const [mobileColumnFilters, setMobileColumnFilters] = useState<Record<string, any>>({});
-
-  const fetchContracts = async () => {
-    try {
-      setLoading(true);
-      const data = await contractsService.getAll();
-      setContractsData(data);
-      setError(null);
-    } catch (err) {
-      log.error("Error fetching contracts:", err);
-
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      }
-
-      setContractsData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchContracts();
-  }, []);
 
   // Transform API data for the table
   const historicalData = transformHistoricalData(contractsData);

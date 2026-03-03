@@ -1,16 +1,7 @@
 // utils/transformDriverTripsData.ts
 
 import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
-
-const STATUS_MAP: Record<number, string> = {
-  1: "Agendado",
-  2: "Por asignar",
-  3: "Próximo",
-  4: "En curso",
-  5: "Por pagar",
-  6: "Finalizado",
-  7: "Cancelado",
-};
+import { TRIP_STATUS_MAP } from "@/app/Utils/statusUtils";
 
 export function transformDriverTripsData(
   apiData: any[],
@@ -28,7 +19,7 @@ export function transformDriverTripsData(
             contract.contract_status_id || contract.status?.id;
 
           const contractStatus =
-            STATUS_MAP[contractStatusId] ||
+            TRIP_STATUS_MAP[contractStatusId] ||
             contract.contract_status_name ||
             contract.status?.name ||
             "";

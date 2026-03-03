@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import FilterableTableComponent from "../FilterableTable/FilterableTableComponent";
 import LoadingComponent from "@/app/Components/LoadingComponent/LoadingComponent";
 import DriverTripCard from "@/app/Components/DriverTripCard/DriverTripCard";
@@ -12,18 +11,11 @@ import { useDriverTrips } from "@/app/hooks/useDriverTrips";
 import { useIsMobile } from "@/app/hooks/useIsMobile";
 import styles from "./DriverDashboardContent.module.css";
 import { Logger } from "@/app/Utils/Logger";
+import { CONTRACT_STATUS_MAP } from "@/app/Utils/statusUtils";
 
 const log = Logger.getLogger("DriverDashboardContent");
 
-const STATUS_MAP: Record<number, string> = {
-  1: "Pendiente",
-  2: "En curso",
-  3: "Finalizado",
-  4: "Cancelado",
-};
-
 export default function DriverDashboardContent() {
-  const router = useRouter();
   const { driverId, error: driverError } = useDriverId();
   const { trips, loading, error, refresh } = useDriverTrips(driverId);
   const isMobile = useIsMobile();
@@ -33,15 +25,11 @@ export default function DriverDashboardContent() {
     log.info("Row clicked:", row);
   };
 
-  const handleAddPayment = () => {
-    router.push("/chofer/gastos/crear");
-  };
-
   const filterConfigs: FilterConfig[] = useMemo(
     () => [
       FilterPresets.createStatusFilter(
         "Estatus",
-        Object.values(STATUS_MAP).filter(
+        Object.values(CONTRACT_STATUS_MAP).filter(
           (status) => status !== "Finalizado" && status !== "Cancelado",
         ),
         "Filtrar por Estatus",

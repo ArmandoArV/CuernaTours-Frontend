@@ -40,6 +40,7 @@ import { useTripDropdowns } from "@/app/hooks/useTripDropdowns";
 import { usePlaceSelection } from "@/app/hooks/usePlaceSelection";
 import { useParadas, Parada } from "@/app/hooks/useParadas";
 import { useUnidades } from "@/app/hooks/useUnidades";
+import { useAddressEditor } from "@/app/hooks/useAddressEditor";
 import UnidadItem from "../UnidadItem/UnidadItem";
 import { Logger } from "@/app/Utils/Logger";
 
@@ -82,10 +83,18 @@ export default function CreateTripContent({
   } = tripForm;
 
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
-  const [isEditingOrigen, setIsEditingOrigen] = useState(true);
-  const [isEditingDestino, setIsEditingDestino] = useState(true);
-  const [originalOrigenData, setOriginalOrigenData] = useState<Partial<TripFormData> | null>(null);
-  const [originalDestinoData, setOriginalDestinoData] = useState<Partial<TripFormData> | null>(null);
+
+  const origenEditor = useAddressEditor({
+    prefix: "origen",
+    formData: tripFormData,
+    setFormData: setTripFormData,
+  });
+
+  const destinoEditor = useAddressEditor({
+    prefix: "destino",
+    formData: tripFormData,
+    setFormData: setTripFormData,
+  });
 
   const {
     choferes,
@@ -207,21 +216,18 @@ export default function CreateTripContent({
         setTripFormData((prev) => ({ ...prev, ...updates }));
         Object.entries(updates).forEach(([key, value]) => handleFieldTouch(key, value));
 
-        // Update original data and disable editing
         if (prefix === "origen") {
-          setOriginalOrigenData({
+          origenEditor.setOriginalSnapshot({
             ...updates,
             origenNombreLugar: placeId.toString(),
             origenNombreDisplay: displayName,
-          } as Partial<TripFormData>);
-          setIsEditingOrigen(false);
+          });
         } else {
-          setOriginalDestinoData({
+          destinoEditor.setOriginalSnapshot({
             ...updates,
             destinoNombreLugar: placeId.toString(),
             destinoNombreDisplay: displayName,
-          } as Partial<TripFormData>);
-          setIsEditingDestino(false);
+          });
         }
       }
     },
@@ -243,8 +249,7 @@ export default function CreateTripContent({
           ...updates,
         }));
 
-        setOriginalOrigenData(updates as Partial<TripFormData>);
-        setIsEditingOrigen(false);
+        origenEditor.setOriginalSnapshot(updates);
 
         // Mark fields as touched with new values
         Object.entries(updates).forEach(([key, value]) => handleFieldTouch(key, value));
@@ -266,8 +271,7 @@ export default function CreateTripContent({
           ...updates,
         }));
 
-        setOriginalDestinoData(updates as Partial<TripFormData>);
-        setIsEditingDestino(false);
+        destinoEditor.setOriginalSnapshot(updates);
 
         // Mark fields as touched with new values
         Object.entries(updates).forEach(([key, value]) => handleFieldTouch(key, value));
@@ -423,10 +427,8 @@ export default function CreateTripContent({
           }));
 
           // Set original data for edit/cancel functionality
-          setOriginalOrigenData(origenData);
-          setOriginalDestinoData(destinoData);
-          setIsEditingOrigen(false);
-          setIsEditingDestino(false);
+          origenEditor.setOriginalSnapshot(origenData);
+          destinoEditor.setOriginalSnapshot(destinoData);
 
           setTripData({
             ...tripFormData, // Use current form data as base
@@ -516,107 +518,6 @@ export default function CreateTripContent({
   const handleRadioChange = (field: keyof typeof tripFormData, value: any) => {
     updateField(field, value);
   };
-
-  const handleEditOrigen = () => {
-    if (!originalOrigenData) {
-      setOriginalOrigenData({
-        origenNombreLugar: tripFormData.origenNombreLugar,
-        origenCalle: tripFormData.origenCalle,
-        origenNumero: tripFormData.origenNumero,
-        origenColonia: tripFormData.origenColonia,
-        origenCodigoPostal: tripFormData.origenCodigoPostal,
-        origenCiudad: tripFormData.origenCiudad,
-        origenEstado: tripFormData.origenEstado,
-      });
-    }
-    setIsEditingOrigen(true);
-    // If we are editing, we clear the ID to force sending the full address object
-    // effectively creating a new place or unlinking from the existing ID
-    // unless the user selects the place again.
-    // However, we want to keep the visual data.
-    // We will append a flag or handle this in the payload mapper if possible,
-    // but since we can't change the mapper easily to know about UI state,
-    // we simply prepend "MANUAL:" to the ID or clear it if it looks like an ID.
-    
-    // Actually, simply clearing the ID from origenNombreLugar (which holds the ID)
-    // and putting the Place Name there would be better, but we don't have the place name handy
-    // in tripFormData, only the ID.
-    // The PlaceSelector likely shows the name based on the ID.
-    
-    // For now, to satisfy "send correct information":
-    // If the user edits manually, we assume they are defining a CUSTOM place.
-    // We clear the ID so the backend receives the address fields.
-    if (tripFormData.origenNombreLugar && !isNaN(Number(tripFormData.origenNombreLugar))) {
-         setTripFormData(prev => ({ ...prev, origenNombreLugar: "" }));
-    }
-  };
-
-  const handleSaveOrigen = () => {
-    setOriginalOrigenData({
-        origenNombreLugar: tripFormData.origenNombreLugar,
-        origenCalle: tripFormData.origenCalle,
-        origenNumero: tripFormData.origenNumero,
-        origenColonia: tripFormData.origenColonia,
-        origenCodigoPostal: tripFormData.origenCodigoPostal,
-        origenCiudad: tripFormData.origenCiudad,
-        origenEstado: tripFormData.origenEstado,
-    });
-    showSuccessAlert("Éxito", "Cambios guardados localmente");
-    setIsEditingOrigen(false);
-  };
-
-  const handleCancelOrigen = () => {
-    if (originalOrigenData) {
-        setTripFormData(prev => ({
-           ...prev,
-           ...originalOrigenData 
-        }));
-    }
-    setIsEditingOrigen(false);
-  };
-
-  const handleEditDestino = () => {
-    if (!originalDestinoData) {
-        setOriginalDestinoData({
-            destinoNombreLugar: tripFormData.destinoNombreLugar,
-            destinoCalle: tripFormData.destinoCalle,
-            destinoNumero: tripFormData.destinoNumero,
-            destinoColonia: tripFormData.destinoColonia,
-            destinoCodigoPostal: tripFormData.destinoCodigoPostal,
-            destinoCiudad: tripFormData.destinoCiudad,
-            destinoEstado: tripFormData.destinoEstado,
-        });
-    }
-    setIsEditingDestino(true);
-    // Same logic as Origen: force new place definition by clearing ID
-    if (tripFormData.destinoNombreLugar && !isNaN(Number(tripFormData.destinoNombreLugar))) {
-         setTripFormData(prev => ({ ...prev, destinoNombreLugar: "" }));
-    }
-  };
-  
-  const handleSaveDestino = () => {
-    setOriginalDestinoData({
-        destinoNombreLugar: tripFormData.destinoNombreLugar,
-        destinoCalle: tripFormData.destinoCalle,
-        destinoNumero: tripFormData.destinoNumero,
-        destinoColonia: tripFormData.destinoColonia,
-        destinoCodigoPostal: tripFormData.destinoCodigoPostal,
-        destinoCiudad: tripFormData.destinoCiudad,
-        destinoEstado: tripFormData.destinoEstado,
-    });
-    showSuccessAlert("Éxito", "Cambios guardados localmente");
-    setIsEditingDestino(false);
-  };
-
-  const handleCancelDestino = () => {
-    if (originalDestinoData) {
-        setTripFormData(prev => ({ ...prev, ...originalDestinoData }));
-    }
-    setIsEditingDestino(false);
-  };
-
-
-
 
   // Parada handlers replaced by useParadas hook
 
@@ -950,28 +851,28 @@ export default function CreateTripContent({
 
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Dirección De Origen</h2>
-            {!isEditingOrigen && (
+            {!origenEditor.isEditing && (
               <button
                 type="button"
-                onClick={handleEditOrigen}
+                onClick={origenEditor.handleEdit}
                 className={styles.editButton}
                 title="Editar dirección de origen"
               >
                 <Edit24Regular />
               </button>
             )}
-            {isEditingOrigen && originalOrigenData && (
+            {origenEditor.isEditing && origenEditor.hasOriginal && (
               <div className={styles.actionButtons}>
                 <button
                   type="button"
-                  onClick={handleCancelOrigen}
+                  onClick={origenEditor.handleCancel}
                   className={styles.cancelEditButton}
                 >
                   Cancelar
                 </button>
                 <button
                   type="button"
-                  onClick={handleSaveOrigen}
+                  onClick={origenEditor.handleSave}
                   className={styles.saveButton}
                   title="Guardar cambios"
                 >
@@ -991,7 +892,7 @@ export default function CreateTripContent({
               onCreate={() => handleCreatePlace("origen")}
               required
               placeholder="Buscar"
-              disabled={!isEditingOrigen}
+              disabled={!origenEditor.isEditing}
               className={styles.input}
               hasError={fieldErrors.origenNombreLugar}
               errorMessage={
@@ -1004,7 +905,7 @@ export default function CreateTripContent({
               type="text"
               value={tripFormData.origenCalle || ""}
               onChange={handleTripInputChange("origenCalle")}
-              disabled={!isEditingOrigen}
+              disabled={!origenEditor.isEditing}
               label="Calle"
               required
               containerClassName={styles.streetInputContainer}
@@ -1017,7 +918,7 @@ export default function CreateTripContent({
               type="text"
               value={tripFormData.origenNumero || ""}
               onChange={handleTripInputChange("origenNumero")}
-              disabled={!isEditingOrigen}
+              disabled={!origenEditor.isEditing}
               label="Número"
               required
               containerClassName={styles.numberInputContainer}
@@ -1032,7 +933,7 @@ export default function CreateTripContent({
               type="text"
               value={tripFormData.origenColonia || ""}
               onChange={handleTripInputChange("origenColonia")}
-              disabled={!isEditingOrigen}
+              disabled={!origenEditor.isEditing}
               label="Colonia"
               required
               className={styles.input}
@@ -1046,7 +947,7 @@ export default function CreateTripContent({
               type="text"
               value={tripFormData.origenCodigoPostal || ""}
               onChange={handleTripInputChange("origenCodigoPostal")}
-              disabled={!isEditingOrigen}
+              disabled={!origenEditor.isEditing}
               label="Código Postal"
               required
               className={styles.input}
@@ -1064,7 +965,7 @@ export default function CreateTripContent({
               type="text"
               value={tripFormData.origenCiudad || ""}
               onChange={handleTripInputChange("origenCiudad")}
-              disabled={!isEditingOrigen}
+              disabled={!origenEditor.isEditing}
               label="Ciudad"
               required
               className={styles.input}
@@ -1077,7 +978,7 @@ export default function CreateTripContent({
               type="text"
               value={tripFormData.origenEstado || ""}
               onChange={handleTripInputChange("origenEstado")}
-              disabled={!isEditingOrigen}
+              disabled={!origenEditor.isEditing}
               label="Estado"
               required
               className={styles.input}
@@ -1157,28 +1058,28 @@ export default function CreateTripContent({
           
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Dirección De Destino</h2>
-            {!isEditingDestino && (
+            {!destinoEditor.isEditing && (
               <button
                 type="button"
-                onClick={handleEditDestino}
+                onClick={destinoEditor.handleEdit}
                 className={styles.editButton}
                 title="Editar dirección de destino"
               >
                 <Edit24Regular />
               </button>
             )}
-            {isEditingDestino && originalDestinoData && (
+            {destinoEditor.isEditing && destinoEditor.hasOriginal && (
               <div className={styles.actionButtons}>
                 <button
                   type="button"
-                  onClick={handleCancelDestino}
+                  onClick={destinoEditor.handleCancel}
                   className={styles.cancelEditButton}
                 >
                   Cancelar
                 </button>
                 <button
                   type="button"
-                  onClick={handleSaveDestino}
+                  onClick={destinoEditor.handleSave}
                   className={styles.saveButton}
                   title="Guardar cambios"
                 >
@@ -1199,7 +1100,7 @@ export default function CreateTripContent({
               onCreate={() => handleCreatePlace("destino")}
               required
               placeholder="Buscar"
-              disabled={!isEditingDestino}
+              disabled={!destinoEditor.isEditing}
               className={styles.input}
               hasError={fieldErrors.destinoNombreLugar}
               errorMessage={
@@ -1214,7 +1115,7 @@ export default function CreateTripContent({
               type="text"
               value={tripFormData.destinoCalle || ""}
               onChange={handleTripInputChange("destinoCalle")}
-              disabled={!isEditingDestino}
+              disabled={!destinoEditor.isEditing}
               label="Calle"
               required
               containerClassName={styles.streetInputContainer}
@@ -1227,7 +1128,7 @@ export default function CreateTripContent({
               type="text"
               value={tripFormData.destinoNumero || ""}
               onChange={handleTripInputChange("destinoNumero")}
-              disabled={!isEditingDestino}
+              disabled={!destinoEditor.isEditing}
               label="Número"
               required
               containerClassName={styles.numberInputContainer}
@@ -1242,7 +1143,7 @@ export default function CreateTripContent({
               type="text"
               value={tripFormData.destinoColonia || ""}
               onChange={handleTripInputChange("destinoColonia")}
-              disabled={!isEditingDestino}
+              disabled={!destinoEditor.isEditing}
               label="Colonia"
               required
               className={styles.input}
@@ -1256,7 +1157,7 @@ export default function CreateTripContent({
               type="text"
               value={tripFormData.destinoCodigoPostal || ""}
               onChange={handleTripInputChange("destinoCodigoPostal")}
-              disabled={!isEditingDestino}
+              disabled={!destinoEditor.isEditing}
               label="Código Postal"
               required
               className={styles.input}
@@ -1274,7 +1175,7 @@ export default function CreateTripContent({
               type="text"
               value={tripFormData.destinoCiudad || ""}
               onChange={handleTripInputChange("destinoCiudad")}
-              disabled={!isEditingDestino}
+              disabled={!destinoEditor.isEditing}
               label="Ciudad"
               required
               className={styles.input}
@@ -1287,7 +1188,7 @@ export default function CreateTripContent({
               type="text"
               value={tripFormData.destinoEstado || ""}
               onChange={handleTripInputChange("destinoEstado")}
-              disabled={!isEditingDestino}
+              disabled={!destinoEditor.isEditing}
               label="Estado"
               required
               className={styles.input}

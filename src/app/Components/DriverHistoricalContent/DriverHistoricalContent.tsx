@@ -3,22 +3,16 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import FilterableTableComponent from "@/app/Components/FilterableTable/FilterableTableComponent";
 import { FilterConfig, FilterPresets } from "@/app/Components/FilterComponent";
-import { contractsService, ApiError } from "@/services/api";
+import { contractsService } from "@/services/api";
+import { useAsyncData } from "@/app/hooks/useAsyncData";
 import { getCookie } from "@/app/Utils/CookieUtil";
 import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
 import LoadingComponent from "@/app/Components/LoadingComponent/LoadingComponent";
 import styles from "./DriverHistoricalContent.module.css";
 import { Logger } from "@/app/Utils/Logger";
+import { CONTRACT_STATUS_MAP } from "@/app/Utils/statusUtils";
 
 const log = Logger.getLogger("DriverHistoricalContent");
-
-// Status mapping
-const STATUS_MAP: Record<number, string> = {
-  1: "Pendiente",
-  2: "En curso",
-  3: "Finalizado",
-  4: "Cancelado",
-};
 
 // Transform API data to show only historical trips (Finalizado or Cancelado)
 function transformDriverHistoricalData(apiData: any[], driverId: number): any[] {
@@ -33,7 +27,7 @@ function transformDriverHistoricalData(apiData: any[], driverId: number): any[] 
       
       if (tripDriverId === driverId) {
         const contractStatusId = contract.contract_status_id || contract.status?.id;
-        const contractStatus = STATUS_MAP[contractStatusId] || contract.contract_status_name || contract.status?.name || "";
+        const contractStatus = CONTRACT_STATUS_MAP[contractStatusId] || contract.contract_status_name || contract.status?.name || "";
         
         // Only show completed or cancelled trips
         if (contractStatusId === 3 || contractStatusId === 4) {
@@ -69,9 +63,6 @@ function transformDriverHistoricalData(apiData: any[], driverId: number): any[] 
 export default function DriverHistoricalContent() {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
-  const [contractsData, setContractsData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [driverId, setDriverId] = useState<number | null>(null);
 
   // Get driver ID from user cookie
@@ -80,55 +71,26 @@ export default function DriverHistoricalContent() {
       const userCookie = getCookie("user");
       if (userCookie) {
         const userData = JSON.parse(userCookie);
-        // Try multiple possible ID fields
         const userId = userData.id || userData.user_id || userData.userId;
         
         if (userId) {
           setDriverId(userId);
         } else {
           log.error("No user ID found in cookie");
-          setError("No se pudo identificar el usuario");
-          setLoading(false);
         }
       } else {
         log.error("No user cookie found");
-        setError("Sesión no encontrada");
-        setLoading(false);
       }
     } catch (error) {
       log.error("Error getting user data:", error);
-      setError("Error al obtener datos del usuario");
-      setLoading(false);
     }
   }, []);
 
-  // Fetch contracts and filter historical trips
-  useEffect(() => {
-    const fetchHistoricalTrips = async () => {
-      if (!driverId) return;
-      
-      try {
-        setLoading(true);
-        const data = await contractsService.getAll();
-        setContractsData(data);
-        setError(null);
-      } catch (err) {
-        log.error("Error fetching historical trips:", err);
-        
-        if (err instanceof ApiError) {
-          setError(err.message);
-        } else {
-          setError(err instanceof Error ? err.message : "Error al cargar el histórico");
-        }
-        
-        setContractsData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHistoricalTrips();
-  }, [driverId]);
+  const { data: contractsData, loading, error } = useAsyncData(
+    () => driverId ? contractsService.getAll() : Promise.resolve([]),
+    [] as any[],
+    [driverId],
+  );
 
   // Transform API data for the table (only trips for this driver)
   const historicalData = driverId ? transformDriverHistoricalData(contractsData, driverId) : [];
@@ -164,16 +126,6 @@ export default function DriverHistoricalContent() {
     ),
   ];
 
-  const handleFiltersChange = (
-    activeFilters: Record<string, string | string[]>
-  ) => {
-    log.debug("Filtros aplicados:", activeFilters);
-  };
-
-  const handleSearch = (searchTerm: string) => {
-    log.debug("Búsqueda:", searchTerm);
-  };
-
   if (error) {
     return (
       <div style={{ padding: "20px", textAlign: "center" }}>
@@ -194,13 +146,11 @@ export default function DriverHistoricalContent() {
         enableSearch={true}
         showActions={false}
         onRowClick={handleRowClick}
-        onSearch={handleSearch}
         emptyMessage="No tienes viajes completados aún"
         enablePagination={true}
         itemsPerPage={10}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
-        onFiltersChange={handleFiltersChange}
       />
     </div>
   );
