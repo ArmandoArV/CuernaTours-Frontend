@@ -2,7 +2,7 @@
   height: 100vh;
   background: var(--Main-090B17, #090b17);
   color: white;
-  transition: width 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: fixed;
   left: 0;
   top: 0;
@@ -28,27 +28,32 @@
 }
 
 .logoDefault {
-  transition: all 0.3s ease;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   object-fit: contain;
   opacity: 1;
+  transform: scale(1);
 }
 
 .logoExpanded {
-  transition: all 0.3s ease;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   object-fit: contain;
   opacity: 0;
+  transform: translate(-50%, -50%) scale(0.92);
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
 }
 
 .lateralNavbar:hover .logoDefault {
   opacity: 0;
+  transform: scale(0.8);
 }
 
 .lateralNavbar:hover .logoExpanded {
   opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .navList {
@@ -66,10 +71,46 @@
   margin-right: auto;
 }
 
-.navLink:hover {
+.navLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 10px;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.2s ease,
+              padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
   border-radius: 0.25rem;
+  position: relative;
+}
+
+/* Hover indicator bar (slides in from the left) */
+.navLink::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background-color: var(--Main-96781A, #96781a);
+  transform: scaleY(0);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navLink:hover::before {
+  transform: scaleY(1);
+}
+
+.navLink:hover {
   background: var(--Shadows-1A2E47-80, rgba(26, 46, 71, 0.8));
   color: white;
+}
+
+.lateralNavbar:hover .navLink {
+  justify-content: flex-start;
+  padding: 15px;
 }
 
 .icon {
@@ -82,39 +123,28 @@
   width: 24px;
   height: 24px;
   margin: 0;
-  transition: margin-right 0.3s ease;
+  transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .lateralNavbar:hover .icon {
   margin-right: 15px;
 }
 
+/* Title: fade + clip instead of display toggle for smooth transition */
 .title {
   font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
-  display: none;
-  transition: all 0.3s ease;
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1) 0.05s,
+              max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .lateralNavbar:hover .title {
-  display: block;
-}
-
-.navLink {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 15px 10px;
-  color: white;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.lateralNavbar:hover .navLink {
-  justify-content: flex-start;
-  padding: 15px;
+  opacity: 1;
+  max-width: 200px;
 }
 
 /* Active state styling */
@@ -122,86 +152,73 @@
   background-color: var(--Main-96781A);
 }
 
+.navLink.active::before {
+  transform: scaleY(1);
+  background-color: white;
+}
+
 .navLink.active:hover {
   background-color: #7d6316;
 }
 
-/* Mobile Hamburger Menu */
+/* ─── Mobile Toggle Button ─── */
 .mobileToggleButton {
   position: fixed;
   top: 20px;
   left: 20px;
   z-index: 1100;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .mobileToggleButton:hover {
   background: transparent !important;
 }
 
+.mobileToggleButton:active {
+  transform: scale(0.9);
+}
+
 /* Closed state → black icon */
 .mobileClosedIcon svg {
   color: black;
   fill: black;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Open state → white icon */
+/* Open state → white icon with rotation */
 .mobileOpenIcon svg {
   color: white;
   fill: white;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: rotate(90deg);
 }
 
-/* Remove focus outline if you want clean look */
 .mobileToggleButton:focus {
   outline: none;
 }
 
+/* ─── Mobile Overlay (fade in/out) ─── */
 .mobileOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0);
   z-index: 999;
+  animation: overlayFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.mobileHamburger:hover {
-  background: #333;
+@keyframes overlayFadeIn {
+  to {
+    background: rgba(0, 0, 0, 0.5);
+  }
 }
 
-.hamburgerLine {
-  width: 25px;
-  height: 3px;
-  background-color: white;
-  transition: all 0.3s ease;
-  transform-origin: center;
-}
-
-.hamburgerLine:nth-child(1).hamburgerLineOpen {
-  transform: rotate(45deg) translate(6px, 6px);
-}
-
-.hamburgerLine:nth-child(2).hamburgerLineOpen {
-  opacity: 0;
-}
-
-.hamburgerLine:nth-child(3).hamburgerLineOpen {
-  transform: rotate(-45deg) translate(6px, -6px);
-}
-
-/* Responsive adjustments */
+/* ─── Mobile Responsive ─── */
 @media (max-width: 768px) {
-  .mobileHamburger {
-    display: flex;
-  }
-
-  .mobileOverlay {
-    display: block;
-  }
-
   .lateralNavbar {
     width: 60px;
     transform: translateX(-100%);
-    transition:
-      transform 0.3s ease,
-      width 0.3s ease;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .lateralNavbar.mobileOpen {
@@ -210,15 +227,18 @@
   }
 
   .lateralNavbar.mobileOpen .title {
-    display: block;
+    opacity: 1;
+    max-width: 200px;
   }
 
   .lateralNavbar.mobileOpen .logoDefault {
     opacity: 0;
+    transform: scale(0.8);
   }
 
   .lateralNavbar.mobileOpen .logoExpanded {
     opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
 
   .lateralNavbar.mobileOpen .navLink {
@@ -226,27 +246,59 @@
     padding: 15px;
   }
 
-  /* Disable hover effects on mobile */
-  .lateralNavbar:hover {
+  /* Staggered entrance for nav items */
+  .lateralNavbar.mobileOpen .navItem {
+    animation: slideInItem 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  .lateralNavbar.mobileOpen .navItem:nth-child(1) { animation-delay: 0.05s; }
+  .lateralNavbar.mobileOpen .navItem:nth-child(2) { animation-delay: 0.08s; }
+  .lateralNavbar.mobileOpen .navItem:nth-child(3) { animation-delay: 0.11s; }
+  .lateralNavbar.mobileOpen .navItem:nth-child(4) { animation-delay: 0.14s; }
+  .lateralNavbar.mobileOpen .navItem:nth-child(5) { animation-delay: 0.17s; }
+  .lateralNavbar.mobileOpen .navItem:nth-child(6) { animation-delay: 0.20s; }
+  .lateralNavbar.mobileOpen .navItem:nth-child(7) { animation-delay: 0.23s; }
+  .lateralNavbar.mobileOpen .navItem:nth-child(8) { animation-delay: 0.26s; }
+
+  @keyframes slideInItem {
+    from {
+      opacity: 0;
+      transform: translateX(-12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Disable hover effects on mobile (only when menu is NOT open) */
+  .lateralNavbar:hover:not(.mobileOpen) {
     width: 60px;
     transform: translateX(-100%);
   }
 
-  .lateralNavbar:hover .title {
-    display: none;
-  }
-
-  .lateralNavbar:hover .logoDefault {
-    opacity: 1;
-  }
-
-  .lateralNavbar:hover .logoExpanded {
+  .lateralNavbar:hover:not(.mobileOpen) .title {
     opacity: 0;
+    max-width: 0;
   }
 
-  .lateralNavbar:hover .navLink {
+  .lateralNavbar:hover:not(.mobileOpen) .logoDefault {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .lateralNavbar:hover:not(.mobileOpen) .logoExpanded {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+
+  .lateralNavbar:hover:not(.mobileOpen) .navLink {
     justify-content: center;
     padding: 15px 10px;
+  }
+
+  .lateralNavbar:hover:not(.mobileOpen) .icon {
+    margin-right: 0;
   }
 
   .logoSection {

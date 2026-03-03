@@ -42,3 +42,100 @@
   text-align: center;
   max-width: 500px;
 }
+
+/* ─── Mobile Layout ─── */
+.mobileContainer {
+  padding: 0 16px;
+}
+
+.mobileHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.mobileTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a2e47;
+  margin: 0;
+  font-family: var(--font-raleway), Raleway, sans-serif;
+}
+
+.refreshButton {
+  padding: 8px 16px;
+  background-color: transparent;
+  color: #96781a;
+  border: 1px solid #96781a;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-raleway), Raleway, sans-serif;
+  transition: all 0.2s ease;
+  height: 40px;
+}
+
+.refreshButton:hover {
+  background-color: #f9f6e8;
+  border-color: #7a6115;
+  color: #7a6115;
+}
+
+.mobileList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobileFilters {
+  margin-bottom: 16px;
+}
+
+.mobileFilterContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Make filters full-width single column on mobile */
+.mobileFilters :global(.ms-Stack) > :global(.ms-Stack):first-child {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.mobileFilters :global(.ms-Stack) > :global(.ms-Stack):first-child > :global(.ms-StackItem) {
+  min-width: unset !important;
+  max-width: unset !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Override inner filter control min-widths for mobile */
+.mobileFilters :global(.ms-Dropdown) {
+  min-width: unset !important;
+  width: 100% !important;
+}
+
+.mobileFilters :global(.ms-ComboBox-container) {
+  min-width: unset !important;
+  width: 100% !important;
+}
+
+.mobileFilters :global(.ms-DatePicker) {
+  min-width: unset !important;
+  width: 100% !important;
+}
+
+.mobileFilters :global(.ms-TextField-fieldGroup) {
+  min-width: unset !important;
+}

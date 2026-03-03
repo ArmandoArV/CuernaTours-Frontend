@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import styles from "./LateralNavbar.module.css";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { LateralNavbarType } from "../../Types/LateralNavbarType";
 import { Button } from "@fluentui/react-components";
 import { NavigationRegular, DismissRegular } from "@fluentui/react-icons";
@@ -26,6 +27,7 @@ const LateralNavbarComponent: React.FC<Props> = ({
   onMobileMenuToggle,
 }) => {
   const isMobile = useIsMobile();
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Close menu automatically when resizing to desktop
@@ -91,22 +93,29 @@ const LateralNavbarComponent: React.FC<Props> = ({
 
         {/* Items */}
         <ul className={styles.navList}>
-          {filteredItems.map((item, index) => (
-            <li key={index} className={styles.navItem}>
-              <Link
-                href={item.link}
-                className={styles.navLink}
-                onClick={() => {
-                  if (isMobile) {
-                    setIsMobileMenuOpen(false);
-                  }
-                }}
-              >
-                {item.icon && <span className={styles.icon}>{item.icon}</span>}
-                <span className={styles.title}>{item.title}</span>
-              </Link>
-            </li>
-          ))}
+          {filteredItems.map((item, index) => {
+            const isActive =
+              pathname === item.link ||
+              (item.link !== "/" && pathname.startsWith(item.link));
+
+            return (
+              <li key={index} className={styles.navItem}>
+                <Link
+                  href={item.link}
+                  className={`${styles.navLink} ${isActive ? styles.active : ""}`}
+                  onClick={() => {
+                    if (isMobile) {
+                      setIsMobileMenuOpen(false);
+                      onMobileMenuToggle?.(false);
+                    }
+                  }}
+                >
+                  {item.icon && <span className={styles.icon}>{item.icon}</span>}
+                  <span className={styles.title}>{item.title}</span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </nav>
     </>

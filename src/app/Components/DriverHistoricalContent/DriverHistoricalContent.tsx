@@ -1,13 +1,17 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import FilterableTableComponent from "@/app/Components/FilterableTable/FilterableTableComponent";
-import { FilterConfig, FilterPresets } from "@/app/Components/FilterComponent";
+import FilterComponent, { FilterConfig, FilterPresets } from "@/app/Components/FilterComponent";
+import { ArrowClockwiseRegular } from "@fluentui/react-icons";
 import { contractsService } from "@/services/api";
 import { useAsyncData } from "@/app/hooks/useAsyncData";
+import { useIsMobile } from "@/app/hooks/useIsMobile";
 import { getCookie } from "@/app/Utils/CookieUtil";
 import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
 import LoadingComponent from "@/app/Components/LoadingComponent/LoadingComponent";
+import ButtonComponent from "@/app/Components/ButtonComponent/ButtonComponent";
+import DriverTripCard from "@/app/Components/DriverTripCard/DriverTripCard";
 import styles from "./DriverHistoricalContent.module.css";
 import { Logger } from "@/app/Utils/Logger";
 import { CONTRACT_STATUS_MAP } from "@/app/Utils/statusUtils";
@@ -62,8 +66,10 @@ function transformDriverHistoricalData(apiData: any[], driverId: number): any[] 
 
 export default function DriverHistoricalContent() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [currentPage, setCurrentPage] = useState(1);
   const [driverId, setDriverId] = useState<number | null>(null);
+  const [mobileColumnFilters, setMobileColumnFilters] = useState<Record<string, any>>({});
 
   // Get driver ID from user cookie
   useEffect(() => {
@@ -86,7 +92,7 @@ export default function DriverHistoricalContent() {
     }
   }, []);
 
-  const { data: contractsData, loading, error } = useAsyncData(
+  const { data: contractsData, loading, error, refresh } = useAsyncData(
     () => driverId ? contractsService.getAll() : Promise.resolve([]),
     [] as any[],
     [driverId],
@@ -102,7 +108,7 @@ export default function DriverHistoricalContent() {
     }
   };
 
-  const filterConfigs: FilterConfig[] = [
+  const filterConfigs: FilterConfig[] = useMemo(() => [
     FilterPresets.createStatusFilter(
       "Estatus",
       ["Finalizado", "Cancelado"],
@@ -124,7 +130,33 @@ export default function DriverHistoricalContent() {
       ),
       "Filtrar por Origen"
     ),
-  ];
+  ], [historicalData]);
+
+  const handleFiltersChange = (activeFilters: Record<string, any>) => {
+    const columnFilters: Record<string, any> = {};
+    Object.entries(activeFilters).forEach(([key, value]) => {
+      if (value != null) {
+        columnFilters[key] = value;
+      }
+    });
+    setMobileColumnFilters(columnFilters);
+    setCurrentPage(1);
+  };
+
+  const mobileFilteredData = useMemo(() => {
+    if (Object.keys(mobileColumnFilters).length === 0) return historicalData;
+
+    return historicalData.filter((item) => {
+      return Object.entries(mobileColumnFilters).every(([key, value]) => {
+        if (!value) return true;
+        const itemValue = item[key];
+        if (Array.isArray(value)) {
+          return value.includes(itemValue);
+        }
+        return String(itemValue) === String(value);
+      });
+    });
+  }, [historicalData, mobileColumnFilters]);
 
   if (error) {
     return (
@@ -136,22 +168,66 @@ export default function DriverHistoricalContent() {
 
   return (
     <div>
-      <FilterableTableComponent
-        title="Histórico de Viajes"
-        description="Viajes de contratos finalizados y cancelados"
-        originalData={historicalData}
-        columns={["ID Viaje", "Cliente", "Fecha", "Hora", "Origen", "Destino", "Unidad", "Estatus"]}
-        filterConfigs={filterConfigs}
-        enableFiltering={true}
-        enableSearch={true}
-        showActions={false}
-        onRowClick={handleRowClick}
-        emptyMessage="No tienes viajes completados aún"
-        enablePagination={true}
-        itemsPerPage={10}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-      />
+      {isMobile ? (
+        /* ─── MOBILE VIEW: Cards ─── */
+        <div className={styles.mobileContainer}>
+          <div className={styles.mobileHeader}>
+            <h2 className={styles.mobileTitle}>Histórico de Viajes</h2>
+            <ButtonComponent
+              text="Actualizar"
+              icon={<ArrowClockwiseRegular width={16} height={16} />}
+              onClick={refresh}
+              className={styles.refreshButton}
+              appearance="outline"
+            />
+          </div>
+
+          <div className={styles.mobileFilters}>
+            <FilterComponent
+              filters={filterConfigs}
+              onFiltersChange={handleFiltersChange}
+              showActiveFilters={false}
+              showClearButton={true}
+              containerClassName={styles.mobileFilterContainer}
+            />
+          </div>
+
+          <div className={styles.mobileList}>
+            {mobileFilteredData.length === 0 ? (
+              <p style={{ textAlign: "center", color: "#888", padding: 24 }}>
+                No tienes viajes completados aún.
+              </p>
+            ) : (
+              mobileFilteredData.map((trip, idx) => (
+                <DriverTripCard
+                  key={`${trip.contract_id}-${trip.trip_id}-${idx}`}
+                  trip={trip}
+                  onClick={handleRowClick}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      ) : (
+        /* ─── DESKTOP VIEW: Table ─── */
+        <FilterableTableComponent
+          title="Histórico de Viajes"
+          description="Viajes de contratos finalizados y cancelados"
+          originalData={historicalData}
+          columns={["ID Viaje", "Cliente", "Fecha", "Hora", "Origen", "Destino", "Unidad", "Estatus"]}
+          filterConfigs={filterConfigs}
+          enableFiltering={true}
+          enableSearch={true}
+          showActions={false}
+          onRowClick={handleRowClick}
+          emptyMessage="No tienes viajes completados aún"
+          enablePagination={true}
+          itemsPerPage={10}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onFiltersChange={handleFiltersChange}
+        />
+      )}
     </div>
   );
 }
