@@ -126,16 +126,38 @@
   gap: 8px;
 }
 
-/* Make filters stack in 2-column grid on mobile */
-@media (max-width: 768px) {
-  .mobileFilters :global(.ms-Stack) {
-    flex-wrap: wrap !important;
-    gap: 8px !important;
-  }
+/* Make filters full-width single column on mobile */
+.mobileFilters :global(.ms-Stack) > :global(.ms-Stack):first-child {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
 
-  .mobileFilters :global(.ms-StackItem) {
-    min-width: calc(50% - 4px) !important;
-    max-width: calc(50% - 4px) !important;
-    flex: 1 1 calc(50% - 4px) !important;
-  }
+.mobileFilters :global(.ms-Stack) > :global(.ms-Stack):first-child > :global(.ms-StackItem) {
+  min-width: unset !important;
+  max-width: unset !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Override inner filter control min-widths for mobile */
+.mobileFilters :global(.ms-Dropdown) {
+  min-width: unset !important;
+  width: 100% !important;
+}
+
+.mobileFilters :global(.ms-ComboBox-container) {
+  min-width: unset !important;
+  width: 100% !important;
+}
+
+.mobileFilters :global(.ms-DatePicker) {
+  min-width: unset !important;
+  width: 100% !important;
+}
+
+.mobileFilters :global(.ms-TextField-fieldGroup) {
+  min-width: unset !important;
 }
