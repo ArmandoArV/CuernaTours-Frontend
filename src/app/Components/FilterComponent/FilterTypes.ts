@@ -22,6 +22,7 @@ export interface FilterConfig {
     minDate?: Date; // For date type
     maxDate?: Date; // For date type
     defaultValue?: any;
+    isExternal?: boolean; // If true, FilterableTableComponent will skip internal filtering logic for this filter
 }
 
 export interface FilterComponentProps {

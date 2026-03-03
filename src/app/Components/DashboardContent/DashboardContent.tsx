@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import FilterableTableComponent from "../FilterableTable/FilterableTableComponent";
 import { FilterConfig, FilterPresets } from "../FilterComponent";
-import DateRangeFilter from "../DateRangeFilter/DateRangeFilter";
 
 import {
   AddFilled,
@@ -252,7 +251,7 @@ export default function DashboardContent() {
   const handleDateRangeChange = (start: string, end: string) => {
     setDateRangeStart(start);
     setDateRangeEnd(end);
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
   };
 
   const columns = [
@@ -265,31 +264,70 @@ export default function DashboardContent() {
     "Estado de Pago",
   ];
 
-  // Configure filters for the table (without date filter, using DateRangeFilter instead)
-  const filterConfigs: FilterConfig[] = [
-    FilterPresets.createSelectFilter(
-      "Empresa O Cliente",
-      "Cliente",
-      Array.from(
-        new Set(transformedData.map((item) => item["Empresa O Cliente"])),
+  // Configure filters for the table
+  const filterConfigs: FilterConfig[] = useMemo(
+    () => [
+      {
+        key: "startDate",
+        label: "Fecha Inicio",
+        placeholder: "Fecha Inicio",
+        type: "date",
+        isExternal: true,
+        maxDate: dateRangeEnd ? parseLocalDate(dateRangeEnd) : undefined,
+      },
+      {
+        key: "endDate",
+        label: "Fecha Fin",
+        placeholder: "Fecha Fin",
+        type: "date",
+        isExternal: true,
+        minDate: dateRangeStart ? parseLocalDate(dateRangeStart) : undefined,
+      },
+      FilterPresets.createSelectFilter(
+        "Empresa O Cliente",
+        "Cliente",
+        Array.from(
+          new Set(transformedData.map((item) => item["Empresa O Cliente"])),
+        ),
+        "Filtrar Por Cliente",
       ),
-      "Filtrar Por Cliente",
-    ),
 
-    FilterPresets.createSelectFilter(
-      "Estado de Pago",
-      "Pago",
-      ["Pagado", "Pendiente"],
-      "Filtrar Por Estado de Pago",
-    ),
-  ];
+      FilterPresets.createSelectFilter(
+        "Estado de Pago",
+        "Pago",
+        ["Pagado", "Pendiente"],
+        "Filtrar Por Estado de Pago",
+      ),
+    ],
+    [transformedData, dateRangeStart, dateRangeEnd],
+  );
 
   // Handlers removed: table will show inline details when the eye button is clicked.
 
-  const handleFiltersChange = (
-    activeFilters: Record<string, string | string[]>,
-  ) => {
-    console.log("Filtros aplicados:", activeFilters);
+  const handleFiltersChange = (activeFilters: Record<string, any>) => {
+    // Handle external date filters
+    if (activeFilters.startDate) {
+      const d = new Date(activeFilters.startDate);
+      // Format to YYYY-MM-DD using local time
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      setDateRangeStart(`${year}-${month}-${day}`);
+    } else {
+      setDateRangeStart("");
+    }
+
+    if (activeFilters.endDate) {
+      const d = new Date(activeFilters.endDate);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      setDateRangeEnd(`${year}-${month}-${day}`);
+    } else {
+      setDateRangeEnd("");
+    }
+
+    setCurrentPage(1);
   };
 
   const handleSearch = (searchTerm: string) => {
@@ -368,14 +406,6 @@ export default function DashboardContent() {
 
   return (
     <div>
-      <div style={{ marginBottom: "20px" }}>
-        <DateRangeFilter
-          onDateRangeChange={handleDateRangeChange}
-          label="Rango De Fechas"
-          placeholder="Seleccionar Fechas"
-        />
-      </div>
-
       <FilterableTableComponent
         title="Lista De Contratos"
         originalData={sampleData}

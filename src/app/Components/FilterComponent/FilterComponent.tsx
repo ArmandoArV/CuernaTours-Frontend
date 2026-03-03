@@ -19,8 +19,9 @@ import {
   mergeStyles,
   FontWeights,
   DefaultButton,
+  IDatePickerStyles,
 } from "@fluentui/react";
-import { FilterFilled } from "@fluentui/react-icons";
+import { FilterRegular, CalendarLtrRegular } from "@fluentui/react-icons";
 import { FilterConfig, FilterComponentProps } from "./FilterTypes";
 import { formatDateStandard } from "@/app/Utils/FormatUtil";
 
@@ -38,120 +39,159 @@ const filterItemStyles: IStackStyles = {
   root: {
     minWidth: 150,
     maxWidth: 300,
+    display: "flex",
+    alignItems: "center",
+    height: 40,
   },
 };
 
-const dropdownStylesFunction = (props: IDropdownStyleProps): Partial<IDropdownStyles> => {
-    const { isOpen } = props;
-    return {
-        root: { minWidth: 200 },
-        title: {
-            borderRadius: "25px",
-            border: "1px solid #ADADAD",
-            height: 40,
-            display: "flex",
-            alignItems: "center",
-            paddingLeft: 40, // Space for icon
-            backgroundColor: "transparent",
-            lineHeight: 38, // Vertically center text
+const dropdownStylesFunction = (
+  props: IDropdownStyleProps,
+): Partial<IDropdownStyles> => {
+  const { isOpen } = props;
+  return {
+    root: { minWidth: 200, marginBottom: 0, width: "100%" },
+    title: {
+      borderRadius: "25px",
+      border: "1px solid #ADADAD",
+      height: 40,
+      display: "flex",
+      alignItems: "center",
+      paddingLeft: 40, // Space for icon
+      backgroundColor: "transparent",
+    },
+    dropdown: {
+      selectors: {
+        ":focus::after": {
+          borderRadius: "25px",
+          borderColor: "#6366f1",
         },
-        dropdown: {
-            selectors: {
-                ":focus::after": {
-                    borderRadius: "25px",
-                    borderColor: "#6366f1",
-                },
-                ":hover .ms-Dropdown-title": {
-                    borderColor: "#d1d5db",
-                    backgroundColor: "#f9fafb"
-                }
-            }
+        ":hover .ms-Dropdown-title": {
+          borderColor: "#d1d5db",
+          backgroundColor: "transparent",
         },
-        caretDownWrapper: {
-            right: 12,
-            lineHeight: 38, // Center arrow
-            top: 0,
-            height: 40,
-            color: "#9ca3af",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.1s linear',
-        },
-        dropdownItem: { minHeight: 40 },
-        dropdownOptionText: { fontSize: 14 }
-    };
+      },
+    },
+    caretDownWrapper: {
+      right: 12,
+      top: 0,
+      height: 40,
+      color: "#9ca3af",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+      transition: "transform 0.1s linear",
+    },
+    dropdownItem: { minHeight: 40 },
+    dropdownOptionText: { fontSize: 14 },
+  };
 };
 
 const comboBoxStyles: Partial<IComboBoxStyles> = {
-  root: { 
-      minWidth: 200, 
-      height: 40,
-      borderRadius: "25px",
-      paddingLeft: 40, // Space for icon
-      border: "1px solid #ADADAD",
-      selectors: {
-        "::after": { borderRadius: "25px" },
-        ":hover": { borderColor: "#d1d5db", backgroundColor: "#f9fafb" },
-        "&.is-open .ms-ComboBox-CaretDown-button": { transform: "rotate(180deg)" },
-        '.ms-ComboBox-CaretDown-button': {
-            height: 38,
-            width: 32,
-            backgroundColor: 'transparent',
-            color: "#9ca3af",
-            right: 4,
-            transition: 'transform 0.1s linear',
-            selectors: {
-                ':hover': { backgroundColor: 'transparent', color: "#6b7280" }
-            }
-        }
-      }
+  root: {
+    minWidth: 200,
+    height: 40,
+    marginBottom: 0,
+    borderRadius: "25px",
+    paddingLeft: 40, // Space for icon
+    border: "1px solid #ADADAD",
+    backgroundColor: "transparent",
+    selectors: {
+      "::after": { borderRadius: "25px" },
+      ":hover": { borderColor: "#d1d5db", backgroundColor: "transparent" },
+      "&.is-open .ms-ComboBox-CaretDown-button": {
+        transform: "rotate(180deg)",
+      },
+      ".ms-ComboBox-CaretDown-button": {
+        height: 38,
+        width: 32,
+        backgroundColor: "transparent",
+        color: "#9ca3af",
+        right: 4,
+        transition: "transform 0.1s linear",
+        selectors: {
+          ":hover": { backgroundColor: "transparent", color: "#6b7280" },
+        },
+      },
+    },
   },
-  input: { 
-      height: 38, 
-      backgroundColor: "transparent",
+  input: {
+    height: 38,
+    backgroundColor: "transparent",
+    lineHeight: "38px", // Center text vertically in input
+    boxSizing: "border-box",
   },
   container: { height: 40 },
 };
 
-const datePickerStyles = {
-    root: { minWidth: 200 },
-    textField: {
+const datePickerStyles: Partial<IDatePickerStyles> = {
+  root: { minWidth: 200, marginBottom: 0, marginTop: 0, width: "100%" },
+  textField: {
+    selectors: {
+      ".ms-TextField-wrapper": {
+        margin: 0,
+        padding: 0,
+      },
+      ".ms-TextField-fieldGroup": {
+        borderRadius: "25px",
+        border: "1px solid #ADADAD",
+        height: 40,
+        paddingLeft: 40,
+        backgroundColor: "transparent",
+        display: "flex",
+        alignItems: "center",
         selectors: {
-            '.ms-TextField-fieldGroup': {
-                borderRadius: "25px",
-                border: "1px solid #ADADAD",
-                height: 40,
-                paddingLeft: 40, // Space for icon
-                selectors: {
-                    ':hover': { borderColor: "#d1d5db", backgroundColor: "#f9fafb" }
-                }
-            },
-            '.ms-TextField-field': {
-                 paddingTop: 8, 
-            }
-        }
-    }
+          ":hover": { borderColor: "#d1d5db", backgroundColor: "transparent" },
+        },
+      },
+      ".ms-TextField-field": {
+        paddingTop: 0,
+        paddingBottom: 0,
+        height: "100%",
+        lineHeight: "38px",
+        display: "block",
+        flex: 1,
+      },
+    },
+  },
+  icon: {
+    color: "#9ca3af",
+    fontSize: 14,
+    position: "relative" as const,
+    top: "auto",
+    right: "auto",
+    bottom: "auto",
+    transform: "none",
+    marginRight: 12,
+    display: "flex",
+    alignItems: "center",
+    height: "100%",
+  },
 };
 
 const iconWrapperClass = mergeStyles({
-    position: 'absolute',
-    left: 16,
-    top: '50%',
-    transform: 'translateY(-50%)',
-    color: '#6b7280',
-    fontSize: 16,
-    zIndex: 1,
-    pointerEvents: 'none',
-    display: 'flex',
-    alignItems: 'center',
+  position: "absolute",
+  left: 16,
+  top: "50%",
+  transform: "translateY(-50%)",
+  color: "#6b7280",
+  fontSize: 16,
+  zIndex: 1,
+  pointerEvents: "none",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  height: 16,
+  width: 16,
 });
 
 const wrapperClass = mergeStyles({
-    position: 'relative',
-    display: 'inline-block',
-    width: '100%',
+  position: "relative",
+  display: "flex",
+  alignItems: "center",
+  width: "100%",
+  height: 40,
 });
 
 const activeFilterTagClass = mergeStyles({
@@ -180,7 +220,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   // Helper to format dates
   const formatDate = useCallback((date: Date | string): string => {
     if (date instanceof Date) {
-        return date.toLocaleDateString(); 
+      return date.toLocaleDateString();
     }
     return formatDateStandard(date) || date;
   }, []);
@@ -209,7 +249,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         onFilterChange(key, value);
       }
     },
-    [activeFilters, onFiltersChange, onFilterChange]
+    [activeFilters, onFiltersChange, onFilterChange],
   );
 
   // Clear all
@@ -226,37 +266,43 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     (key: string) => {
       handleFilterChange(key, undefined);
     },
-    [handleFilterChange]
+    [handleFilterChange],
   );
 
   // Get display text for active filter
-  const getDisplayValue = useCallback(
-    (filter: FilterConfig, value: any) => {
-      if (!value) return "";
-      
-      if (filter.formatDisplay) return filter.formatDisplay(value);
+  const getDisplayValue = useCallback((filter: FilterConfig, value: any) => {
+    if (!value) return "";
 
-      if (filter.type === 'date' && value instanceof Date) {
-          return value.toLocaleDateString();
+    if (filter.formatDisplay) return filter.formatDisplay(value);
+
+    if (filter.type === "date" && value instanceof Date) {
+      return value.toLocaleDateString();
+    }
+
+    // If options exist, try to find the label
+    if (filter.options) {
+      if (Array.isArray(value)) {
+        // For multi-select
+        return value
+          .map((v) => filter.options?.find((o) => o.value === v)?.label || v)
+          .join(", ");
       }
+      const option = filter.options.find((o) => o.value === value);
+      return option ? option.label : value;
+    }
 
-      // If options exist, try to find the label
-      if (filter.options) {
-        if (Array.isArray(value)) {
-           // For multi-select
-           return value.map(v => filter.options?.find(o => o.value === v)?.label || v).join(', ');
-        }
-        const option = filter.options.find((o) => o.value === value);
-        return option ? option.label : value;
-      }
-
-      return String(value);
-    },
-    []
-  );
+    return String(value);
+  }, []);
 
   const renderFilterInput = (filter: FilterConfig) => {
-    const { key, label, placeholder, options = [], type = "dropdown", multiple } = filter;
+    const {
+      key,
+      label,
+      placeholder,
+      options = [],
+      type = "dropdown",
+      multiple,
+    } = filter;
     const value = activeFilters[key];
 
     // Map options to FluentUI format
@@ -268,7 +314,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
           disabled: opt.disabled,
           data: opt.data,
         })),
-      [options]
+      [options],
     );
 
     switch (type) {
@@ -276,10 +322,10 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         return (
           <div className={wrapperClass}>
             <div className={iconWrapperClass}>
-              <FilterFilled />
+              <FilterRegular />
             </div>
             <DatePicker
-              placeholder={placeholder || "Select date"}
+              placeholder={placeholder || "Seleccionar fechas"}
               value={value ? new Date(value) : undefined}
               onSelectDate={(date) => handleFilterChange(key, date)}
               minDate={filter.minDate}
@@ -293,7 +339,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         return (
           <div className={wrapperClass}>
             <div className={iconWrapperClass}>
-              <FilterFilled />
+              <FilterRegular />
             </div>
             <ComboBox
               placeholder={placeholder}
@@ -314,7 +360,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         return (
           <div className={wrapperClass}>
             <div className={iconWrapperClass}>
-              <FilterFilled />
+              <FilterRegular />
             </div>
             <Dropdown
               placeholder={placeholder}
@@ -335,10 +381,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
               multiSelect={multiple}
               styles={dropdownStylesFunction}
               onRenderCaretDown={() => (
-                  <Icon 
-                    iconName="ChevronDown" 
-                    style={{ fontSize: 12 }} 
-                  />
+                <Icon iconName="ChevronDown" style={{ fontSize: 12 }} />
               )}
             />
           </div>
@@ -348,17 +391,26 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
 
   const hasActiveFilters = Object.keys(activeFilters).length > 0;
 
+  // Sort filters: Date filters first
+  const sortedFilters = useMemo(() => {
+    return [...filters].sort((a, b) => {
+      if (a.type === "date" && b.type !== "date") return -1;
+      if (a.type !== "date" && b.type === "date") return 1;
+      return 0;
+    });
+  }, [filters]);
+
   return (
     <Stack className={className || containerClassName}>
       {/* Filters Row */}
       <Stack
         horizontal
         horizontalAlign="start"
-        verticalAlign="end"
+        verticalAlign="center"
         tokens={{ childrenGap: 16 }}
         styles={containerStyles}
       >
-        {filters.map((filter) => (
+        {sortedFilters.map((filter) => (
           <Stack.Item key={filter.key} styles={filterItemStyles}>
             {renderFilterInput(filter)}
           </Stack.Item>
@@ -366,38 +418,46 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
 
         {showClearButton && hasActiveFilters && (
           <Stack.Item>
-             <DefaultButton
-              iconProps={{ iconName: 'Cancel' }} // Using standard Fluent icon name
+            <DefaultButton
+              iconProps={{ iconName: "Cancel" }} // Using standard Fluent icon name
               text="Limpiar filtros"
               onClick={clearAllFilters}
               styles={{ root: { height: 36, marginTop: 29 } }} // Align with inputs (label ~29px)
-             />
+            />
           </Stack.Item>
         )}
       </Stack>
 
       {/* Active Filters Tags */}
       {showActiveFilters && hasActiveFilters && (
-        <Stack horizontal wrap tokens={{ childrenGap: 8 }} style={{ marginTop: 8 }}>
+        <Stack
+          horizontal
+          wrap
+          tokens={{ childrenGap: 8 }}
+          style={{ marginTop: 8 }}
+        >
           {filters.map((filter) => {
             if (!activeFilters[filter.key]) return null;
-            
+
             return (
               <div key={filter.key} className={activeFilterTagClass}>
-                <Text variant="small" style={{ fontWeight: 600, color: '#605E5C' }}>
+                <Text
+                  variant="small"
+                  style={{ fontWeight: 600, color: "#605E5C" }}
+                >
                   {filter.label}:
                 </Text>
-                <Text variant="small" style={{ color: '#323130' }}>
-                   {getDisplayValue(filter, activeFilters[filter.key])}
+                <Text variant="small" style={{ color: "#323130" }}>
+                  {getDisplayValue(filter, activeFilters[filter.key])}
                 </Text>
                 <IconButton
-                  iconProps={{ iconName: 'Cancel' }}
+                  iconProps={{ iconName: "Cancel" }}
                   title="Remove filter"
                   ariaLabel="Remove filter"
                   onClick={() => removeFilter(filter.key)}
                   styles={{
                     root: { height: 20, width: 20, marginLeft: 4 },
-                    icon: { fontSize: 10, color: '#605E5C' }
+                    icon: { fontSize: 10, color: "#605E5C" },
                   }}
                 />
               </div>

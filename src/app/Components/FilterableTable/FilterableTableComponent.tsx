@@ -106,6 +106,14 @@ const FilterableTableComponent: React.FC<FilterableTableProps> = ({
       data = data.filter((row) => {
         return Object.entries(activeFilters).every(
           ([filterKey, filterValue]) => {
+            // Find the filter config to check if it's external
+            const filterConfig = defaultFilterConfigs.find(
+              (f) => f.key === filterKey,
+            );
+
+            // Skip internal filtering if marked as external
+            if (filterConfig?.isExternal) return true;
+
             if (!filterValue || filterValue === "") return true;
 
             const rowValue = row[filterKey];
