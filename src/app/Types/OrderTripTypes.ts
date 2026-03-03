@@ -1,4 +1,6 @@
 import { CreateContractWithTripsRequest } from "@/services/api/contracts.service";
+import type { Parada } from "@/app/hooks/useParadas";
+import type { UnitAssignment } from "@/app/hooks/useUnidades";
 
 export interface OrderFormData {
   empresa: string;
@@ -28,6 +30,7 @@ export interface OrderFormData {
 export interface TripFormData {
   // ===== ORIGEN =====
   origenNombreLugar?: string;
+  origenNombreDisplay?: string;
   origenCalle?: string;
   origenNumero?: string;
   origenColonia?: string;
@@ -42,6 +45,7 @@ export interface TripFormData {
 
   // ===== DESTINO =====
   destinoNombreLugar?: string;
+  destinoNombreDisplay?: string;
   destinoCalle?: string;
   destinoNumero?: string;
   destinoColonia?: string;
@@ -70,20 +74,7 @@ export interface TripFormData {
   regresoPasajeros?: string; // STRING
 
   // ===== ASIGNACIÓN =====
-  tipoUnidad?: string;
   nombreChofer?: string;
-
-  unidadAsignada?: string;
-  placa?: string;
-
-  unidadAsignada1?: string;
-  placa1?: string;
-
-  unidadAsignada2?: string;
-  placa2?: string;
-
-  unidadAsignada3?: string;
-  placa3?: string;
 
   observacionesChofer?: string;
   observacionesCliente?: string;
@@ -100,6 +91,12 @@ export interface CompleteOrderTripData {
 export const mapCompleteOrderToPayload = (
   orderData: OrderFormData,
   tripData: TripFormData,
+  options?: {
+    paradas?: Parada[];
+    returnParadas?: Parada[];
+    reverseStopsForReturn?: boolean;
+    unidades?: UnitAssignment[];
+  },
 ): CreateContractWithTripsRequest => {
   // Convert DD/MM/YYYY to YYYY-MM-DD
   const convertDateFormat = (ddmmyyyy: string): string => {
@@ -173,12 +170,8 @@ export const mapCompleteOrderToPayload = (
             annotations: tripData.destinoNotas,
           },
 
-      unit_type: tripData.tipoUnidad || undefined,
       driver_id: tripData.nombreChofer
         ? parseInt(tripData.nombreChofer, 10)
-        : undefined,
-      vehicle_id: tripData.unidadAsignada
-        ? parseInt(tripData.unidadAsignada, 10)
         : undefined,
       observations: tripData.observacionesCliente || undefined,
       internal_observations: tripData.observacionesChofer || undefined,
@@ -210,6 +203,46 @@ export const mapCompleteOrderToPayload = (
           : undefined,
     },
   };
+
+  // Map paradas to stops
+  const mapParadasToStops = (paradaList: Parada[]) =>
+    paradaList.map((p, index) => {
+      const stop: { place_id?: number; description?: string; stop_order: number } = {
+        stop_order: index + 1,
+      };
+      if (p.nombreLugar && !isNaN(parseInt(p.nombreLugar))) {
+        stop.place_id = parseInt(p.nombreLugar, 10);
+      }
+      if (p.description) {
+        stop.description = p.description;
+      }
+      return stop;
+    });
+
+  if (options?.paradas && options.paradas.length > 0) {
+    payload.trip.stops = mapParadasToStops(options.paradas);
+  }
+
+  if (options?.returnParadas && options.returnParadas.length > 0) {
+    payload.trip.return_stops = mapParadasToStops(options.returnParadas);
+  }
+
+  if (options?.reverseStopsForReturn !== undefined && tripData.tipoViaje === "redondo") {
+    payload.trip.reverse_stops_for_return = options.reverseStopsForReturn;
+  }
+
+  // Map dynamic unidades to units array
+  if (options?.unidades && options.unidades.length > 0) {
+    const validUnits = options.unidades
+      .filter((u) => u.vehicleTypeId && !isNaN(parseInt(u.vehicleTypeId)))
+      .map((u) => ({
+        vehicle_type_id: parseInt(u.vehicleTypeId, 10),
+        ...(u.notes ? { notes: u.notes } : {}),
+      }));
+    if (validUnits.length > 0) {
+      payload.trip.units = validUnits;
+    }
+  }
 
   // Add commission if applicable
   if (orderData.llevaComision === "Si" && orderData.nombreRecibeComision) {

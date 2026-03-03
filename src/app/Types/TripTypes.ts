@@ -33,6 +33,24 @@ export interface Flight {
   notes?: string;
 }
 
+export interface TripStopPlace {
+  id: number;
+  name: string;
+  address?: string;
+}
+
+export interface TripStop {
+  stop_id?: number;
+  place_id?: number;
+  place_name?: string;
+  place?: TripStopPlace;
+  description?: string | null;
+  stop_order: number;
+  address?: string;
+  city?: string;
+  state?: string;
+}
+
 export interface TripData {
   trip_id: number;
   service_date: string;
@@ -48,6 +66,8 @@ export interface TripData {
   driver_accepted?: boolean | null;
   notes?: string;
   internal_notes?: string;
+  stops?: TripStop[];
+  return_stops?: TripStop[];
 }
 
 export class Trip {
@@ -199,6 +219,31 @@ export class Trip {
 
   get flightNotes(): string {
     return this._data.flight?.notes || "";
+  }
+
+  // Stops getters
+  get stops(): TripStop[] {
+    return this._data.stops ?? [];
+  }
+
+  get returnStops(): TripStop[] {
+    return this._data.return_stops ?? [];
+  }
+
+  get hasStops(): boolean {
+    return this.stops.length > 0;
+  }
+
+  get hasReturnStops(): boolean {
+    return this.returnStops.length > 0;
+  }
+
+  get sortedStops(): TripStop[] {
+    return [...this.stops].sort((a, b) => a.stop_order - b.stop_order);
+  }
+
+  get sortedReturnStops(): TripStop[] {
+    return [...this.returnStops].sort((a, b) => a.stop_order - b.stop_order);
   }
 
   // Utility methods

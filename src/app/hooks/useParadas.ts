@@ -5,6 +5,7 @@ import { SearchableSelectOption } from "@/app/Components/SearchableSelectCompone
 export interface Parada {
   id: string;
   nombreLugar: string;
+  description: string;
   calle: string;
   numero: string;
   colonia: string;
@@ -20,6 +21,7 @@ export function useParadas(initialParadas: Parada[] = []) {
     const newParada: Parada = {
       id: Date.now().toString(),
       nombreLugar: "",
+      description: "",
       calle: "",
       numero: "",
       colonia: "",

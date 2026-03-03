@@ -129,6 +129,26 @@ export interface CreateContractWithTripsRequest {
     is_round_trip?: boolean;
     return_date?: string;
     return_time?: string;
+
+    // Units (multiple vehicles)
+    units?: Array<{
+      vehicle_type_id?: number;
+      vehicle_id?: number;
+      notes?: string;
+    }>;
+
+    // Stops
+    stops?: Array<{
+      place_id?: number;
+      description?: string;
+      stop_order: number;
+    }>;
+    return_stops?: Array<{
+      place_id?: number;
+      description?: string;
+      stop_order: number;
+    }>;
+    reverse_stops_for_return?: boolean;
   };
 
   // Notification control

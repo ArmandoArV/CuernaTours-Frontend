@@ -33,6 +33,7 @@ interface OrderFormData {
 interface TripFormData {
   // ===== ORIGEN =====
   origenNombreLugar?: string;
+  origenNombreDisplay?: string;
   origenCalle?: string;
   origenNumero?: string;
   origenColonia?: string;
@@ -47,6 +48,7 @@ interface TripFormData {
 
   // ===== DESTINO =====
   destinoNombreLugar?: string;
+  destinoNombreDisplay?: string;
   destinoCalle?: string;
   destinoNumero?: string;
   destinoColonia?: string;
@@ -75,20 +77,7 @@ interface TripFormData {
   regresoPasajeros?: string; // STRING
 
   // ===== ASIGNACIÓN =====
-  tipoUnidad?: string;
   nombreChofer?: string;
-
-  unidadAsignada?: string;
-  placa?: string;
-
-  unidadAsignada1?: string;
-  placa1?: string;
-
-  unidadAsignada2?: string;
-  placa2?: string;
-
-  unidadAsignada3?: string;
-  placa3?: string;
 
   observacionesChofer?: string;
   observacionesCliente?: string;
@@ -129,6 +118,7 @@ const defaultOrderData: OrderFormData = {
 
 const defaultTripData: TripFormData = {
   origenNombreLugar: "",
+  origenNombreDisplay: "",
   origenCalle: "",
   origenNumero: "",
   origenColonia: "",
@@ -142,6 +132,7 @@ const defaultTripData: TripFormData = {
   origenNotas: "",
 
   destinoNombreLugar: "",
+  destinoNombreDisplay: "",
   destinoCalle: "",
   destinoNumero: "",
   destinoColonia: "",
@@ -168,10 +159,7 @@ const defaultTripData: TripFormData = {
   regresoAmPm: "AM",
   regresoPasajeros: "",
 
-  tipoUnidad: "",
   nombreChofer: "",
-  unidadAsignada: "",
-  placa: "",
   observacionesChofer: "",
   observacionesCliente: "",
 };

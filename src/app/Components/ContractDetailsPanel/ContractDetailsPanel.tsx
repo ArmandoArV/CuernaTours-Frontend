@@ -39,7 +39,16 @@ export default function ContractDetailsPanel({ contract }: Props) {
           label: activeTrip.originName,
           type: "origin",
         },
-
+        ...activeTrip.sortedStops.map((stop) => ({
+          id: stop.stop_id ?? `stop-${stop.stop_order}`,
+          label:
+            stop.place?.name ||
+            stop.place_name ||
+            stop.description ||
+            [stop.place?.address || stop.address, stop.city].filter(Boolean).join(", ") ||
+            `Parada ${stop.stop_order}`,
+          type: "stop" as const,
+        })),
         {
           label: activeTrip.destinationName,
           type: "destination",

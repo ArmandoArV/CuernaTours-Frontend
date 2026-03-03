@@ -5,17 +5,9 @@ import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import RouteTimeline, {
   RouteLocation,
 } from "@/app/Components/RouteTimeline/RouteTimeline";
+import type { Parada } from "@/app/hooks/useParadas";
 
-interface Parada {
-  id: string;
-  nombreLugar: string;
-  calle: string;
-  numero: string;
-  colonia: string;
-  codigoPostal: string;
-  ciudad: string;
-  estado: string;
-}
+import type { UnitAssignment } from "@/app/hooks/useUnidades";
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -24,6 +16,7 @@ interface ConfirmationModalProps {
   orderData: any;
   tripFormData: any;
   paradas: Parada[];
+  unitAssignments?: UnitAssignment[];
   lugares?: Array<{ value: string; label: string }>;
 }
 
@@ -34,20 +27,41 @@ export default function ConfirmationModal({
   orderData,
   tripFormData,
   paradas,
+  unitAssignments = [],
   lugares = [],
 }: ConfirmationModalProps) {
   const [sendNotification, setSendNotification] = useState(true);
 
   if (!isOpen) return null;
-  const origenLabel =
-    lugares.find((l) => l.value === tripFormData?.origenNombreLugar)?.label ||
-    tripFormData?.origenNombreLugar ||
-    "Origen";
 
-  const destinoLabel =
-    lugares.find((l) => l.value === tripFormData?.destinoNombreLugar)?.label ||
-    tripFormData?.destinoNombreLugar ||
-    "Destino";
+  const buildAddressLabel = (prefix: "origen" | "destino", defaultLabel: string) => {
+    // Prefer stored display name (set when place was selected)
+    const displayName = tripFormData?.[`${prefix}NombreDisplay`];
+    if (displayName) return displayName;
+
+    // Try to find in lugares list by ID
+    const placeId = tripFormData?.[`${prefix}NombreLugar`];
+    if (placeId) {
+      const found = lugares.find((l) => String(l.value) === String(placeId));
+      if (found) return found.label;
+    }
+
+    // Build from address fields as last resort
+    const parts = [
+      tripFormData?.[`${prefix}Calle`],
+      tripFormData?.[`${prefix}Colonia`],
+      tripFormData?.[`${prefix}Ciudad`],
+      tripFormData?.[`${prefix}Estado`],
+    ].filter(Boolean);
+
+    if (parts.length > 0) return parts.join(", ");
+
+    return defaultLabel;
+  };
+
+  const origenLabel = buildAddressLabel("origen", "Origen");
+
+  const destinoLabel = buildAddressLabel("destino", "Destino");
 
   const routeLocations: RouteLocation[] = [
     {
@@ -55,13 +69,15 @@ export default function ConfirmationModal({
       type: "origin",
     },
 
-    ...(paradas ?? []).map<RouteLocation>((parada) => ({
-      id: parada.id,
-      label:
+    ...(paradas ?? []).map<RouteLocation>((parada) => {
+      const paradaLabel =
         lugares.find((l) => l.value === parada.nombreLugar)?.label ||
-        parada.nombreLugar,
-      type: "stop",
-    })),
+        parada.description ||
+        [parada.calle, parada.ciudad].filter(Boolean).join(", ") ||
+        parada.nombreLugar ||
+        "Parada";
+      return { id: parada.id, label: paradaLabel, type: "stop" };
+    }),
 
     {
       label: destinoLabel,
@@ -122,7 +138,7 @@ export default function ConfirmationModal({
               <div className={styles.infoItem}>
                 <div className={styles.summaryLabel}>No. unidades</div>
                 <div className={styles.summaryValue}>
-                  {tripFormData?.unidadAsignada ? "1" : "0"}
+                  {unitAssignments.length || "0"}
                 </div>
               </div>
 

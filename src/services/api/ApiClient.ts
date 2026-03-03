@@ -198,8 +198,8 @@ export class ApiClient {
         throw error;
       }
 
-      // Don't retry auth errors or client errors
-      if (error instanceof ApiError && (error.isAuthError() || error.isClientError())) {
+      // Don't retry auth errors, client errors, or server errors
+      if (error instanceof ApiError && (error.isAuthError() || error.isClientError() || error.isServerError())) {
         throw error;
       }
 

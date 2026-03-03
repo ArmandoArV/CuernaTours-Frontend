@@ -38,6 +38,8 @@ import type { TripFormData } from "@/app/Types/OrderTripTypes";
 import { useTripDropdowns } from "@/app/hooks/useTripDropdowns";
 import { usePlaceSelection } from "@/app/hooks/usePlaceSelection";
 import { useParadas, Parada } from "@/app/hooks/useParadas";
+import { useUnidades } from "@/app/hooks/useUnidades";
+import UnidadItem from "../UnidadItem/UnidadItem";
 
 interface CreateTripContentProps {
   contractId?: string;
@@ -53,6 +55,7 @@ export default function CreateTripContent({
 
   // Loading state for trip data
   const [isLoadingTrip, setIsLoadingTrip] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingTripId, setEditingTripId] = useState<number | null>(null);
 
   const tripForm = useOrderForm({
@@ -60,12 +63,6 @@ export default function CreateTripContent({
     numeroPasajeros: tripData.regresoPasajeros || "",
     idaFecha: tripData.idaFecha || "",
     regresoFecha: tripData.regresoFecha || "",
-    unidadAsignada1: "",
-    placa1: "",
-    unidadAsignada2: "",
-    placa2: "",
-    unidadAsignada3: "",
-    placa3: "",
   });
 
   const {
@@ -90,6 +87,7 @@ export default function CreateTripContent({
     choferes,
     unidades,
     lugares,
+    tiposUnidad,
     fetchLugares,
     fetchChoferes,
     fetchUnidades,
@@ -150,6 +148,28 @@ export default function CreateTripContent({
   } = useParadas();
 
   const {
+    paradas: returnParadas,
+    setParadas: setReturnParadas,
+    handleAddParada: handleAddReturnParada,
+    handleRemoveParada: handleRemoveReturnParada,
+    handleParadaChange: handleReturnParadaChange,
+    handleParadaPlaceSelect: handleReturnParadaPlaceSelect,
+  } = useParadas();
+
+  const [returnStopOption, setReturnStopOption] = useState<"none" | "reverse" | "custom">("none");
+
+  const {
+    typeSelections,
+    setTypeSelections,
+    assignments: unitAssignments,
+    setAssignments: setUnitAssignments,
+    handleAddTypeSelection,
+    handleRemoveTypeSelection,
+    handleTypeSelectionChange,
+    handleAssignmentChange,
+  } = useUnidades();
+
+  const {
     isPlaceModalOpen,
     placeModalContext,
     setIsPlaceModalOpen,
@@ -159,13 +179,18 @@ export default function CreateTripContent({
     handlePlaceCreated,
   } = usePlaceSelection({
     onPlaceSelect: (field, placeId, option) => {
-      setTripFormData((prev) => ({ ...prev, [field]: placeId }));
+      const prefix = field === "origenNombreLugar" ? "origen" : "destino";
+      const displayName = option?.label || "";
+      setTripFormData((prev) => ({
+        ...prev,
+        [field]: placeId,
+        [`${prefix}NombreDisplay`]: displayName,
+      }));
       handleFieldTouch(field, placeId);
 
       // Auto-fill address fields if available
       if (option?.data) {
         const placeData = option.data;
-        const prefix = field === "origenNombreLugar" ? "origen" : "destino";
         const updates: Partial<TripFormData> = {
           [`${prefix}Calle`]: placeData.address || "",
           [`${prefix}Numero`]: placeData.number || "",
@@ -183,12 +208,14 @@ export default function CreateTripContent({
           setOriginalOrigenData({
             ...updates,
             origenNombreLugar: placeId.toString(),
+            origenNombreDisplay: displayName,
           } as Partial<TripFormData>);
           setIsEditingOrigen(false);
         } else {
           setOriginalDestinoData({
             ...updates,
             destinoNombreLugar: placeId.toString(),
+            destinoNombreDisplay: displayName,
           } as Partial<TripFormData>);
           setIsEditingDestino(false);
         }
@@ -198,6 +225,7 @@ export default function CreateTripContent({
       if (context === "origen") {
         const updates: Partial<TripFormData> = {
            origenNombreLugar: placeId.toString(),
+           origenNombreDisplay: placeName,
            origenCalle: placeData?.address || "",
            origenNumero: placeData?.number || "",
            origenColonia: placeData?.colonia || "",
@@ -219,6 +247,7 @@ export default function CreateTripContent({
       } else if (context === "destino") {
         const updates: Partial<TripFormData> = {
            destinoNombreLugar: placeId.toString(),
+           destinoNombreDisplay: placeName,
            destinoCalle: placeData?.address || "",
            destinoNumero: placeData?.number || "",
            destinoColonia: placeData?.colonia || "",
@@ -301,6 +330,7 @@ export default function CreateTripContent({
               );
               origenData = {
                 origenNombreLugar: trip.origin.id.toString(),
+                origenNombreDisplay: originPlace.name || originPlace.nombre || "",
                 origenCalle: originPlace.address || "",
                 origenNumero: originPlace.number || "",
                 origenColonia: originPlace.colonia || "",
@@ -321,6 +351,7 @@ export default function CreateTripContent({
               );
               destinoData = {
                 destinoNombreLugar: trip.destination.id.toString(),
+                destinoNombreDisplay: destPlace.name || destPlace.nombre || "",
                 destinoCalle: destPlace.address || "",
                 destinoNumero: destPlace.number || "",
                 destinoColonia: destPlace.colonia || "",
@@ -350,12 +381,7 @@ export default function CreateTripContent({
               idaMinutos !== undefined ? idaMinutos.toString() : undefined,
             idaAmPm,
             idaPasajeros: trip.passengers?.toString() || "",
-            tipoUnidad: trip.unit_type || "",
             nombreChofer: trip.driver?.id?.toString() || "",
-            unidadAsignada: trip.vehicle?.id?.toString() || "",
-            placa: trip.vehicle?.license_plate || trip.vehicle?.placa || "",
-            unidadAsignada1: trip.vehicle?.id?.toString() || "",
-            placa1: trip.vehicle?.license_plate || trip.vehicle?.placa || "",
             observacionesChofer: trip.internal_notes || "",
             observacionesCliente: trip.notes || "",
             tipoViaje: tipoViajeValue,
@@ -365,6 +391,27 @@ export default function CreateTripContent({
             origenAerolinea: trip.flight?.airline || "",
             origenLugarVuelo: trip.flight?.flight_origin || "",
           };
+
+          // Load existing units into type selections
+          if (trip.units && Array.isArray(trip.units) && trip.units.length > 0) {
+            // Group by vehicle_type_id to create type selections
+            const typeMap = new Map<string, { count: number; }>();
+            trip.units.forEach((u: any) => {
+              const typeId = (u.vehicle_type_id || u.vehicleTypeId || "").toString();
+              if (typeId) {
+                const existing = typeMap.get(typeId);
+                typeMap.set(typeId, { count: (existing?.count || 0) + 1 });
+              }
+            });
+            const selections = Array.from(typeMap.entries()).map(([typeId, data], i) => ({
+              id: `${Date.now()}-${i}`,
+              vehicleTypeId: typeId,
+              quantity: data.count,
+            }));
+            if (selections.length > 0) {
+              setTypeSelections(selections);
+            }
+          }
 
           setTripFormData((prev: any) => ({
             ...prev,
@@ -461,34 +508,6 @@ export default function CreateTripContent({
     (field: keyof typeof tripFormData) =>
     (e: React.ChangeEvent<HTMLSelectElement>) =>
       updateField(field, e.target.value);
-
-  const handleUnitChange =
-    (
-      unitField: "unidadAsignada1" | "unidadAsignada2" | "unidadAsignada3",
-      plateField: "placa1" | "placa2" | "placa3",
-    ) =>
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const selectedId = e.target.value;
-      const selectedUnit = unidades.find((u) => u.value === selectedId);
-
-      setTripFormData((prev) => {
-        const updates: any = {
-          [unitField]: selectedId,
-          [plateField]: selectedUnit?.licensePlate || "",
-        };
-
-        // If updating unit 1, also update the main vehicle_id field used by payload mapper
-        if (unitField === "unidadAsignada1") {
-          updates.unidadAsignada = selectedId;
-          updates.placa = selectedUnit?.licensePlate || "";
-        }
-
-        return {
-          ...prev,
-          ...updates,
-        };
-      });
-    };
 
   const handleRadioChange = (field: keyof typeof tripFormData, value: any) => {
     updateField(field, value);
@@ -687,14 +706,20 @@ export default function CreateTripContent({
       "numeroPasajeros",
     ];
 
-    // Add conditional required fields
-    if (canAssignResources) {
-      requiredFields.push("tipoUnidad");
-    }
-
     // Check for missing fields
     const errors: Record<string, boolean> = {};
     let hasErrors = false;
+
+    // Validate at least one unit has a vehicle type selected
+    if (canAssignResources) {
+      const hasValidUnit = unitAssignments.some(
+        (u) => u.vehicleTypeId && !isNaN(parseInt(u.vehicleTypeId))
+      );
+      if (!hasValidUnit) {
+        errors["tipoUnidad"] = true;
+        hasErrors = true;
+      }
+    }
 
     requiredFields.forEach((field) => {
       // If manually editing origin (no Place ID), skip ID validation if address fields are present
@@ -733,6 +758,8 @@ export default function CreateTripContent({
   };
 
   const handleConfirmCreateTrip = async (sendNotification: boolean) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       // Close the confirmation modal
       setIsConfirmationModalOpen(false);
@@ -759,7 +786,7 @@ export default function CreateTripContent({
             return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
           };
 
-        const updatePayload = {
+        const updatePayload: Record<string, any> = {
           service_date: convertDateFormat(tripFormData.idaFecha || ""),
           origin_time: convertTimeFormat(
              tripFormData.idaHora || "0",
@@ -769,13 +796,21 @@ export default function CreateTripContent({
           origin_id: parseInt(tripFormData.origenNombreLugar || "0"),
           destination_id: parseInt(tripFormData.destinoNombreLugar || "0"),
           passengers: parseInt(tripFormData.numeroPasajeros || tripFormData.idaPasajeros || "1"),
-          unit_type: tripFormData.tipoUnidad,
-          vehicle_id: tripFormData.unidadAsignada ? parseInt(tripFormData.unidadAsignada) : undefined,
           driver_id: tripFormData.nombreChofer ? parseInt(tripFormData.nombreChofer) : undefined,
           observations: tripFormData.observacionesCliente,
           internal_observations: tripFormData.observacionesChofer,
-          // Add other fields as needed
         };
+
+        // Add dynamic units
+        const validUnits = unitAssignments
+          .filter((u) => u.vehicleTypeId && !isNaN(parseInt(u.vehicleTypeId)))
+          .map((u) => ({
+            vehicle_type_id: parseInt(u.vehicleTypeId, 10),
+            ...(u.notes ? { notes: u.notes } : {}),
+          }));
+        if (validUnits.length > 0) {
+          updatePayload.units = validUnits;
+        }
 
         await tripsService.update(editingTripId, updatePayload);
         showSuccessAlert("Éxito", "Viaje actualizado correctamente");
@@ -786,7 +821,12 @@ export default function CreateTripContent({
       } else {
         // CREATE NEW CONTRACT + TRIP
         const contractPayload = {
-          ...mapCompleteOrderToPayload(orderData as OrderFormData, tripFormData),
+          ...mapCompleteOrderToPayload(orderData as OrderFormData, tripFormData, {
+            paradas,
+            returnParadas: returnStopOption === "custom" ? returnParadas : undefined,
+            reverseStopsForReturn: returnStopOption === "reverse" ? true : undefined,
+            unidades: unitAssignments,
+          }),
           send_notification: sendNotification,
         };
         console.log("Contract payload:", contractPayload);
@@ -799,6 +839,8 @@ export default function CreateTripContent({
         // Clear all form data
         clearData();
         setParadas([]);
+        setReturnParadas([]);
+        setReturnStopOption("none");
         setFieldErrors({});
 
         router.push("/dashboard");
@@ -816,6 +858,8 @@ export default function CreateTripContent({
             : "Error al crear el contrato y viaje",
         );
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1429,104 +1473,194 @@ export default function CreateTripContent({
             />
           ))}
 
+          {/* Return Stops - only for round trips with outbound stops */}
+          {tripFormData.tipoViaje === "redondo" && paradas.length > 0 && (
+            <>
+              <div className={styles.divider}>
+                <h2 className={styles.sectionTitle}>Paradas De Regreso</h2>
+              </div>
+              <div className={styles.buttonGroup}>
+                <label className={styles.radioLabel}>
+                  ¿Cómo manejar las paradas de regreso?
+                </label>
+                <div className={styles.radioOptions}>
+                  <label className={styles.radioOption}>
+                    <input
+                      type="radio"
+                      name="returnStopOption"
+                      value="none"
+                      checked={returnStopOption === "none"}
+                      onChange={() => setReturnStopOption("none")}
+                    />
+                    Sin paradas de regreso
+                  </label>
+                  <label className={styles.radioOption}>
+                    <input
+                      type="radio"
+                      name="returnStopOption"
+                      value="reverse"
+                      checked={returnStopOption === "reverse"}
+                      onChange={() => setReturnStopOption("reverse")}
+                    />
+                    Mismas paradas en orden inverso
+                  </label>
+                  <label className={styles.radioOption}>
+                    <input
+                      type="radio"
+                      name="returnStopOption"
+                      value="custom"
+                      checked={returnStopOption === "custom"}
+                      onChange={() => setReturnStopOption("custom")}
+                    />
+                    Paradas diferentes
+                  </label>
+                </div>
+              </div>
+
+              {returnStopOption === "custom" && (
+                <>
+                  <div className={styles.section}>
+                    <ButtonComponent
+                      type="button"
+                      onClick={handleAddReturnParada}
+                      icon={<AddFilled />}
+                      className={`${styles.button} ${styles.addButton}`}
+                    />
+                  </div>
+                  {returnParadas.map((parada, index) => (
+                    <ParadaItem
+                      key={parada.id}
+                      parada={parada}
+                      index={index}
+                      onRemove={handleRemoveReturnParada}
+                      onChange={handleReturnParadaChange}
+                      onPlaceSelect={handleReturnParadaPlaceSelect}
+                      onPlaceSearch={handlePlaceSearch}
+                      onCreatePlace={handleCreatePlace}
+                      onAdd={handleAddReturnParada}
+                    />
+                  ))}
+                </>
+              )}
+            </>
+          )}
+
           {canAssignResources && (
             <>
               <div className={styles.divider}>
                 <h2 className={styles.sectionTitle}>Asignación</h2>
               </div>
 
-              <div className={styles.section}>
-                <InputComponent
-                  type="text"
-                  value={tripFormData.tipoUnidad || ""}
-                  onChange={handleTripInputChange("tipoUnidad")}
-                  label={
-                    <p>
-                      Tipo de unidad (Provisional){" "}
-                      <strong style={{ color: "red" }}>*</strong>
-                    </p>
-                  }
-                  className={styles.input}
-                  hasError={fieldErrors.tipoUnidad}
-                  errorMessage={
-                    fieldErrors.tipoUnidad ? "Este campo es obligatorio" : ""
-                  }
-                />
-              </div>
-              <div className={styles.section}>
-                <SelectComponent
-                  label="Chofer"
-                  options={[
-                    { value: "POR_ASIGNAR", label: "Por Asignar" },
-                    ...choferes,
-                  ]}
-                  value={tripFormData.nombreChofer || ""}
-                  onChange={handleTripSelectChange("nombreChofer")}
-                  className={styles.input}
-                />
-              </div>
+              <h3 className={styles.subsectionTitle}>Tipos de Unidad</h3>
 
-              <h3 className={styles.subsectionTitle}>Unidades Asignadas</h3>
+              {typeSelections.map((sel, index) => (
+                <UnidadItem
+                  key={sel.id}
+                  selection={sel}
+                  index={index}
+                  tiposUnidad={tiposUnidad}
+                  onRemove={handleRemoveTypeSelection}
+                  onChange={handleTypeSelectionChange}
+                  onAdd={handleAddTypeSelection}
+                  canDelete={typeSelections.length > 1}
+                />
+              ))}
 
-              <div className={styles.section}>
-                <SelectComponent
-                  label="Unidad 1"
-                  options={[
-                    { value: "POR_ASIGNAR", label: "Por Asignar" },
-                    ...unidades,
-                  ]}
-                  value={tripFormData.unidadAsignada1 || ""}
-                  onChange={handleUnitChange("unidadAsignada1", "placa1")}
-                  className={styles.input}
-                />
-                <InputComponent
-                  type="text"
-                  value={tripFormData.placa1 || ""}
-                  onChange={handleTripInputChange("placa1")}
-                  label="Placa 1"
-                  className={styles.input}
-                />
-              </div>
+              {unitAssignments.length > 0 && (
+                <>
+                  <h3 className={styles.subsectionTitle}>Asignación de Unidades</h3>
 
-              <div className={styles.section}>
-                <SelectComponent
-                  label="Unidad 2"
-                  options={[
-                    { value: "POR_ASIGNAR", label: "Por Asignar" },
-                    ...unidades,
-                  ]}
-                  value={tripFormData.unidadAsignada2 || ""}
-                  onChange={handleUnitChange("unidadAsignada2", "placa2")}
-                  className={styles.input}
-                />
-                <InputComponent
-                  type="text"
-                  value={tripFormData.placa2 || ""}
-                  onChange={handleTripInputChange("placa2")}
-                  label="Placa 2"
-                  className={styles.input}
-                />
-              </div>
+                  {unitAssignments.map((asgn, index) => {
+                    const typeName = tiposUnidad.find(
+                      (t) => t.value === asgn.vehicleTypeId
+                    );
+                    const typeLabel = typeName
+                      ? typeName.capacity
+                        ? `${typeName.label} (${typeName.capacity} pax)`
+                        : typeName.label
+                      : `Tipo ${asgn.vehicleTypeId}`;
 
-              <div className={styles.section}>
-                <SelectComponent
-                  label="Unidad 3"
-                  options={[
-                    { value: "POR_ASIGNAR", label: "Por Asignar" },
-                    ...unidades,
-                  ]}
-                  value={tripFormData.unidadAsignada3 || ""}
-                  onChange={handleUnitChange("unidadAsignada3", "placa3")}
-                  className={styles.input}
-                />
-                <InputComponent
-                  type="text"
-                  value={tripFormData.placa3 || ""}
-                  onChange={handleTripInputChange("placa3")}
-                  label="Placa 3"
-                  className={styles.input}
-                />
-              </div>
+                    return (
+                      <div
+                        key={asgn.id}
+                        style={{
+                          borderRadius: 8,
+                          padding: "1rem 1.5rem",
+                          marginBottom: "0.75rem",
+                          backgroundColor: "#f9fafb",
+                          border: "1px solid #e5e7eb",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "0.85rem",
+                            fontWeight: 600,
+                            color: "#1a2e47",
+                            marginBottom: "0.75rem",
+                            padding: "4px 8px",
+                            backgroundColor: "#e8edf2",
+                            borderRadius: 4,
+                            display: "inline-block",
+                          }}
+                        >
+                          Unidad {index + 1}: {typeLabel}
+                        </span>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "1rem",
+                            width: "100%",
+                            alignItems: "flex-end",
+                            marginTop: "0.75rem",
+                          }}
+                        >
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <SelectComponent
+                              label="Chofer"
+                              options={[
+                                { value: "", label: "Por Asignar" },
+                                ...choferes,
+                              ]}
+                              value={asgn.driverId}
+                              onChange={(e) =>
+                                handleAssignmentChange(asgn.id, "driverId", e.target.value)
+                              }
+                              className={styles.input}
+                            />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <SelectComponent
+                              label="Unidad"
+                              options={[
+                                { value: "", label: "Por Asignar" },
+                                ...unidades,
+                              ]}
+                              value={asgn.vehicleId}
+                              onChange={(e) =>
+                                handleAssignmentChange(asgn.id, "vehicleId", e.target.value)
+                              }
+                              className={styles.input}
+                            />
+                          </div>
+                          <div style={{ flex: 1.5, minWidth: 0 }}>
+                            <InputComponent
+                              type="text"
+                              value={asgn.notes}
+                              onChange={(e) =>
+                                handleAssignmentChange(asgn.id, "notes", e.target.value)
+                              }
+                              label="Notas"
+                              placeholder="Ej: SUV para directivos"
+                              className={styles.input}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
+
               <div className={styles.section}>
                 <InputComponent
                   type="textarea"
@@ -1590,6 +1724,7 @@ export default function CreateTripContent({
         orderData={orderData}
         tripFormData={tripFormData}
         paradas={paradas}
+        unitAssignments={unitAssignments}
         lugares={lugares}
       />
     </main>

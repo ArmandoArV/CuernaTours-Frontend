@@ -25,6 +25,8 @@ import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import { useRouter } from "next/navigation";
 import { useUserRole } from "@/app/hooks/useUserRole";
 import type { TripFormData } from "@/app/Types/OrderTripTypes";
+import { useUnidades } from "@/app/hooks/useUnidades";
+import UnidadItem from "../UnidadItem/UnidadItem";
 import {
   referenceService,
   contractsService,
@@ -68,12 +70,6 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
   const [tripFormData, setTripFormData] = useState<TripFormData>(() => ({
     idaFecha: tripData?.idaFecha || "",
     regresoFecha: tripData?.regresoFecha || "",
-    unidadAsignada1: "",
-    placa1: "",
-    unidadAsignada2: "",
-    placa2: "",
-    unidadAsignada3: "",
-    placa3: "",
     tipoViaje: tripData?.tipoViaje as "sencillo" | "redondo" | undefined,
   }));
 
@@ -87,6 +83,20 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
   const [unidades, setUnidades] = useState<
     Array<{ value: string; label: string; licensePlate?: string }>
   >([]);
+  const [tiposUnidad, setTiposUnidad] = useState<
+    Array<{ value: string; label: string; capacity?: number }>
+  >([]);
+
+  const {
+    typeSelections,
+    setTypeSelections,
+    assignments: unitAssignments,
+    setAssignments: setUnitAssignments,
+    handleAddTypeSelection,
+    handleRemoveTypeSelection,
+    handleTypeSelectionChange,
+    handleAssignmentChange,
+  } = useUnidades();
 
   // Place modal state
   const [isPlaceModalOpen, setIsPlaceModalOpen] = useState(false);
@@ -120,7 +130,6 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
       "destinoEstado",
       "idaFecha",
       "idaPasajeros",
-      "tipoUnidad",
     ];
     return requiredFields.includes(field);
   };
@@ -307,6 +316,18 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
       setUnidades(unidadOptions);
     } catch (error) {
       console.error("Error fetching unidades:", error);
+    }
+  }, []);
+
+  const fetchTiposUnidad = useCallback(async () => {
+    try {
+      const data = await referenceService.getPrefillableData();
+      if (data.vehicle_types) {
+        const options = referenceService.transformVehicleTypesForSelect(data.vehicle_types);
+        setTiposUnidad(options);
+      }
+    } catch (error) {
+      console.error("Error fetching tipos de unidad:", error);
     }
   }, []);
 
@@ -547,16 +568,8 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
   };
 
   const handleEditAsignacion = () => {
-    // Store current assignment data
     const asignacionData: Partial<TripFormData> = {
-      tipoUnidad: tripFormData.tipoUnidad,
       nombreChofer: tripFormData.nombreChofer,
-      unidadAsignada1: tripFormData.unidadAsignada1,
-      placa1: tripFormData.placa1,
-      unidadAsignada2: tripFormData.unidadAsignada2,
-      placa2: tripFormData.placa2,
-      unidadAsignada3: tripFormData.unidadAsignada3,
-      placa3: tripFormData.placa3,
       observacionesChofer: tripFormData.observacionesChofer,
     };
     setOriginalAsignacionData(asignacionData);
@@ -565,11 +578,13 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
 
   const handleSaveAsignacion = async () => {
     try {
-      // Validate required assignment fields
       const newErrors: { [key: string]: string } = {};
 
-      if (!tripFormData.tipoUnidad) {
-        newErrors.tipoUnidad = "El tipo de unidad es obligatorio";
+      const hasValidUnit = unitAssignments.some(
+        (u) => u.vehicleTypeId && !isNaN(parseInt(u.vehicleTypeId))
+      );
+      if (!hasValidUnit) {
+        newErrors.tipoUnidad = "Debe seleccionar al menos un tipo de unidad";
       }
 
       if (Object.keys(newErrors).length > 0) {
@@ -713,10 +728,7 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
               idaMinutos !== undefined ? idaMinutos.toString() : undefined,
             idaAmPm,
             idaPasajeros: trip.passengers?.toString() || "",
-            tipoUnidad: trip.unit_type || "",
             nombreChofer: trip.driver?.id?.toString() || "",
-            unidadAsignada: trip.vehicle?.id?.toString() || "",
-            placa: trip.vehicle?.license_plate || "",
             observacionesChofer: trip.internal_notes || "",
             observacionesCliente: trip.notes || "",
             tipoViaje: tipoViajeValue,
@@ -726,6 +738,25 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
             origenAerolinea: trip.flight?.airline || "",
             origenLugarVuelo: trip.flight?.flight_origin || "",
           };
+
+          // Load existing units into type selections
+          if (trip.units && Array.isArray(trip.units) && trip.units.length > 0) {
+            const typeMap = new Map<string, number>();
+            trip.units.forEach((u: any) => {
+              const typeId = (u.vehicle_type_id || u.vehicleTypeId || "").toString();
+              if (typeId) {
+                typeMap.set(typeId, (typeMap.get(typeId) || 0) + 1);
+              }
+            });
+            const selections = Array.from(typeMap.entries()).map(([typeId, count], i) => ({
+              id: `${Date.now()}-${i}`,
+              vehicleTypeId: typeId,
+              quantity: count,
+            }));
+            if (selections.length > 0) {
+              setTypeSelections(selections);
+            }
+          }
 
           setTripFormData((prev) => ({
             ...prev,
@@ -780,12 +811,14 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
     fetchLugares();
     fetchChoferes();
     fetchUnidades();
+    fetchTiposUnidad();
 
     return () => clearTimeout(timeoutId);
   }, [
     fetchLugares,
     fetchChoferes,
     fetchUnidades,
+    fetchTiposUnidad,
     orderData,
     router,
     contractId,
@@ -805,24 +838,6 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
   const handleTripSelectChange =
     (field: string) => (e: React.ChangeEvent<HTMLSelectElement>) => {
       const value = e.target.value;
-
-      // If selecting a vehicle, auto-fill the license plate for any unidad field
-      if (field.startsWith("unidadAsignada") && value) {
-        const selectedVehicle = unidades.find((u) => u.value === value);
-        const unitNumber = field.replace("unidadAsignada", "") || "";
-        const placaField = `placa${unitNumber}`;
-
-        if (selectedVehicle?.licensePlate) {
-          setTripFormData((prev) => ({
-            ...prev,
-            [field]: value,
-            [placaField]: selectedVehicle.licensePlate || "",
-          }));
-          handleFieldTouch(field);
-          handleFieldTouch(placaField);
-          return;
-        }
-      }
 
       setTripFormData((prev) => ({
         ...prev,
@@ -1692,97 +1707,118 @@ export default function EditTripContent({ contractId }: EditTripContentProps) {
               </div>
 
               <div className={styles.divider}>
-                <div className={styles.section}>
-                  <InputComponent
-                    type="text"
-                    value={tripFormData.tipoUnidad || ""}
-                    onChange={handleTripInputChange("tipoUnidad")}
-                    label={
-                      <p>
-                        Tipo de unidad (Provisional){" "}
-                        <strong style={{ color: "red" }}>*</strong>
-                      </p>
-                    }
-                    className={styles.input}
-                    disabled={!isEditingAsignacion}
-                  />
-                  {touchedFields.has("tipoUnidad") &&
-                    !tripFormData.tipoUnidad && (
-                      <p className={styles.requiredLabel}>
-                        El tipo de unidad es obligatorio
-                      </p>
-                    )}
-                </div>
+                <h3 className={styles.subsectionTitle}>Tipos de Unidad</h3>
 
-                <div className={styles.section}>
-                  <SelectComponent
-                    label="Chofer"
-                    options={choferes}
-                    value={tripFormData.nombreChofer || ""}
-                    onChange={handleTripSelectChange("nombreChofer")}
-                    className={styles.input}
-                    disabled={!isEditingAsignacion}
+                {typeSelections.map((sel, index) => (
+                  <UnidadItem
+                    key={sel.id}
+                    selection={sel}
+                    index={index}
+                    tiposUnidad={tiposUnidad}
+                    onRemove={handleRemoveTypeSelection}
+                    onChange={handleTypeSelectionChange}
+                    onAdd={handleAddTypeSelection}
+                    canDelete={typeSelections.length > 1}
                   />
-                </div>
+                ))}
 
-                <h3 className={styles.subsectionTitle}>Unidades Asignadas</h3>
+                {unitAssignments.length > 0 && (
+                  <>
+                    <h3 className={styles.subsectionTitle}>Asignación de Unidades</h3>
 
-                <div className={styles.section}>
-                  <SelectComponent
-                    label="Unidad 1"
-                    options={unidades}
-                    value={tripFormData.unidadAsignada1 || ""}
-                    onChange={handleTripSelectChange("unidadAsignada1")}
-                    className={styles.input}
-                    disabled={!isEditingAsignacion}
-                  />
-                  <InputComponent
-                    type="text"
-                    value={tripFormData.placa1 || ""}
-                    onChange={handleTripInputChange("placa1")}
-                    label="Placa 1"
-                    className={styles.input}
-                    disabled={!isEditingAsignacion}
-                  />
-                </div>
+                    {unitAssignments.map((asgn, index) => {
+                      const typeName = tiposUnidad.find(
+                        (t) => t.value === asgn.vehicleTypeId
+                      );
+                      const typeLabel = typeName
+                        ? typeName.capacity
+                          ? `${typeName.label} (${typeName.capacity} pax)`
+                          : typeName.label
+                        : `Tipo ${asgn.vehicleTypeId}`;
 
-                <div className={styles.section}>
-                  <SelectComponent
-                    label="Unidad 2"
-                    options={unidades}
-                    value={tripFormData.unidadAsignada2 || ""}
-                    onChange={handleTripSelectChange("unidadAsignada2")}
-                    className={styles.input}
-                    disabled={!isEditingAsignacion}
-                  />
-                  <InputComponent
-                    type="text"
-                    value={tripFormData.placa2 || ""}
-                    onChange={handleTripInputChange("placa2")}
-                    label="Placa 2"
-                    className={styles.input}
-                    disabled={!isEditingAsignacion}
-                  />
-                </div>
-
-                <div className={styles.section}>
-                  <SelectComponent
-                    label="Unidad 3"
-                    options={unidades}
-                    value={tripFormData.unidadAsignada3 || ""}
-                    onChange={handleTripSelectChange("unidadAsignada3")}
-                    className={styles.input}
-                    disabled={!isEditingAsignacion}
-                  />
-                  <InputComponent
-                    type="text"
-                    value={tripFormData.placa3 || ""}
-                    onChange={handleTripInputChange("placa3")}
-                    label="Placa 3"
-                    className={styles.input}
-                    disabled={!isEditingAsignacion}
-                  />
-                </div>
+                      return (
+                        <div
+                          key={asgn.id}
+                          style={{
+                            borderRadius: 8,
+                            padding: "1rem 1.5rem",
+                            marginBottom: "0.75rem",
+                            backgroundColor: "#f9fafb",
+                            border: "1px solid #e5e7eb",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: "0.85rem",
+                              fontWeight: 600,
+                              color: "#1a2e47",
+                              marginBottom: "0.75rem",
+                              padding: "4px 8px",
+                              backgroundColor: "#e8edf2",
+                              borderRadius: 4,
+                              display: "inline-block",
+                            }}
+                          >
+                            Unidad {index + 1}: {typeLabel}
+                          </span>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "1rem",
+                              width: "100%",
+                              alignItems: "flex-end",
+                              marginTop: "0.75rem",
+                            }}
+                          >
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <SelectComponent
+                                label="Chofer"
+                                options={[
+                                  { value: "", label: "Por Asignar" },
+                                  ...choferes,
+                                ]}
+                                value={asgn.driverId}
+                                onChange={(e) =>
+                                  handleAssignmentChange(asgn.id, "driverId", e.target.value)
+                                }
+                                className={styles.input}
+                                disabled={!isEditingAsignacion}
+                              />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <SelectComponent
+                                label="Unidad"
+                                options={[
+                                  { value: "", label: "Por Asignar" },
+                                  ...unidades,
+                                ]}
+                                value={asgn.vehicleId}
+                                onChange={(e) =>
+                                  handleAssignmentChange(asgn.id, "vehicleId", e.target.value)
+                                }
+                                className={styles.input}
+                                disabled={!isEditingAsignacion}
+                              />
+                            </div>
+                            <div style={{ flex: 1.5, minWidth: 0 }}>
+                              <InputComponent
+                                type="text"
+                                value={asgn.notes}
+                                onChange={(e) =>
+                                  handleAssignmentChange(asgn.id, "notes", e.target.value)
+                                }
+                                label="Notas"
+                                placeholder="Ej: SUV para directivos"
+                                className={styles.input}
+                                disabled={!isEditingAsignacion}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
 
                 <div className={styles.section}>
                   <InputComponent

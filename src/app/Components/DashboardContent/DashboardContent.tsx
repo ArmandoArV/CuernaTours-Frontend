@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useMemo } from "react";
 import FilterableTableComponent from "../FilterableTable/FilterableTableComponent";
-import { FilterConfig, FilterPresets } from "../FilterComponent";
+import FilterComponent, { FilterConfig, FilterPresets } from "../FilterComponent";
 
 import {
   AddFilled,
@@ -28,9 +28,11 @@ import { useRouter } from "next/navigation";
 import { contractsService, ApiError } from "@/services/api";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import { useUserRole } from "@/app/hooks/useUserRole";
+import { useIsMobile } from "@/app/hooks/useIsMobile";
 import AssignDriverModal from "../AssignDriverModal/AssignDriverModal";
 import DriverPaymentModal from "../DriverPaymentModal/DriverPaymentModal";
 import LoadingComponent from "../LoadingComponent/LoadingComponent";
+import ContractCard from "../ContractCard/ContractCard";
 import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
 import styles from "./DashboardContent.module.css";
 
@@ -57,13 +59,13 @@ const toDayNumber = (date: Date) =>
 function transformApiData(apiData: any[]): any[] {
   // Filter out "Finalizado" (3) and "Cancelado" (4) contracts
   const activeContracts = apiData.filter((contract) => {
-    const statusId = contract.contract_status_id || contract.status?.id;
-    const statusName = contract.contract_status_name || contract.status?.name;
+    const statusId = Number(contract.contract_status_id || contract.status?.id);
+    const statusName = (contract.contract_status_name || contract.status?.name || "").toLowerCase();
     return (
       statusId !== 3 &&
       statusId !== 4 &&
-      statusName !== "Finalizado" &&
-      statusName !== "Cancelado"
+      statusName !== "finalizado" &&
+      statusName !== "cancelado"
     );
   });
 
@@ -159,6 +161,7 @@ function transformApiData(apiData: any[]): any[] {
 export default function DashboardContent() {
   const router = useRouter();
   const { hasFullAccess, canCreateOrders, canAssignResources } = useUserRole();
+  const isMobile = useIsMobile();
   const [currentPage, setCurrentPage] = useState(1);
   const [contractsData, setContractsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -176,6 +179,8 @@ export default function DashboardContent() {
   // Date range filter states
   const [dateRangeStart, setDateRangeStart] = useState("");
   const [dateRangeEnd, setDateRangeEnd] = useState("");
+  // Mobile column filter state (non-date filters)
+  const [mobileColumnFilters, setMobileColumnFilters] = useState<Record<string, any>>({});
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -308,7 +313,6 @@ export default function DashboardContent() {
     // Handle external date filters
     if (activeFilters.startDate) {
       const d = new Date(activeFilters.startDate);
-      // Format to YYYY-MM-DD using local time
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, "0");
       const day = String(d.getDate()).padStart(2, "0");
@@ -327,8 +331,33 @@ export default function DashboardContent() {
       setDateRangeEnd("");
     }
 
+    // Track non-date filters for mobile card filtering
+    const columnFilters: Record<string, any> = {};
+    Object.entries(activeFilters).forEach(([key, value]) => {
+      if (key !== "startDate" && key !== "endDate" && value != null) {
+        columnFilters[key] = value;
+      }
+    });
+    setMobileColumnFilters(columnFilters);
+
     setCurrentPage(1);
   };
+
+  // Filtered data for mobile (applies column filters on top of date-filtered sampleData)
+  const mobileFilteredData = useMemo(() => {
+    if (Object.keys(mobileColumnFilters).length === 0) return sampleData;
+
+    return sampleData.filter((item) => {
+      return Object.entries(mobileColumnFilters).every(([key, value]) => {
+        if (!value) return true;
+        const itemValue = item[key];
+        if (Array.isArray(value)) {
+          return value.includes(itemValue);
+        }
+        return String(itemValue) === String(value);
+      });
+    });
+  }, [sampleData, mobileColumnFilters]);
 
   const handleSearch = (searchTerm: string) => {
     console.log("Búsqueda:", searchTerm);
@@ -406,68 +435,145 @@ export default function DashboardContent() {
 
   return (
     <div>
-      <FilterableTableComponent
-        title="Lista De Contratos"
-        originalData={sampleData}
-        columns={columns}
-        filterConfigs={filterConfigs}
-        enableFiltering={true}
-        enableSearch={true}
-        showActions={true}
-        onSearch={handleSearch}
-        enablePagination={true}
-        itemsPerPage={10}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-        onFiltersChange={handleFiltersChange}
-        actionButtons={
-          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <ButtonComponent
-              text="Actualizar"
-              icon={<ArrowClockwiseRegular width={16} height={16} />}
-              onClick={fetchContracts}
-              className={styles.refreshButton}
-              appearance="outline"
-            />
-
-            {canCreateOrders ? (
-              <div ref={dropdownRef} style={{ position: "relative" }}>
-                <ButtonComponent
-                  text="Crear Orden"
-                  icon={
-                    <AddFilled
-                      fontWeight={600}
-                      color="white"
-                      width={16}
-                      height={16}
-                    />
-                  }
-                  className={styles.createOrderButton}
-                  onClick={handleButtonClick}
-                />
-                {showDropdown && (
-                  <div className={styles.dropdownMenu}>
-                    <ButtonComponent
-                      text="Nuevo Viaje"
-                      icon={<DocumentAddRegular width={16} height={16} />}
-                      className={styles.dropdownItem}
-                      onClick={() =>
-                        handleMenuItemClick("/dashboard/createOrder")
-                      }
-                    />
-                    <ButtonComponent
-                      text="Viaje frecuente"
-                      icon={<ArrowRepeatAllRegular width={16} height={16} />}
-                      className={styles.dropdownItem}
-                      onClick={() => handleMenuItemClick("/dashboard")}
-                    />
-                  </div>
-                )}
-              </div>
-            ) : null}
+      {isMobile ? (
+        /* ─── MOBILE VIEW: Cards ─── */
+        <div className={styles.mobileContainer}>
+          <div className={styles.mobileHeader}>
+            <h2 className={styles.mobileTitle}>Lista De Contratos</h2>
+            <div className={styles.mobileActions}>
+              <ButtonComponent
+                text="Actualizar"
+                icon={<ArrowClockwiseRegular width={16} height={16} />}
+                onClick={fetchContracts}
+                className={styles.refreshButton}
+                appearance="outline"
+              />
+              {canCreateOrders && (
+                <div ref={dropdownRef} style={{ position: "relative" }}>
+                  <ButtonComponent
+                    text="Crear"
+                    icon={
+                      <AddFilled fontWeight={600} color="white" width={16} height={16} />
+                    }
+                    className={styles.createOrderButton}
+                    onClick={handleButtonClick}
+                  />
+                  {showDropdown && (
+                    <div className={styles.dropdownMenu}>
+                      <ButtonComponent
+                        text="Nuevo Viaje"
+                        icon={<DocumentAddRegular width={16} height={16} />}
+                        className={styles.dropdownItem}
+                        onClick={() => handleMenuItemClick("/dashboard/createOrder")}
+                      />
+                      <ButtonComponent
+                        text="Viaje frecuente"
+                        icon={<ArrowRepeatAllRegular width={16} height={16} />}
+                        className={styles.dropdownItem}
+                        onClick={() => handleMenuItemClick("/dashboard")}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        }
-      />
+
+          {/* Mobile Filters */}
+          <div className={styles.mobileFilters}>
+            <FilterComponent
+              filters={filterConfigs}
+              onFiltersChange={handleFiltersChange}
+              showActiveFilters={false}
+              showClearButton={true}
+              containerClassName={styles.mobileFilterContainer}
+            />
+          </div>
+
+          <div className={styles.mobileList}>
+            {mobileFilteredData.length === 0 ? (
+              <p style={{ textAlign: "center", color: "#888", padding: 24 }}>
+                No hay contratos disponibles.
+              </p>
+            ) : (
+              mobileFilteredData.map((contract, idx) => (
+                <ContractCard
+                  key={contract.contract_id || idx}
+                  contract={contract}
+                  showActions={canAssignResources || hasFullAccess}
+                  onEdit={handleEditOrder}
+                  onAssignDriver={canAssignResources ? handleAssignDriver : undefined}
+                  onPayDriver={hasFullAccess ? handlePayDriver : undefined}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      ) : (
+        /* ─── DESKTOP VIEW: Table ─── */
+        <FilterableTableComponent
+          title="Lista De Contratos"
+          originalData={sampleData}
+          columns={columns}
+          filterConfigs={filterConfigs}
+          enableFiltering={true}
+          enableSearch={true}
+          showActions={true}
+          onSearch={handleSearch}
+          enablePagination={true}
+          itemsPerPage={10}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onFiltersChange={handleFiltersChange}
+          actionButtons={
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <ButtonComponent
+                text="Actualizar"
+                icon={<ArrowClockwiseRegular width={16} height={16} />}
+                onClick={fetchContracts}
+                className={styles.refreshButton}
+                appearance="outline"
+              />
+
+              {canCreateOrders ? (
+                <div ref={dropdownRef} style={{ position: "relative" }}>
+                  <ButtonComponent
+                    text="Crear Orden"
+                    icon={
+                      <AddFilled
+                        fontWeight={600}
+                        color="white"
+                        width={16}
+                        height={16}
+                      />
+                    }
+                    className={styles.createOrderButton}
+                    onClick={handleButtonClick}
+                  />
+                  {showDropdown && (
+                    <div className={styles.dropdownMenu}>
+                      <ButtonComponent
+                        text="Nuevo Viaje"
+                        icon={<DocumentAddRegular width={16} height={16} />}
+                        className={styles.dropdownItem}
+                        onClick={() =>
+                          handleMenuItemClick("/dashboard/createOrder")
+                        }
+                      />
+                      <ButtonComponent
+                        text="Viaje frecuente"
+                        icon={<ArrowRepeatAllRegular width={16} height={16} />}
+                        className={styles.dropdownItem}
+                        onClick={() => handleMenuItemClick("/dashboard")}
+                      />
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+          }
+        />
+      )}
 
       {/* Modals */}
       <AssignDriverModal

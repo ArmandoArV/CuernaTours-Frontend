@@ -81,3 +81,61 @@
 .dropdownItem:active {
   background-color: #e8ecf1;
 }
+
+/* ─── Mobile Layout ─── */
+.mobileContainer {
+  padding: 0 16px;
+}
+
+.mobileHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.mobileTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a2e47;
+  margin: 0;
+  font-family: var(--font-raleway), Raleway, sans-serif;
+}
+
+.mobileActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.mobileList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobileFilters {
+  margin-bottom: 16px;
+}
+
+.mobileFilterContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Make filters stack in 2-column grid on mobile */
+@media (max-width: 768px) {
+  .mobileFilters :global(.ms-Stack) {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .mobileFilters :global(.ms-StackItem) {
+    min-width: calc(50% - 4px) !important;
+    max-width: calc(50% - 4px) !important;
+    flex: 1 1 calc(50% - 4px) !important;
+  }
+}

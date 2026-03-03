@@ -5,17 +5,7 @@ import SearchableSelectComponent, { SearchableSelectOption } from "../Searchable
 import InputComponent from "../InputComponent/InputComponent";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import { DeleteRegular, AddFilled } from "@fluentui/react-icons";
-
-interface Parada {
-  id: string;
-  nombreLugar: string;
-  calle: string;
-  numero: string;
-  colonia: string;
-  codigoPostal: string;
-  ciudad: string;
-  estado: string;
-}
+import type { Parada } from "@/app/hooks/useParadas";
 
 interface ParadaItemProps {
   parada: Parada;
@@ -48,6 +38,17 @@ export default function ParadaItem({
           onSearch={onPlaceSearch}
           onCreate={() => onCreatePlace("destino")}
           placeholder="Buscar lugar..."
+          className={styles.input}
+        />
+      </div>
+
+      <div className={styles.section}>
+        <InputComponent
+          type="text"
+          value={parada.description || ""}
+          onChange={(e) => onChange(parada.id, "description", e.target.value)}
+          label="Descripción de la parada"
+          placeholder="Ej: Parar por café en algún Oxxo"
           className={styles.input}
         />
       </div>

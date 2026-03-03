@@ -11,6 +11,9 @@ export function useTripDropdowns() {
   const [unidades, setUnidades] = useState<
     Array<{ value: string; label: string; licensePlate?: string }>
   >([]);
+  const [tiposUnidad, setTiposUnidad] = useState<
+    Array<{ value: string; label: string; capacity?: number }>
+  >([]);
 
   const fetchLugares = useCallback(async () => {
     try {
@@ -42,18 +45,33 @@ export function useTripDropdowns() {
     }
   }, []);
 
+  const fetchTiposUnidad = useCallback(async () => {
+    try {
+      const data = await referenceService.getPrefillableData();
+      if (data.vehicle_types) {
+        const options = referenceService.transformVehicleTypesForSelect(data.vehicle_types);
+        setTiposUnidad(options);
+      }
+    } catch (error) {
+      console.error("Error fetching tipos de unidad:", error);
+    }
+  }, []);
+
   useEffect(() => {
     fetchLugares();
     fetchChoferes();
     fetchUnidades();
-  }, [fetchLugares, fetchChoferes, fetchUnidades]);
+    fetchTiposUnidad();
+  }, [fetchLugares, fetchChoferes, fetchUnidades, fetchTiposUnidad]);
 
   return {
     lugares,
     choferes,
     unidades,
+    tiposUnidad,
     fetchLugares,
     fetchChoferes,
     fetchUnidades,
+    fetchTiposUnidad,
   };
 }
