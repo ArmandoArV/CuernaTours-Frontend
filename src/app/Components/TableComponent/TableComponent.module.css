@@ -141,93 +141,6 @@
   border-bottom-left-radius: 7px;
 }
 
-.actionButton {
-  padding: 6px 12px;
-  font-size: 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: 500;
-  min-width: 90px;
-  justify-content: center;
-}
-
-.viewButton {
-  background-color: transparent;
-  color: rgb(0, 0, 0);
-  font-size: 30px;
-  border: none;
-  margin-right: 20px;
-  cursor: pointer;
-}
-
-.viewButton:hover {
-  transform: translateY(-1px);
-}
-
-.editButton {
-  background-color: #28a745;
-  color: white;
-  background-color: transparent;
-  color: rgb(0, 0, 0);
-  font-size: 30px;
-  border: none;
-  cursor: pointer;
-}
-
-.editButton:hover {
-  transform: translateY(-1px);
-}
-
-.tooltip {
-  position: fixed;
-  background-color: #333;
-  color: white;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 15px;
-  z-index: 1000;
-  pointer-events: none;
-  white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  transform: translateX(-50%);
-  max-width: 150px;
-}
-
-.tooltip::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid #333;
-}
-
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-  font-style: italic;
-}
-
-.error {
-  color: #dc3545;
-  text-align: center;
-  padding: 20px;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  border-radius: 6px;
-  margin: 16px 0;
-}
-
 .emptyMessage {
   text-align: center;
   padding: 40px;
@@ -248,85 +161,12 @@
   line-height: 1.5;
 }
 
-/* Status pill in Estatus column */
-.statusCell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.statusPill {
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 12px;
-  display: inline-block;
-  text-align: center;
-  min-width: 80px;
-}
-
-.statusDot {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  margin-right: 2px;
-}
-
 /* Pagination wrapper */
 .paginationWrapper {
   display: flex;
   justify-content: center;
   margin-top: 20px;
   padding: 16px 0;
-}
-
-/* Dropdown Menu Styles */
-.dropdownContainer {
-  position: relative;
-  display: inline-block;
-}
-
-.dropdownMenu {
-  position: fixed;
-  background-color: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 9999;
-  min-width: 200px;
-  overflow: visible;
-  margin-top: 4px;
-}
-
-.dropdownItem {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 16px;
-  border: none;
-  background-color: white;
-  color: #333;
-  font-size: 14px;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  font-weight: 400;
-}
-
-.dropdownItem:hover {
-  background-color: #f8f9fa;
-}
-
-.dropdownItem:first-child {
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-}
-
-.dropdownItem:last-child {
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
 }
 
 /* Details row styling (inserted directly under a selected row) */

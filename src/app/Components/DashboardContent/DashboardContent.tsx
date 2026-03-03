@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useMemo } from "react";
 import FilterableTableComponent from "../FilterableTable/FilterableTableComponent";
 import FilterComponent, { FilterConfig, FilterPresets } from "../FilterComponent";
 
@@ -16,6 +16,7 @@ import {
   MenuList,
   MenuItem,
   MenuDivider,
+  Button,
 } from "@fluentui/react-components";
 
 import {
@@ -169,8 +170,6 @@ export default function DashboardContent() {
     () => contractsService.getAll(),
     [] as any[],
   );
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Modal states
   const [isAssignDriverModalOpen, setIsAssignDriverModalOpen] = useState(false);
@@ -184,26 +183,6 @@ export default function DashboardContent() {
   const [dateRangeEnd, setDateRangeEnd] = useState("");
   // Mobile column filter state (non-date filters)
   const [mobileColumnFilters, setMobileColumnFilters] = useState<Record<string, any>>({});
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
-    };
-
-    if (showDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showDropdown]);
 
   // Transform API data for the table
   const transformedData = transformApiData(contractsData);
@@ -339,15 +318,6 @@ export default function DashboardContent() {
     log.debug("Búsqueda:", searchTerm);
   };
 
-  const handleButtonClick = () => {
-    setShowDropdown(!showDropdown);
-  };
-
-  const handleMenuItemClick = (path: string) => {
-    setShowDropdown(false);
-    router.push(path);
-  };
-
   // Action handlers for table dropdown actions
   const handleEditOrder = (row: any) => {
     if (row.contract_id) {
@@ -462,32 +432,33 @@ export default function DashboardContent() {
                 appearance="outline"
               />
               {canCreateOrders && (
-                <div ref={dropdownRef} style={{ position: "relative" }}>
-                  <ButtonComponent
-                    text="Crear"
-                    icon={
-                      <AddFilled fontWeight={600} color="white" width={16} height={16} />
-                    }
-                    className={styles.createOrderButton}
-                    onClick={handleButtonClick}
-                  />
-                  {showDropdown && (
-                    <div className={styles.dropdownMenu}>
-                      <ButtonComponent
-                        text="Nuevo Viaje"
-                        icon={<DocumentAddRegular width={16} height={16} />}
-                        className={styles.dropdownItem}
-                        onClick={() => handleMenuItemClick("/dashboard/createOrder")}
-                      />
-                      <ButtonComponent
-                        text="Viaje frecuente"
-                        icon={<ArrowRepeatAllRegular width={16} height={16} />}
-                        className={styles.dropdownItem}
-                        onClick={() => handleMenuItemClick("/dashboard")}
-                      />
-                    </div>
-                  )}
-                </div>
+                <Menu>
+                  <MenuTrigger disableButtonEnhancement>
+                    <Button
+                      appearance="primary"
+                      icon={<AddFilled />}
+                      className={styles.createOrderButton}
+                    >
+                      Crear
+                    </Button>
+                  </MenuTrigger>
+                  <MenuPopover>
+                    <MenuList>
+                      <MenuItem
+                        icon={<DocumentAddRegular />}
+                        onClick={() => router.push("/dashboard/createOrder")}
+                      >
+                        Nuevo Viaje
+                      </MenuItem>
+                      <MenuItem
+                        icon={<ArrowRepeatAllRegular />}
+                        onClick={() => router.push("/dashboard")}
+                      >
+                        Viaje frecuente
+                      </MenuItem>
+                    </MenuList>
+                  </MenuPopover>
+                </Menu>
               )}
             </div>
           </div>
@@ -552,39 +523,33 @@ export default function DashboardContent() {
               />
 
               {canCreateOrders ? (
-                <div ref={dropdownRef} style={{ position: "relative" }}>
-                  <ButtonComponent
-                    text="Crear Orden"
-                    icon={
-                      <AddFilled
-                        fontWeight={600}
-                        color="white"
-                        width={16}
-                        height={16}
-                      />
-                    }
-                    className={styles.createOrderButton}
-                    onClick={handleButtonClick}
-                  />
-                  {showDropdown && (
-                    <div className={styles.dropdownMenu}>
-                      <ButtonComponent
-                        text="Nuevo Viaje"
-                        icon={<DocumentAddRegular width={16} height={16} />}
-                        className={styles.dropdownItem}
-                        onClick={() =>
-                          handleMenuItemClick("/dashboard/createOrder")
-                        }
-                      />
-                      <ButtonComponent
-                        text="Viaje frecuente"
-                        icon={<ArrowRepeatAllRegular width={16} height={16} />}
-                        className={styles.dropdownItem}
-                        onClick={() => handleMenuItemClick("/dashboard")}
-                      />
-                    </div>
-                  )}
-                </div>
+                <Menu>
+                  <MenuTrigger disableButtonEnhancement>
+                    <Button
+                      appearance="primary"
+                      icon={<AddFilled />}
+                      className={styles.createOrderButton}
+                    >
+                      Crear Orden
+                    </Button>
+                  </MenuTrigger>
+                  <MenuPopover>
+                    <MenuList>
+                      <MenuItem
+                        icon={<DocumentAddRegular />}
+                        onClick={() => router.push("/dashboard/createOrder")}
+                      >
+                        Nuevo Viaje
+                      </MenuItem>
+                      <MenuItem
+                        icon={<ArrowRepeatAllRegular />}
+                        onClick={() => router.push("/dashboard")}
+                      >
+                        Viaje frecuente
+                      </MenuItem>
+                    </MenuList>
+                  </MenuPopover>
+                </Menu>
               ) : null}
             </div>
           }

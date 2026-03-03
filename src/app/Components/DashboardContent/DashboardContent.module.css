@@ -1,17 +1,11 @@
 .createOrderButton {
-  padding: 8px 16px;
   background-color: #96781a !important;
   color: white !important;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  border: none !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
   font-family: var(--font-raleway), Raleway, sans-serif;
-  width: 160px;
+  min-width: 120px !important;
 }
 
 .createOrderButton:hover {
@@ -40,46 +34,6 @@
   background-color: #f9f6e8;
   border-color: #7a6115;
   color: #7a6115;
-}
-
-.dropdownMenu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 4px;
-  background-color: white;
-  border: 1px solid #d1d1d1;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 200px;
-  z-index: 1000;
-  overflow: hidden;
-}
-
-.dropdownItem {
-  padding: 12px 16px;
-  background-color: white;
-  border: none;
-  text-align: left;
-  font-size: 0.95rem;
-  font-weight: 400;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  font-family: var(--font-raleway), Raleway, sans-serif;
-  color: #1a2e47;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-
-}
-
-.dropdownItem:hover {
-  background-color: #f5f7fa;
-}
-
-.dropdownItem:active {
-  background-color: #e8ecf1;
 }
 
 /* ─── Mobile Layout ─── */
