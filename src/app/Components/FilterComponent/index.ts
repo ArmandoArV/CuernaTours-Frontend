@@ -5,7 +5,6 @@ export { FilterPresets } from './FilterTypes';
 export type { 
     FilterOption, 
     FilterConfig, 
-    ActiveFilter, 
     FilterComponentProps,
     CreateFilterConfig 
 } from './FilterTypes';

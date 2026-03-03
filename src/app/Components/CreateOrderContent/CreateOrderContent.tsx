@@ -421,7 +421,9 @@ export default function CreateOrderContent({
           </Link>
           <div>
             <h1 className={styles.title}>
-              {isEdit ? "Editar contrato de orden" : "Crear contrato de orden"}
+              {isEdit
+                ? "Editar contrato de orden #" + contractId
+                : "Crear contrato de orden"}
             </h1>
             <p className={styles.subtitle} style={{ color: "red" }}>
               Campos obligatorios <strong style={{ color: "red" }}>* </strong>

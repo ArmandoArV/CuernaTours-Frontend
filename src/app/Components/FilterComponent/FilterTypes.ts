@@ -1,37 +1,37 @@
 // FilterComponent Types
 import { formatDateStandard } from "@/app/Utils/FormatUtil";
 
+export type FilterType = 'dropdown' | 'combobox' | 'date' | 'text';
+
 export interface FilterOption {
-    value: string;
+    value: string | number;
     label: string;
     disabled?: boolean;
+    data?: any;
 }
 
 export interface FilterConfig {
     key: string;
     label: string;
-    placeholder: string;
-    options: FilterOption[];
+    placeholder?: string;
+    type?: FilterType; // Defaults to 'dropdown' if not specified
+    options?: FilterOption[]; // Required for dropdown/combobox
     multiple?: boolean;
-    searchable?: boolean;
-    formatDisplay?: (value: string) => string;
-}
-
-export interface ActiveFilter {
-    key: string;
-    value: string;
-    label: string;
-    displayValue: string;
+    searchable?: boolean; // For combobox
+    formatDisplay?: (value: any) => string;
+    minDate?: Date; // For date type
+    maxDate?: Date; // For date type
+    defaultValue?: any;
 }
 
 export interface FilterComponentProps {
     filters: FilterConfig[];
-    onFiltersChange: (activeFilters: Record<string, string | string[]>) => void;
-    onFilterChange?: (filterKey: string, filterValue: string | string[]) => void;
+    onFiltersChange: (activeFilters: Record<string, any>) => void;
+    onFilterChange?: (filterKey: string, filterValue: any) => void;
     showActiveFilters?: boolean;
     showClearButton?: boolean;
     className?: string;
-    placeholder?: string;
+    containerClassName?: string;
 }
 
 // Utility type for creating filter configurations
@@ -41,7 +41,7 @@ export type CreateFilterConfig = Omit<FilterConfig, 'options'> & {
 
 // Common filter presets
 export const FilterPresets = {
-    // Date filter configuration
+    // Date filter configuration (Dropdown style)
     createDateFilter: (
         key: string = "fecha",
         dates: string[] = [],
@@ -55,6 +55,22 @@ export const FilterPresets = {
             label: formatDateStandard(date) || date
         })),
         formatDisplay: (value: string) => formatDateStandard(value) || value
+    }),
+
+    // Date Picker configuration (Calendar style)
+    createDatePickerFilter: (
+        key: string = "fecha",
+        label: string = "Fecha",
+        placeholder: string = "Seleccionar fecha"
+    ): FilterConfig => ({
+        key,
+        label,
+        placeholder,
+        type: 'date',
+        formatDisplay: (value: any) => {
+             if (value instanceof Date) return value.toLocaleDateString();
+             return formatDateStandard(value) || value;
+        }
     }),
 
     // Status filter configuration

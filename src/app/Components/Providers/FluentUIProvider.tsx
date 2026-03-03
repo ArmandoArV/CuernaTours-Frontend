@@ -1,7 +1,11 @@
 "use client";
 
 import { FluentProvider, webLightTheme, Theme } from '@fluentui/react-components';
+import { initializeIcons } from '@fluentui/react';
 import { ReactNode } from 'react';
+
+// Initialize icons for Fluent UI v8 components (Dropdown, ComboBox, DatePicker)
+initializeIcons();
 
 interface FluentUIProviderProps {
   children: ReactNode;
