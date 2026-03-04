@@ -60,8 +60,9 @@ export default function UnidadItem({
           <ButtonComponent
             type="button"
             onClick={() => onRemove(selection.id)}
-            icon={<DeleteRegular color="#1A2E47" />}
+            icon={<DeleteRegular color="white" />}
             className={`${styles.button} ${styles.deleteButton}`}
+            style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47", color: "white" }}
           />
         )}
         <ButtonComponent
@@ -69,6 +70,7 @@ export default function UnidadItem({
           onClick={onAdd}
           icon={<AddFilled />}
           className={`${styles.button} ${styles.addButton}`}
+          style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47", color: "white" }}
         />
       </div>
     </div>

@@ -1,5 +1,5 @@
 .createOrderButton {
-  background-color: #96781a !important;
+  background-color: #1a2e47 !important;
   color: white !important;
   border: none !important;
   border-radius: 6px !important;
@@ -9,7 +9,7 @@
 }
 
 .createOrderButton:hover {
-  background-color: #7a6115 !important;
+  background-color: #152338 !important;
   color: white !important;
 }
 

@@ -12,6 +12,7 @@ export default function ButtonComponent({
   icon,
   title,
   appearance,
+  style,
 }: IButtonProps) {
   const buttonType = type === "cancel" ? "button" : type;
   
@@ -24,6 +25,7 @@ export default function ButtonComponent({
       icon={icon ? <span className={styles.icon}>{icon}</span> : undefined}
       title={title}
       appearance={appearance}
+      style={style}
     >
       {text}
     </Button>

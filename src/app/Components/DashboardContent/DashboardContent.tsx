@@ -449,6 +449,7 @@ export default function DashboardContent() {
                       appearance="primary"
                       icon={<AddFilled />}
                       className={styles.createOrderButton}
+                      style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47" }}
                     >
                       Crear
                     </Button>
@@ -541,6 +542,7 @@ export default function DashboardContent() {
                       appearance="primary"
                       icon={<AddFilled />}
                       className={styles.createOrderButton}
+                      style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47" }}
                     >
                       Crear Orden
                     </Button>

@@ -236,18 +236,20 @@
 
 .cancelButton {
   background-color: #fff;
-  color: #323130;
-  border: 1px solid #d1d1d1;
+  color: #96781a;
+  border: 2px solid #96781a;
   padding: 0.75rem 2rem;
   border-radius: 4px;
   font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .cancelButton:hover:not(:disabled) {
-  background-color: #f3f2f1;
-  border-color: #a19f9d;
+  background-color: #f7f3e8;
+  border-color: #7a6115;
+  color: #7a6115;
 }
 
 .submitButton {

@@ -553,6 +553,7 @@ export default function UsersContent() {
                     appearance="secondary"
                     onClick={() => setDialogOpen(false)}
                     disabled={saving}
+                    style={{ color: "#96781a", borderColor: "#96781a" }}
                   >
                     Cancelar
                   </Button>

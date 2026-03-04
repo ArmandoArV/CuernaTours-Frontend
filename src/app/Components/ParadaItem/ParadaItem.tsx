@@ -114,15 +114,17 @@ export default function ParadaItem({
           type="button"
           onClick={() => onRemove(parada.id)}
           icon={<DeleteRegular 
-          color="#1A2E47"
+          color="white"
           />}
           className={`${styles.button} ${styles.deleteButton}`}
+          style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47", color: "white" }}
         />
         <ButtonComponent
           type="button"
           onClick={onAdd}
           icon={<AddFilled />}
           className={`${styles.button} ${styles.addButton}`}
+          style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47", color: "white" }}
         />
       </div>
     </div>

@@ -312,13 +312,19 @@ const ClientPaymentModal: React.FC<ClientPaymentModalProps> = ({
           </DialogContent>
 
           <DialogActions>
-            <Button appearance="secondary" onClick={onClose} disabled={saving}>
+            <Button
+              appearance="secondary"
+              onClick={onClose}
+              disabled={saving}
+              style={{ color: "#96781a", borderColor: "#96781a" }}
+            >
               Cancelar
             </Button>
             <Button
               appearance="primary"
               onClick={handleSave}
               disabled={saving || loading || !!error}
+              style={{ backgroundColor: "#96781a", borderColor: "#96781a" }}
             >
               {saving ? <Spinner size="tiny" /> : "Registrar Pago"}
             </Button>

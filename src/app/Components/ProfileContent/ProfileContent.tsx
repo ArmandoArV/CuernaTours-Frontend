@@ -251,6 +251,7 @@ export default function ProfileContent({ userId }: ProfileContentProps) {
                 icon={<DismissRegular />}
                 onClick={cancelEdit}
                 disabled={saving}
+                style={{ color: "#96781a", borderColor: "#96781a" }}
               >
                 Cancelar
               </Button>
@@ -344,6 +345,7 @@ export default function ProfileContent({ userId }: ProfileContentProps) {
                 icon={<DismissRegular />}
                 onClick={cancelEdit}
                 disabled={saving}
+                style={{ color: "#96781a", borderColor: "#96781a" }}
               >
                 Cancelar
               </Button>
@@ -436,6 +438,7 @@ export default function ProfileContent({ userId }: ProfileContentProps) {
                 icon={<DismissRegular />}
                 onClick={cancelEdit}
                 disabled={saving}
+                style={{ color: "#96781a", borderColor: "#96781a" }}
               >
                 Cancelar
               </Button>
@@ -553,9 +556,10 @@ export default function ProfileContent({ userId }: ProfileContentProps) {
               <div className={styles.formActions}>
                 <Button
                   appearance="secondary"
-                  icon={<DismissRegular />}
-                  onClick={cancelEdit}
-                  disabled={saving}
+                icon={<DismissRegular />}
+                onClick={cancelEdit}
+                disabled={saving}
+                style={{ color: "#96781a", borderColor: "#96781a" }}
                 >
                   Cancelar
                 </Button>
@@ -654,6 +658,7 @@ export default function ProfileContent({ userId }: ProfileContentProps) {
                 icon={<DismissRegular />}
                 onClick={cancelEdit}
                 disabled={saving}
+                style={{ color: "#96781a", borderColor: "#96781a" }}
               >
                 Cancelar
               </Button>

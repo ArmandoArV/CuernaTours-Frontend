@@ -358,6 +358,7 @@
 .addButton {
   background-color: var(--Main-1A2E47, #1a2e47) !important;
   border: none !important;
+  border-color: var(--Main-1A2E47, #1a2e47) !important;
   color: white !important;
   font-size: 1.5rem;
   font-weight: 900;
@@ -365,6 +366,7 @@
 
 .addButton:hover {
   background-color: #152338 !important;
+  border-color: #152338 !important;
 }
 
 .paradaForm {

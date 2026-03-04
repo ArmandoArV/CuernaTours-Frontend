@@ -47,16 +47,14 @@
 }
 
 .deleteButton {
-  border-color: #d1d5db;
-  color: #374151;
-  border: 1px solid var(--Main-1A2E47);
-  background-color: transparent;
+  background-color: var(--Main-1A2E47, #1a2e47);
+  border-color: var(--Main-1A2E47, #1a2e47);
+  color: white;
 }
 
 .deleteButton:hover {
-  background-color: #fee2e2;
-  border-color: #dc2626;
-  color: #dc2626;
+  background-color: #152338;
+  border-color: #152338;
 }
 
 .addButton {

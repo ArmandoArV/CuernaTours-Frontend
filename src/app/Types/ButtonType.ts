@@ -7,4 +7,5 @@ export type IButtonProps = {
   icon?: React.ReactNode;
   title?: string;
   appearance?: "primary" | "secondary" | "outline" | "subtle" | "transparent";
+  style?: React.CSSProperties;
 }

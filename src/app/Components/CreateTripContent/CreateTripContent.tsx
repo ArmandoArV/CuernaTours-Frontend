@@ -1314,6 +1314,7 @@ export default function CreateTripContent({
               onClick={handleAddParada}
               icon={<AddFilled />}
               className={`${styles.button} ${styles.addButton}`}
+              style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47", color: "white" }}
             />
           </div>
 
@@ -1383,6 +1384,7 @@ export default function CreateTripContent({
                       onClick={handleAddReturnParada}
                       icon={<AddFilled />}
                       className={`${styles.button} ${styles.addButton}`}
+                      style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47", color: "white" }}
                     />
                   </div>
                   {returnParadas.map((parada, index) => (

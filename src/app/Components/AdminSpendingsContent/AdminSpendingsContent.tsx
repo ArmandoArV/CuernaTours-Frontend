@@ -222,8 +222,8 @@ export default function AdminSpendingsContent() {
           <Button
             appearance="primary"
             icon={<AddRegular />}
-            className={styles.primaryButton}
             onClick={() => router.push("/gastos/crear")}
+            style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47" }}
           >
             Registrar Gasto
           </Button>
@@ -492,6 +492,7 @@ export default function AdminSpendingsContent() {
                     setActionDialog({ open: false, type: "approve", spending: null })
                   }
                   disabled={actionLoading}
+                  style={{ color: "#96781a", borderColor: "#96781a" }}
                 >
                   Cancelar
                 </Button>

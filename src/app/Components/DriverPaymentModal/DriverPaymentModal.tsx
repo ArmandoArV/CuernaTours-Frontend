@@ -429,15 +429,28 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
           </DialogContent>
           
           <DialogActions>
-            <Button appearance="secondary" onClick={onClose}>
+            <Button
+              appearance="secondary"
+              onClick={onClose}
+              style={{ color: "#96781a", borderColor: "#96781a" }}
+            >
               Cancelar
             </Button>
             {step === 1 ? (
-              <Button appearance="primary" onClick={handleNext}>
+              <Button
+                appearance="primary"
+                onClick={handleNext}
+                style={{ backgroundColor: "#96781a", borderColor: "#96781a" }}
+              >
                 Siguiente
               </Button>
             ) : (
-              <Button appearance="primary" onClick={handleSave} disabled={loading}>
+              <Button
+                appearance="primary"
+                onClick={handleSave}
+                disabled={loading}
+                style={{ backgroundColor: "#96781a", borderColor: "#96781a" }}
+              >
                 {loading ? <Spinner size="tiny" /> : "Guardar"}
               </Button>
             )}

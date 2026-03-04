@@ -464,13 +464,18 @@ const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
           </DialogContent>
 
           <DialogActions>
-            <Button appearance="secondary" onClick={onClose}>
+            <Button
+              appearance="secondary"
+              onClick={onClose}
+              style={{ color: "#96781a", borderColor: "#96781a" }}
+            >
               Cancelar
             </Button>
             <Button 
               appearance="primary" 
               onClick={handleSave}
               disabled={isLoading || isSaving}
+              style={{ backgroundColor: "#96781a", borderColor: "#96781a" }}
             >
               {isSaving ? <Spinner size="tiny" /> : "Guardar Asignación"}
             </Button>

@@ -148,6 +148,7 @@ export default function DriverSpendingsContent({ createRoute = "/chofer/gastos/c
             appearance="primary"
             icon={<AddFilled />}
             onClick={handleCreateSpending}
+            style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47" }}
           >
             Registrar Gasto
           </Button>
