@@ -85,8 +85,8 @@
 
 .driverTypeSelector label input[type="radio"]:checked,
 .sameDriverSelector label input[type="radio"]:checked {
-  border-color: #96781a;
-  background-color: #96781a;
+  border-color: #1a2e47;
+  background-color: #1a2e47;
 }
 
 .driverTypeSelector label input[type="radio"]:checked::before,

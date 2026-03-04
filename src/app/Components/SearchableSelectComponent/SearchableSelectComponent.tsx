@@ -151,7 +151,7 @@ export default function SearchableSelectComponent({
       validationMessage={hasError ? errorMessage : undefined}
       validationState={hasError ? "error" : undefined}
     >
-      <div style={{ display: "flex", gap: 8 }} className={className}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }} className={className}>
         <Combobox
           id={id}
           placeholder={placeholder}
@@ -161,7 +161,7 @@ export default function SearchableSelectComponent({
           onOptionSelect={handleOptionSelect}
           onOpenChange={handleOpenChange}
           disabled={disabled}
-          style={{ flex: 1 }}
+          style={{ flex: "1 1 160px", minWidth: 0 }}
         >
           {isLoading && (
             <Option value="loading" text={loadingText} disabled>
@@ -193,6 +193,8 @@ export default function SearchableSelectComponent({
               backgroundColor: "var(--Main-96781A)",
               borderColor: "var(--Main-96781A)",
               color: "#ffffff",
+              flexShrink: 0,
+              whiteSpace: "nowrap",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = "#7e6315";

@@ -203,8 +203,8 @@
 }
 
 .radioOption input[type="radio"]:checked {
-  border-color: #96781a;
-  background-color: #96781a;
+  border-color: #1a2e47;
+  background-color: #1a2e47;
 }
 
 .radioOption input[type="radio"]:checked::before {
@@ -243,7 +243,7 @@
 }
 
 .checkboxLabel input[type="checkbox"] {
-  accent-color: #96781a;
+  accent-color: #1a2e47;
 }
 
 /* BUTTON FOOTER */

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./UnidadItem.module.css";
 import SelectComponent from "../SelectComponent/SelectComponent";
 import InputComponent from "../InputComponent/InputComponent";
@@ -26,6 +26,12 @@ export default function UnidadItem({
   onAdd,
   canDelete,
 }: UnidadItemProps) {
+  const [quantityStr, setQuantityStr] = useState(selection.quantity.toString());
+
+  useEffect(() => {
+    setQuantityStr(selection.quantity.toString());
+  }, [selection.quantity]);
+
   return (
     <div className={styles.unidadContainer}>
       <div className={styles.section}>
@@ -47,8 +53,14 @@ export default function UnidadItem({
         <div className={styles.quantityInput}>
           <InputComponent
             type="number"
-            value={selection.quantity.toString()}
-            onChange={(e) => onChange(selection.id, "quantity", parseInt(e.target.value) || 1)}
+            value={quantityStr}
+            onChange={(e) => setQuantityStr(e.target.value)}
+            onBlur={(e) => {
+              const num = parseInt(e.target.value);
+              const clamped = isNaN(num) || num < 1 ? 1 : num;
+              setQuantityStr(clamped.toString());
+              onChange(selection.id, "quantity", clamped);
+            }}
             label="Cantidad"
             className={styles.input}
           />

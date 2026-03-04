@@ -10,9 +10,9 @@
   display: flex;
   width: 100%;
   min-height: fit-content;
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 1rem;
+  align-items: center;
+  flex-direction: row;
+  gap: 0.5rem;
 }
 
 .backButton {
@@ -213,8 +213,8 @@
 }
 
 .radioOption input[type="radio"]:checked {
-  border-color: #96781a;
-  background-color: #96781a;
+  border-color: #1a2e47;
+  background-color: #1a2e47;
 }
 
 .radioOption input[type="radio"]:checked::before {
@@ -369,6 +369,12 @@
   border-color: #152338 !important;
 }
 
+@media (max-width: 480px) {
+  .paradasAddButton {
+    width: 100% !important;
+  }
+}
+
 .paradaForm {
   border-radius: 6px;
   padding: 2rem;
@@ -466,9 +472,7 @@
 /* Tablet and desktop styles */
 @media (min-width: 768px) {
   .header {
-    flex-direction: row;
     align-items: center;
-    height: 20%;
   }
 
   .section {
@@ -531,8 +535,7 @@
   }
 
   .radioOptions {
-    flex-direction: column;
-    gap: 0.5rem;
+    gap: 1rem;
   }
 
   .radioLabel {

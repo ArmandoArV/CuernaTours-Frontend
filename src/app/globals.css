@@ -73,9 +73,9 @@ body {
   margin: 0;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: #1a2e47;
 }
 
 /* SweetAlert2 Custom Button Styles */

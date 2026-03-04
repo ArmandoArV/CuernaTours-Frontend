@@ -281,7 +281,6 @@ export default function CreateTripContent({
 
   const handlePlaceSelect = handlePlaceSelectHook;
 
-
   useEffect(() => {
     const fetchTripData = async () => {
       if (!contractId) return;
@@ -445,8 +444,6 @@ export default function CreateTripContent({
     fetchTripData();
   }, [contractId, setTripData]);
 
-
-
   /* =============================
    COMPATIBILITY (DO NOT REMOVE)
    Keeps existing JSX working
@@ -521,9 +518,7 @@ export default function CreateTripContent({
 
   // Parada handlers replaced by useParadas hook
 
-
   // Removed manual fetchLugares, fetchChoferes, fetchUnidades as they are in the hook
-
 
   // Load data and sync with context
   useEffect(() => {
@@ -786,6 +781,9 @@ export default function CreateTripContent({
             </h1>
           </div>
         </div>
+        <p style={{ color: "#dc2626", fontSize: "0.82rem", margin: "4px 0 0 0" }}>
+          *Los campos marcados con un asterisco rojo son obligatorios
+        </p>
         <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
           <div className={styles.divider}>
             <h2 className={styles.subsectionTitle}>Ida</h2>
@@ -1313,7 +1311,7 @@ export default function CreateTripContent({
               type="button"
               onClick={handleAddParada}
               icon={<AddFilled />}
-              className={`${styles.button} ${styles.addButton}`}
+              className={`${styles.button} ${styles.addButton} ${styles.paradasAddButton}`}
               style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47", color: "white" }}
             />
           </div>
@@ -1383,7 +1381,7 @@ export default function CreateTripContent({
                       type="button"
                       onClick={handleAddReturnParada}
                       icon={<AddFilled />}
-                      className={`${styles.button} ${styles.addButton}`}
+                      className={`${styles.button} ${styles.addButton} ${styles.paradasAddButton}`}
                       style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47", color: "white" }}
                     />
                   </div>

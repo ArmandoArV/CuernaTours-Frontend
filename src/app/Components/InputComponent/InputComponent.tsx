@@ -18,6 +18,7 @@ export default function InputComponent({
   type = "text",
   value = "",
   onChange,
+  onBlur,
   placeholder = "",
   className = "",
   label = "",
@@ -113,6 +114,7 @@ export default function InputComponent({
             type={inputType as "text" | "password" | "number" | "date" | "email" | "tel" | "url" | "search" | "time"}
             value={value}
             onChange={onChange}
+            onBlur={onBlur}
             placeholder={placeholder}
             disabled={disabled}
             id={id}

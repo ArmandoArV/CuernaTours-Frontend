@@ -429,6 +429,9 @@ export default function CreateOrderContent({
             </h1>
           </div>
         </div>
+        <p style={{ color: "#dc2626", fontSize: "0.82rem", margin: "4px 0 0 0" }}>
+          *Los campos marcados con un asterisco rojo son obligatorios
+        </p>
         <form className={styles.form}>
           <div className={styles.placeSection}>
             <SearchableSelectComponent
