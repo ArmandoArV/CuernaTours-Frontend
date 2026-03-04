@@ -52,7 +52,7 @@ const dropdownStylesFunction = (
   return {
     root: { minWidth: 200, marginBottom: 0, width: "100%" },
     title: {
-      borderRadius: "25px",
+      borderRadius: "6px",
       border: "1px solid #ADADAD",
       height: 40,
       display: "flex",
@@ -63,7 +63,7 @@ const dropdownStylesFunction = (
     dropdown: {
       selectors: {
         ":focus::after": {
-          borderRadius: "25px",
+          borderRadius: "6px",
           borderColor: "#6366f1",
         },
         ":hover .ms-Dropdown-title": {
@@ -93,12 +93,12 @@ const comboBoxStyles: Partial<IComboBoxStyles> = {
     minWidth: 200,
     height: 40,
     marginBottom: 0,
-    borderRadius: "25px",
+    borderRadius: "6px",
     paddingLeft: 40, // Space for icon
     border: "1px solid #ADADAD",
     backgroundColor: "transparent",
     selectors: {
-      "::after": { borderRadius: "25px" },
+      "::after": { borderRadius: "6px" },
       ":hover": { borderColor: "#d1d5db", backgroundColor: "transparent" },
       "&.is-open .ms-ComboBox-CaretDown-button": {
         transform: "rotate(180deg)",
@@ -134,7 +134,7 @@ const datePickerStyles: Partial<IDatePickerStyles> = {
         padding: 0,
       },
       ".ms-TextField-fieldGroup": {
-        borderRadius: "25px",
+        borderRadius: "6px",
         border: "1px solid #ADADAD",
         height: 40,
         paddingLeft: 40,
@@ -198,7 +198,7 @@ const activeFilterTagClass = mergeStyles({
   display: "flex",
   alignItems: "center",
   backgroundColor: "#F3F2F1", // NeutralLighter
-  borderRadius: "4px",
+  borderRadius: "6px",
   padding: "4px 8px",
   gap: "8px",
   border: "1px solid #E1DFDD",
