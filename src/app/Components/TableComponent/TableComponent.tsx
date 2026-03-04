@@ -72,8 +72,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
   emptyMessage = "No se encontraron datos",
 }) => {
   const router = useRouter();
-  const { isChofer, isAdmin, isMaestro } = useUserRole();
+  const { isChofer, isAdmin, isMaestro, isOficina } = useUserRole();
   const canManage = isAdmin || isMaestro;
+  const canViewDetails = canManage || isOficina;
 
   const [internalCurrentPage, setInternalCurrentPage] = useState(
     currentPage || 1,
@@ -223,7 +224,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                         return;
                       }
 
-                      if (canManage && id) {
+                      if (canViewDetails && id) {
                         router.push(`/dashboard/trips/${id}`);
                         return;
                       }
@@ -286,7 +287,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                 return;
                               }
 
-                              if (canManage && id) {
+                              if (canViewDetails && id) {
                                 router.push(`/dashboard/trips/${id}`);
                               }
                             }}
