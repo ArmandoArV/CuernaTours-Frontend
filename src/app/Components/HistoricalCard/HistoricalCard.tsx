@@ -66,22 +66,23 @@ const useStyles = makeStyles({
   },
 });
 
-import { getStatusColor } from "@/app/Utils/statusUtils";
+import { getStatusColor, getStatusTextColor } from "@/app/Utils/statusUtils";
 
 export default function HistoricalCard({ trip, onViewDetails }: HistoricalCardProps) {
   const styles = useStyles();
   const status = trip["Estatus"] || "";
   const statusColor = getStatusColor(status);
+  const statusTextColor = getStatusTextColor(status);
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.statusBar} style={{ backgroundColor: statusColor }} />
+      <div className={styles.statusBar} style={{ backgroundColor: statusTextColor }} />
       <Card className={styles.card} appearance="subtle">
         <div className={styles.headerRow}>
           <Text weight="semibold" size={400}>
             {trip["Empresa o Cliente"] || "—"}
           </Text>
-          <span className={styles.badge} style={{ backgroundColor: statusColor }}>
+          <span className={styles.badge} style={{ backgroundColor: statusColor, color: statusTextColor }}>
             {status}
           </span>
         </div>

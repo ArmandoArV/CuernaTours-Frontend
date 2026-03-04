@@ -40,7 +40,7 @@ import {
   showErrorAlert 
 } from "@/app/Utils/AlertUtil";
 import { Logger } from "@/app/Utils/Logger";
-import { getStatusColor } from "@/app/Utils/statusUtils";
+import { getStatusColor, getStatusTextColor } from "@/app/Utils/statusUtils";
 
 const log = Logger.getLogger("TableComponent");
 
@@ -244,7 +244,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                           style={
                             colIndex === 0
                               ? ({
-                                  "--indicator-color": getStatusColor(status),
+                                  "--indicator-color": getStatusTextColor(status),
                                 } as React.CSSProperties)
                               : undefined
                           }
@@ -253,7 +253,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                             <span
                               style={{
                                 backgroundColor: getStatusColor(value),
-                                color: "white",
+                                color: getStatusTextColor(value),
                                 padding: "4px 8px",
                                 borderRadius: "4px",
                                 display: "inline-block",

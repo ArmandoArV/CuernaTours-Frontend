@@ -107,7 +107,7 @@ const useStyles = makeStyles({
   },
 });
 
-import { getStatusColor } from "@/app/Utils/statusUtils";
+import { getStatusColor, getStatusTextColor } from "@/app/Utils/statusUtils";
 
 export default function ContractCard({
   contract,
@@ -127,6 +127,7 @@ export default function ContractCard({
 
   const status = contract["Estatus"] || "";
   const statusColor = getStatusColor(status);
+  const statusTextColor = getStatusTextColor(status);
   const isPaid = contract["Estado de Pago"] === "Pagado";
 
   const handleViewDetails = async () => {
@@ -162,7 +163,7 @@ export default function ContractCard({
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.statusBar} style={{ backgroundColor: statusColor }} />
+      <div className={styles.statusBar} style={{ backgroundColor: statusTextColor }} />
 
       <Card className={styles.card} appearance="subtle">
         {/* Header: Client + Status */}
@@ -170,7 +171,7 @@ export default function ContractCard({
           <Text weight="semibold" size={400}>
             {contract["Empresa O Cliente"]}
           </Text>
-          <span className={styles.badge} style={{ backgroundColor: statusColor }}>
+          <span className={styles.badge} style={{ backgroundColor: statusColor, color: getStatusTextColor(status) }}>
             {status}
           </span>
         </div>

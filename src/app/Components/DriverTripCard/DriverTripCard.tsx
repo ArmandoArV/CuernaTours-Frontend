@@ -9,7 +9,7 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
-import { getStatusColor } from "@/app/Utils/statusUtils";
+import { getStatusColor, getStatusTextColor } from "@/app/Utils/statusUtils";
 
 interface Props {
   trip: any;
@@ -75,7 +75,7 @@ export default function DriverTripCard({ trip, onClick }: Props) {
       {/* LEFT STATUS BAR */}
       <div
         className={styles.statusBar}
-        style={{ backgroundColor: getStatusColor(trip.Estatus) }}
+        style={{ backgroundColor: getStatusTextColor(trip.Estatus) }}
       />
 
       {/* CARD CONTENT */}
@@ -85,7 +85,7 @@ export default function DriverTripCard({ trip, onClick }: Props) {
           <span
             style={{
               backgroundColor: getStatusColor(trip.Estatus),
-              color: "white",
+              color: getStatusTextColor(trip.Estatus),
               padding: "2px 8px",
               borderRadius: "4px",
               fontSize: "12px",
