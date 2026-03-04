@@ -1,15 +1,18 @@
 .createOrderButton {
-  background-color: #1a2e47 !important;
+  background-color: var(--gold) !important;
   color: white !important;
   border: none !important;
   border-radius: 6px !important;
   font-weight: 500 !important;
   font-family: var(--font-raleway), Raleway, sans-serif;
   min-width: 120px !important;
+  height: 40px !important;
+  padding: 8px 16px !important;
+  font-size: 1rem !important;
 }
 
 .createOrderButton:hover {
-  background-color: #152338 !important;
+  background-color: #7a5e14 !important;
   color: white !important;
 }
 
@@ -24,6 +27,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  min-width: 120px;
   gap: 8px;
   font-family: var(--font-raleway), Raleway, sans-serif;
   transition: all 0.2s ease;

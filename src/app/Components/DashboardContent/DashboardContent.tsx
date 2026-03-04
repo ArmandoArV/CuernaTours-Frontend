@@ -542,7 +542,7 @@ export default function DashboardContent() {
                       appearance="primary"
                       icon={<AddFilled />}
                       className={styles.createOrderButton}
-                      style={{ backgroundColor: "#C5A572", borderColor: "#C5A572", color: "#1a2e47" }}
+                      style={{ backgroundColor: "#96781a", borderColor: "#96781a", color: "white" }}
                     >
                       Crear Orden
                     </Button>
