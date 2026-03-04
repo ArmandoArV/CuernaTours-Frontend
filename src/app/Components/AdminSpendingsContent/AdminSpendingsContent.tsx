@@ -70,7 +70,7 @@ const STATUS_COLORS: Record<string, "warning" | "success" | "danger"> = {
 const CATEGORY_LABELS: Record<string, string> = {
   gas: "Gasolina",
   casetas: "Casetas",
-  alimentacion: "Alimentación",
+  hotel: "Hotel",
   estacionamiento: "Estacionamiento",
   mantenimiento: "Mantenimiento",
   TAG: "TAG",

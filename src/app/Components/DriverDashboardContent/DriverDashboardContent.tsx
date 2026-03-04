@@ -5,6 +5,7 @@ import FilterableTableComponent from "../FilterableTable/FilterableTableComponen
 import LoadingComponent from "@/app/Components/LoadingComponent/LoadingComponent";
 import DriverTripCard from "@/app/Components/DriverTripCard/DriverTripCard";
 import ErrorBlock from "@/app/Components/ErrorBlock/ErrorBlock";
+import FilterComponent from "../FilterComponent/FilterComponent";
 import { FilterConfig, FilterPresets } from "../FilterComponent";
 import { useDriverId } from "@/app/hooks/useDriverId";
 import { useDriverTrips } from "@/app/hooks/useDriverTrips";
@@ -20,24 +21,37 @@ export default function DriverDashboardContent() {
   const { trips, loading, error, refresh } = useDriverTrips(driverId);
   const isMobile = useIsMobile();
   const [currentPage, setCurrentPage] = useState(1);
+  const [dateRange, setDateRange] = useState<{ start?: Date; end?: Date }>({});
+  const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
 
   const handleRowClick = (row: any) => {
     log.info("Row clicked:", row);
   };
 
+  const handleFiltersChange = (filters: Record<string, any>) => {
+    if (filters.Fecha && typeof filters.Fecha === "object") {
+      setDateRange({ start: filters.Fecha.start, end: filters.Fecha.end });
+    } else {
+      setDateRange({});
+    }
+    setActiveFilters(filters);
+    setCurrentPage(1);
+  };
+
   const filterConfigs: FilterConfig[] = useMemo(
     () => [
+      {
+        key: "Fecha",
+        label: "Periodo",
+        type: "dateRange" as any,
+        isExternal: true,
+      },
       FilterPresets.createStatusFilter(
         "Estatus",
         Object.values(CONTRACT_STATUS_MAP).filter(
           (status) => status !== "Finalizado" && status !== "Cancelado",
         ),
         "Filtrar por Estatus",
-      ),
-      FilterPresets.createDateFilter(
-        "Fecha",
-        Array.from(new Set(trips.map((item) => item.Fecha).filter(Boolean))),
-        "Filtrar por Fecha",
       ),
       FilterPresets.createSelectFilter(
         "Unidad",
@@ -48,6 +62,35 @@ export default function DriverDashboardContent() {
     ],
     [trips],
   );
+
+  // Filter trips for mobile cards
+  const filteredTrips = useMemo(() => {
+    return trips.filter((trip) => {
+      // Date range filter
+      if (dateRange.start || dateRange.end) {
+        const tripDate = trip._tripData?.service_date ? new Date(trip._tripData.service_date) : null;
+        if (!tripDate) return false;
+        const tripDay = new Date(tripDate.getFullYear(), tripDate.getMonth(), tripDate.getDate()).getTime();
+        if (dateRange.start) {
+          const s = dateRange.start;
+          const startDay = new Date(s.getFullYear(), s.getMonth(), s.getDate()).getTime();
+          if (tripDay < startDay) return false;
+        }
+        if (dateRange.end) {
+          const e = dateRange.end;
+          const endDay = new Date(e.getFullYear(), e.getMonth(), e.getDate()).getTime();
+          if (tripDay > endDay) return false;
+        }
+      }
+      // Other active filters (Estatus, Unidad)
+      for (const [key, value] of Object.entries(activeFilters)) {
+        if (key === "Fecha") continue;
+        if (!value) continue;
+        if (String(trip[key] ?? "").toLowerCase().trim() !== String(value).toLowerCase().trim()) return false;
+      }
+      return true;
+    });
+  }, [trips, dateRange, activeFilters]);
 
   if (driverError) {
     return <ErrorBlock message={driverError} onRetry={refresh} />;
@@ -66,17 +109,21 @@ export default function DriverDashboardContent() {
       <div className={styles.header}>
         <h1>Mis Viajes</h1>
         <p>
-          {trips.length}{" "}
-          {trips.length === 1 ? "viaje asignado" : "viajes asignados"}
+          {filteredTrips.length}{" "}
+          {filteredTrips.length === 1 ? "viaje asignado" : "viajes asignados"}
         </p>
       </div>
 
       {isMobile ? (
         <div className={styles.mobileList}>
-          {trips.length === 0 ? (
+          <FilterComponent
+            filters={filterConfigs}
+            onFiltersChange={handleFiltersChange}
+          />
+          {filteredTrips.length === 0 ? (
             <p>No tienes viajes asignados</p>
           ) : (
-            trips.map((trip) => (
+            filteredTrips.map((trip) => (
               <DriverTripCard
                 key={trip.trip_id ?? trip["ID Viaje"]}
                 trip={trip}
@@ -104,6 +151,7 @@ export default function DriverDashboardContent() {
           enableSearch
           showActions
           onRowClick={handleRowClick}
+          onFiltersChange={handleFiltersChange}
           enablePagination
           itemsPerPage={10}
           currentPage={currentPage}

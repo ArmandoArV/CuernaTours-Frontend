@@ -147,7 +147,7 @@ class TripsService {
   }
 
   /**
-   * Assign driver and/or vehicle to a trip
+   * Assign driver and/or vehicle to a trip (via its first unit)
    */
   async assignTripResources(
     tripId: number,
@@ -155,17 +155,23 @@ class TripsService {
     vehicleId?: number | null,
     externalDriverId?: number | null
   ): Promise<ContractTrip> {
-    // Check if a specific assign-resources endpoint exists, otherwise fallback to update
-    const endpoint = API_ENDPOINTS.TRIPS.ASSIGN_RESOURCES(tripId);
-    
+    // Fetch units for the trip to get the unit ID
+    const unitsEndpoint = API_ENDPOINTS.TRIPS.UNITS_BY_TRIP(tripId);
+    const unitsResponse = await apiClient.get<any[]>(unitsEndpoint);
+    const units = validateResponse<any[]>(unitsResponse);
+
+    if (!units || units.length === 0) {
+      throw new Error('No units found for trip');
+    }
+
+    const unitId = units[0].contract_trip_unit_id || units[0].unit_id || units[0].id;
+    const endpoint = API_ENDPOINTS.TRIPS.ASSIGN_RESOURCES(unitId);
+
     const data: any = {};
     if (driverId !== undefined) data.driver_id = driverId;
     if (vehicleId !== undefined) data.vehicle_id = vehicleId;
-    // Handle external driver separately if needed or part of same payload
     if (externalDriverId !== undefined) data.external_driver_id = externalDriverId;
 
-    // Use PUT if it's a standard update, or POST if it's a specific action
-    // Assuming update (PUT) for generic ID endpoint, POST for action
     const response = await apiClient.post<ContractTrip>(endpoint, data);
     return validateResponse<ContractTrip>(response);
   }

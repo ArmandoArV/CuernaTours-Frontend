@@ -201,11 +201,18 @@ export default function ContractCard({
             <Text>{contract["Asignados"] || "0/0"}</Text>
           </div>
 
-          <div className={styles.section}>
+          <div className={styles.section} style={{ gridColumn: "1 / -1" }}>
             <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-              Monto
+              IDA
             </Text>
-            <Text weight="semibold">{contract["Monto"] || "—"}</Text>
+            <Text weight="semibold">{contract["IDA"] || "—"}</Text>
+          </div>
+
+          <div className={styles.section} style={{ gridColumn: "1 / -1" }}>
+            <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+              REGRESO
+            </Text>
+            <Text weight="semibold">{contract["REGRESO"] || "—"}</Text>
           </div>
         </div>
 

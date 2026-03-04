@@ -10,10 +10,15 @@ export function transformDriverTripsData(
   return apiData
     .flatMap((contract) =>
       (contract.trips || [])
-        .filter(
-          (trip: any) =>
-            (trip.driver?.id || trip.driver_id) === driverId
-        )
+        .filter((trip: any) => {
+          // Driver can be at top-level OR inside units array
+          const topLevelMatch =
+            (trip.driver?.id || trip.driver_id) === driverId;
+          const unitMatch = (trip.units || []).some(
+            (unit: any) => unit.driver?.id === driverId
+          );
+          return topLevelMatch || unitMatch;
+        })
         .map((trip: any) => {
           const contractStatusId =
             contract.contract_status_id || contract.status?.id;
@@ -24,6 +29,21 @@ export function transformDriverTripsData(
             contract.status?.name ||
             "";
 
+          // Find the unit assigned to this driver
+          const driverUnit = (trip.units || []).find(
+            (unit: any) => unit.driver?.id === driverId
+          );
+
+          const vehicle =
+            driverUnit?.vehicle ||
+            trip.vehicle;
+
+          const vehicleDisplay =
+            vehicle?.license_plate ||
+            vehicle?.plates ||
+            trip.vehicle_plates ||
+            "No asignada";
+
           return {
             trip_id: trip.trip_id,
             contract_id: contract.contract_id,
@@ -31,16 +51,13 @@ export function transformDriverTripsData(
             "ID Viaje": trip.trip_id,
             Cliente: formatPersonName(contract.client_name) || "",
             Fecha: formatDateStandard(trip.service_date),
-            Hora: trip.service_time || "",
+            Hora: trip.origin_time || trip.service_time || "",
             Origen: trip.origin?.name || trip.origin_name || "",
             Destino: trip.destination?.name || trip.destination_name || "",
-            Unidad:
-              trip.vehicle?.plates ||
-              trip.vehicle_plates ||
-              "No asignada",
+            Unidad: vehicleDisplay,
             Estatus: contractStatus,
 
-            _tripData: trip, // keep for sorting
+            _tripData: trip,
           };
         })
     )

@@ -70,7 +70,11 @@ const FilterableTableComponent: React.FC<FilterableTableProps> = ({
             key.toLowerCase().includes("fecha") ||
             key.toLowerCase().includes("date")
           ) {
-            configs.push(FilterPresets.createDateFilter(key, uniqueValues));
+            configs.push({
+              key,
+              label: key.charAt(0).toUpperCase() + key.slice(1),
+              type: "dateRange" as any,
+            });
           } else if (
             key.toLowerCase().includes("estatus") ||
             key.toLowerCase().includes("status")
@@ -119,6 +123,26 @@ const FilterableTableComponent: React.FC<FilterableTableProps> = ({
             if (filterConfig?.isExternal) return true;
 
             if (!filterValue || filterValue === "") return true;
+
+            // Handle dateRange filter type
+            if (filterConfig?.type === ("dateRange" as any) && typeof filterValue === "object" && !Array.isArray(filterValue)) {
+              const { start, end } = filterValue as any;
+              if (!start && !end) return true;
+              const rowDate = row[filterKey] ? new Date(row[filterKey]) : null;
+              if (!rowDate) return false;
+              const rowDay = new Date(rowDate.getFullYear(), rowDate.getMonth(), rowDate.getDate()).getTime();
+              if (start) {
+                const s = new Date(start);
+                const startDay = new Date(s.getFullYear(), s.getMonth(), s.getDate()).getTime();
+                if (rowDay < startDay) return false;
+              }
+              if (end) {
+                const e = new Date(end);
+                const endDay = new Date(e.getFullYear(), e.getMonth(), e.getDate()).getTime();
+                if (rowDay > endDay) return false;
+              }
+              return true;
+            }
 
             const rowValue = row[filterKey];
             if (rowValue === null || rowValue === undefined) return false;

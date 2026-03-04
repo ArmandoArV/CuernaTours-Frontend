@@ -1,7 +1,7 @@
 // FilterComponent Types
 import { formatDateStandard } from "@/app/Utils/FormatUtil";
 
-export type FilterType = 'dropdown' | 'combobox' | 'date' | 'text';
+export type FilterType = 'dropdown' | 'combobox' | 'date' | 'dateRange' | 'text';
 
 export interface FilterOption {
     value: string | number;

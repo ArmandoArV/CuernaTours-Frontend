@@ -32,7 +32,7 @@ const log = Logger.getLogger("CreateSpendingContent");
 const SPENDING_CATEGORIES= [
   { value: "gas", label: "Gasolina" },
   { value: "casetas", label: "Casetas" },
-  { value: "alimentacion", label: "Alimentación" },
+  { value: "hotel", label: "Hotel" },
   { value: "estacionamiento", label: "Estacionamiento" },
   { value: "mantenimiento", label: "Mantenimiento" },
   { value: "TAG", label: "TAG" },

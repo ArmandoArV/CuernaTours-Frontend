@@ -143,7 +143,7 @@ export default function ConfirmationModal({
               </div>
 
               <div className={styles.infoItem}>
-                <div className={styles.summaryLabel}>Coordinador</div>
+                <div className={styles.summaryLabel}>Chofer Principal</div>
                 <div className={styles.summaryValue}>
                   {orderData?.coordinadorNombre || "Sin asignar"}
                 </div>

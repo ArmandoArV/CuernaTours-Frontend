@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import {
   Stack,
   Dropdown,
@@ -20,6 +20,9 @@ import {
   FontWeights,
   DefaultButton,
   IDatePickerStyles,
+  Calendar,
+  Callout,
+  DirectionalHint,
 } from "@fluentui/react";
 import { FilterRegular, CalendarLtrRegular } from "@fluentui/react-icons";
 import { FilterConfig, FilterComponentProps } from "./FilterTypes";
@@ -31,17 +34,27 @@ const containerStyles: IStackStyles = {
     padding: "0",
     marginBottom: 20,
     flexWrap: "wrap",
-    gap: 12,
+    gap: 8,
+    "@media (max-width: 600px)": {
+      flexDirection: "column",
+    },
   },
 };
 
 const filterItemStyles: IStackStyles = {
   root: {
-    minWidth: 150,
+    minWidth: 140,
     maxWidth: 300,
+    flexBasis: "140px",
+    flexGrow: 1,
     display: "flex",
     alignItems: "center",
     height: 40,
+    "@media (max-width: 600px)": {
+      minWidth: "100%",
+      maxWidth: "100%",
+      flexBasis: "100%",
+    },
   },
 };
 
@@ -204,6 +217,91 @@ const activeFilterTagClass = mergeStyles({
   border: "1px solid #E1DFDD",
 });
 
+// --- DateRange sub-component (single Calendar callout) ---
+const DateRangeFilter: React.FC<{
+  filter: FilterConfig;
+  value: { start?: Date; end?: Date } | undefined;
+  onChange: (value: any) => void;
+}> = ({ filter, value, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectingEnd, setSelectingEnd] = useState(false);
+  const buttonRef = useRef<HTMLDivElement>(null);
+
+  const handleSelectDate = (date: Date) => {
+    if (!selectingEnd || !value?.start) {
+      onChange({ start: date, end: undefined });
+      setSelectingEnd(true);
+    } else {
+      if (date >= value.start) {
+        onChange({ start: value.start, end: date });
+        setIsOpen(false);
+        setSelectingEnd(false);
+      } else {
+        onChange({ start: date, end: undefined });
+        setSelectingEnd(true);
+      }
+    }
+  };
+
+  const displayText = value?.start
+    ? `${value.start.toLocaleDateString("es-MX")}${value.end ? ` — ${value.end.toLocaleDateString("es-MX")}` : " — ..."}`
+    : filter.placeholder || "Seleccionar periodo";
+
+  return (
+    <div ref={buttonRef} style={{ width: "100%" }}>
+      <DefaultButton
+        iconProps={{ iconName: "Calendar" }}
+        onClick={() => { setIsOpen(!isOpen); setSelectingEnd(false); }}
+        styles={{
+          root: {
+            height: 40,
+            borderRadius: "6px",
+            border: "1px solid #ADADAD",
+            backgroundColor: "transparent",
+            width: "100%",
+            minWidth: 160,
+          },
+          label: { fontWeight: 400, color: value?.start ? "#323130" : "#605e5c" },
+        }}
+      >
+        {displayText}
+      </DefaultButton>
+      {isOpen && (
+        <Callout
+          target={buttonRef}
+          onDismiss={() => { setIsOpen(false); setSelectingEnd(false); }}
+          directionalHint={DirectionalHint.bottomLeftEdge}
+          directionalHintFixed={false}
+          isBeakVisible={false}
+          styles={{ root: { maxWidth: "min(320px, calc(100vw - 16px))" } }}
+        >
+          <div style={{ padding: "8px 12px 4px", textAlign: "center", fontSize: 12, color: "#605e5c", borderBottom: "1px solid #edebe9" }}>
+            {selectingEnd ? "📅 Selecciona la fecha fin" : "📅 Selecciona la fecha inicio"}
+          </div>
+          <Calendar
+            onSelectDate={handleSelectDate}
+            value={selectingEnd ? value?.start : undefined}
+            firstDayOfWeek={DayOfWeek.Monday}
+            minDate={selectingEnd ? value?.start : undefined}
+            isMonthPickerVisible={false}
+            showGoToToday={false}
+          />
+          {(value?.start || value?.end) && (
+            <div style={{ padding: "4px 12px 8px", borderTop: "1px solid #edebe9", display: "flex", justifyContent: "flex-end" }}>
+              <DefaultButton
+                text="Limpiar"
+                iconProps={{ iconName: "Cancel" }}
+                onClick={() => { onChange(undefined); setSelectingEnd(false); setIsOpen(false); }}
+                styles={{ root: { height: 28, fontSize: 12 } }}
+              />
+            </div>
+          )}
+        </Callout>
+      )}
+    </div>
+  );
+};
+
 // --- Component ---
 const FilterComponent: React.FC<FilterComponentProps> = ({
   filters,
@@ -235,7 +333,8 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         value === null ||
         value === undefined ||
         value === "" ||
-        (Array.isArray(value) && value.length === 0)
+        (Array.isArray(value) && value.length === 0) ||
+        (typeof value === "object" && !Array.isArray(value) && !value?.start && !value?.end)
       ) {
         delete newActiveFilters[key];
       } else {
@@ -274,6 +373,13 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     if (!value) return "";
 
     if (filter.formatDisplay) return filter.formatDisplay(value);
+
+    if (filter.type === "dateRange" && value && typeof value === "object") {
+      const parts = [];
+      if (value.start) parts.push(new Date(value.start).toLocaleDateString());
+      if (value.end) parts.push(new Date(value.end).toLocaleDateString());
+      return parts.join(" — ");
+    }
 
     if (filter.type === "date" && value instanceof Date) {
       return value.toLocaleDateString();
@@ -318,6 +424,14 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     );
 
     switch (type) {
+      case "dateRange":
+        return (
+          <DateRangeFilter
+            filter={filter}
+            value={value}
+            onChange={(v) => handleFilterChange(key, v)}
+          />
+        );
       case "date":
         return (
           <div className={wrapperClass}>
@@ -394,8 +508,8 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   // Sort filters: Date filters first
   const sortedFilters = useMemo(() => {
     return [...filters].sort((a, b) => {
-      if (a.type === "date" && b.type !== "date") return -1;
-      if (a.type !== "date" && b.type === "date") return 1;
+      if ((a.type === "date" || a.type === "dateRange") && b.type !== "date" && b.type !== "dateRange") return -1;
+      if (a.type !== "date" && a.type !== "dateRange" && (b.type === "date" || b.type === "dateRange")) return 1;
       return 0;
     });
   }, [filters]);
@@ -407,22 +521,28 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         horizontal
         horizontalAlign="start"
         verticalAlign="center"
-        tokens={{ childrenGap: 16 }}
+        tokens={{ childrenGap: 8 }}
         styles={containerStyles}
       >
         {sortedFilters.map((filter) => (
-          <Stack.Item key={filter.key} styles={filterItemStyles}>
+          <Stack.Item
+            key={filter.key}
+            grow={filter.type === "dateRange" ? 1 : undefined}
+            styles={filter.type === "dateRange"
+              ? { root: { display: "flex", alignItems: "center", height: 40, minWidth: 160, flexBasis: "160px", "@media (max-width: 600px)": { minWidth: "100%", flexBasis: "100%" } } }
+              : filterItemStyles}
+          >
             {renderFilterInput(filter)}
           </Stack.Item>
         ))}
 
         {showClearButton && hasActiveFilters && (
-          <Stack.Item>
+          <Stack.Item styles={{ root: { marginLeft: "auto", display: "flex", alignItems: "center", "@media (max-width: 600px)": { marginLeft: 0, width: "100%" } } }}>
             <DefaultButton
-              iconProps={{ iconName: "Cancel" }} // Using standard Fluent icon name
+              iconProps={{ iconName: "Cancel" }}
               text="Limpiar filtros"
               onClick={clearAllFilters}
-              styles={{ root: { height: 36, marginTop: 29 } }} // Align with inputs (label ~29px)
+              styles={{ root: { height: 40, "@media (max-width: 600px)": { width: "100%" } } }}
             />
           </Stack.Item>
         )}

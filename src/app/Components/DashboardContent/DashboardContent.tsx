@@ -129,6 +129,8 @@ function transformApiData(apiData: any[]): any[] {
         Horario: scheduleTime,
         Asignados: assignmentStatus,
         Monto: contract.amount ? `$${contract.amount.toLocaleString()}` : "",
+        IDA: (firstTrip as any).origin_name || (firstTrip as any).origin?.name || "",
+        REGRESO: (firstTrip as any).destination_name || (firstTrip as any).destination?.name || "",
         Estatus: contractStatus,
         "Estado de Pago":
           contract.payment_status === "paid" ? "Pagado" : "Pendiente",
@@ -231,20 +233,10 @@ export default function DashboardContent() {
   const filterConfigs: FilterConfig[] = useMemo(
     () => [
       {
-        key: "startDate",
-        label: "Fecha Inicio",
-        placeholder: "Fecha Inicio",
-        type: "date",
+        key: "dateRange",
+        label: "Periodo",
+        type: "dateRange" as any,
         isExternal: true,
-        maxDate: dateRangeEnd ? parseLocalDate(dateRangeEnd) : undefined,
-      },
-      {
-        key: "endDate",
-        label: "Fecha Fin",
-        placeholder: "Fecha Fin",
-        type: "date",
-        isExternal: true,
-        minDate: dateRangeStart ? parseLocalDate(dateRangeStart) : undefined,
       },
       FilterPresets.createSelectFilter(
         "Empresa O Cliente",
@@ -262,37 +254,36 @@ export default function DashboardContent() {
         "Filtrar Por Estado de Pago",
       ),
     ],
-    [transformedData, dateRangeStart, dateRangeEnd],
+    [transformedData],
   );
 
   // Handlers removed: table will show inline details when the eye button is clicked.
 
   const handleFiltersChange = (activeFilters: Record<string, any>) => {
-    // Handle external date filters
-    if (activeFilters.startDate) {
-      const d = new Date(activeFilters.startDate);
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      setDateRangeStart(`${year}-${month}-${day}`);
+    // Handle external date range filter
+    if (activeFilters.dateRange) {
+      const { start, end } = activeFilters.dateRange;
+      if (start) {
+        const d = new Date(start);
+        setDateRangeStart(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+      } else {
+        setDateRangeStart("");
+      }
+      if (end) {
+        const d = new Date(end);
+        setDateRangeEnd(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+      } else {
+        setDateRangeEnd("");
+      }
     } else {
       setDateRangeStart("");
-    }
-
-    if (activeFilters.endDate) {
-      const d = new Date(activeFilters.endDate);
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      setDateRangeEnd(`${year}-${month}-${day}`);
-    } else {
       setDateRangeEnd("");
     }
 
     // Track non-date filters for mobile card filtering
     const columnFilters: Record<string, any> = {};
     Object.entries(activeFilters).forEach(([key, value]) => {
-      if (key !== "startDate" && key !== "endDate" && value != null) {
+      if (key !== "dateRange" && value != null) {
         columnFilters[key] = value;
       }
     });
