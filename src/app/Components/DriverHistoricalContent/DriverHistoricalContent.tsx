@@ -27,14 +27,22 @@ function transformDriverHistoricalData(apiData: any[], driverId: number): any[] 
     
     // Filter trips assigned to this driver that are completed or cancelled
     trips.forEach((trip: any) => {
-      const tripDriverId = trip.driver?.id || trip.driver_id;
-      
-      if (tripDriverId === driverId) {
+      // Driver is now assigned at the unit level
+      const driverUnit = (trip.units || []).find(
+        (u: any) => u.driver_id === driverId || u.driver?.id === driverId
+      );
+      const hasThisDriver = !!driverUnit;
+
+      if (hasThisDriver) {
         const contractStatusId = contract.contract_status_id || contract.status?.id;
         const contractStatus = CONTRACT_STATUS_MAP[contractStatusId] || contract.contract_status_name || contract.status?.name || "";
-        
+
         // Only show completed or cancelled trips
         if (contractStatusId === 3 || contractStatusId === 4) {
+          const vehiclePlate = driverUnit?.vehicle_license_plate
+            || driverUnit?.vehicle?.license_plate
+            || "No asignada";
+
           historicalTrips.push({
             "ID Viaje": trip.trip_id,
             "ID Contrato": contract.contract_id,
@@ -43,7 +51,7 @@ function transformDriverHistoricalData(apiData: any[], driverId: number): any[] 
             "Hora": trip.service_time || "",
             "Origen": trip.origin?.name || trip.origin_name || "",
             "Destino": trip.destination?.name || trip.destination_name || "",
-            "Unidad": trip.vehicle?.plates || trip.vehicle_plates || "No asignada",
+            "Unidad": vehiclePlate,
             "Estatus": contractStatus,
             // Store for details
             trip_id: trip.trip_id,

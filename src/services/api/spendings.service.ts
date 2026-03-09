@@ -1,13 +1,12 @@
 /**
  * Spendings Service
- * 
+ *
  * Handles spending-related API calls
  */
 
 import { apiClient } from './ApiClient';
-import { API_ENDPOINTS } from '@/config/api.config';
+import { apiConfig, API_ENDPOINTS } from '@/config/api.config';
 import { validateResponse } from './validators';
-import type { ApiResponse } from '@/app/backend_models/common_types/common.types';
 
 export interface Spending {
   spending_id: number;
@@ -21,6 +20,20 @@ export interface Spending {
   approved_by_id?: number;
   payment_status: 'pending' | 'paid';
   comments?: string;
+}
+
+export interface SpendingAttachedFile {
+  file_id: number;
+  original_name: string;
+  stored_name: string;
+  file_path: string;
+  file_size: number;
+  mime_type: string;
+  uploaded_at: Date;
+}
+
+export interface SpendingWithFiles extends Spending {
+  files: SpendingAttachedFile[];
 }
 
 export interface CreateSpendingRequest {
@@ -38,6 +51,7 @@ export interface UpdateSpendingRequest {
   comments?: string;
 }
 
+/** @deprecated use SpendingAttachedFile */
 export interface SpendingFile {
   file_id: number;
   spending_id: number;
@@ -88,17 +102,66 @@ class SpendingsService {
    */
   async update(spendingId: number, data: UpdateSpendingRequest): Promise<Spending> {
     const endpoint = API_ENDPOINTS.SPENDINGS.BY_ID(spendingId);
-    const response = await apiClient.patch<Spending>(endpoint, data);
+    const response = await apiClient.put<Spending>(endpoint, data);
     return validateResponse<Spending>(response);
   }
 
   /**
+   * Get spending by ID with associated files
+   */
+  async getWithFiles(spendingId: number): Promise<SpendingWithFiles> {
+    const endpoint = API_ENDPOINTS.SPENDINGS.FILES(spendingId);
+    const response = await apiClient.get<SpendingWithFiles>(endpoint);
+    return validateResponse<SpendingWithFiles>(response);
+  }
+
+  /**
+   * Attach a file to an existing spending via the files upload endpoint
+   */
+  async addFile(spendingId: number, file: File): Promise<SpendingAttachedFile> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('category', 'receipts');
+    formData.append('entity_type', 'spending');
+    formData.append('entity_id', spendingId.toString());
+
+    const token = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('accessToken='))
+      ?.split('=')[1];
+
+    const response = await fetch(
+      `${apiConfig.baseUrl}${API_ENDPOINTS.FILES.UPLOAD}`,
+      {
+        method: 'POST',
+        headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+        body: formData,
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`File upload failed: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    // Backend returns { success, message, file: FileWithAssociations }
+    const fileData = result?.file ?? result?.data;
+    if (!fileData) throw new Error('Upload response missing file data');
+    return fileData as SpendingAttachedFile;
+  }
+
+  /**
    * Get spending files
+   * @deprecated Use getWithFiles() instead
    */
   async getFiles(spendingId: number): Promise<SpendingFile[]> {
-    const endpoint = API_ENDPOINTS.SPENDINGS.FILES(spendingId);
-    const response = await apiClient.get<SpendingFile[]>(endpoint);
-    return validateResponse<SpendingFile[]>(response);
+    const data = await this.getWithFiles(spendingId);
+    return (data.files ?? []).map((f) => ({
+      file_id: f.file_id,
+      spending_id: spendingId,
+      file_url: `${apiConfig.baseUrl}${API_ENDPOINTS.FILES.DOWNLOAD(f.file_id)}`,
+      original_name: f.original_name,
+    }));
   }
 
   /**
@@ -120,20 +183,64 @@ class SpendingsService {
   }
 
   /**
-   * Upload file for spending
+   * Submit spending with files in a single multipart request.
+   * Calls POST /spendings/submit
    */
-  async uploadFile(spendingId: number, file: File): Promise<SpendingFile> {
+  async submit(data: CreateSpendingRequest, files: File[]): Promise<SpendingWithFiles> {
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('spending_id', spendingId.toString());
+    formData.append('spending_amount', String(data.spending_amount));
+    formData.append('driver_id', String(data.driver_id));
+    if (data.spending_type) formData.append('spending_type', data.spending_type);
+    if (data.comments)      formData.append('comments', data.comments);
+    if (data.contract_id)   formData.append('contract_id', String(data.contract_id));
+    if (data.vehicle_id)    formData.append('vehicle_id', String(data.vehicle_id));
+    for (const file of files) {
+      formData.append('files', file);
+    }
 
-    // Use fetch directly for FormData uploads
+    const token = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('accessToken='))
+      ?.split('=')[1];
+
+    const response = await fetch(
+      `${apiConfig.baseUrl}${API_ENDPOINTS.SPENDINGS.UPLOAD_FILE}`,
+      {
+        method: 'POST',
+        headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+        body: formData,
+      },
+    );
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err?.message ?? `Error al registrar: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    if (!result?.success) throw new Error(result?.message ?? 'Error desconocido');
+    return result.spending as SpendingWithFiles;
+  }
+
+  /**
+   * Upload file for spending
+   * @deprecated Use submit() for new spendings or addFile() to attach to existing ones
+   */
+  async uploadFile(spendingId: number, file: File, data?: Omit<CreateSpendingRequest, 'driver_id'> & { driver_id: number }): Promise<SpendingFile> {
+    const formData = new FormData();
+    formData.append('files', file);
+    if (data) {
+      Object.entries(data).forEach(([key, val]) => {
+        if (val !== undefined && val !== null) formData.append(key, String(val));
+      });
+    }
+
     const token = document.cookie
       .split('; ')
       .find(row => row.startsWith('accessToken='))
       ?.split('=')[1];
 
-    const response = await fetch(API_ENDPOINTS.SPENDINGS.UPLOAD_FILE, {
+    const response = await fetch(`${apiConfig.baseUrl}${API_ENDPOINTS.SPENDINGS.UPLOAD_FILE}`, {
       method: 'POST',
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
@@ -145,8 +252,8 @@ class SpendingsService {
       throw new Error(`Upload failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return validateResponse<SpendingFile>(data);
+    const result = await response.json();
+    return validateResponse<SpendingFile>(result);
   }
 }
 

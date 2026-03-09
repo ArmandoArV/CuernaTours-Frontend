@@ -17,7 +17,6 @@ export interface ContractTripUnit {
   vehicle_id?: number;
   driver_id?: number;
   external_driver_id?: number;
-  driver_accepted?: number; // TINYINT
   notes?: string;
 }
 

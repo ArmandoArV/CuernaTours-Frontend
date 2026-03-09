@@ -51,23 +51,41 @@ export interface TripStop {
   state?: string;
 }
 
+export interface TripUnitDetail {
+  unit_id?: number;
+  contract_trip_unit_id?: number;
+  vehicle_type?: string;
+  vehicle_type_name?: string;
+  vehicle_type_id?: number;
+  vehicle?: Vehicle | null;
+  vehicle_alias?: string;
+  vehicle_license_plate?: string;
+  driver?: Driver | null;
+  driver_id?: number;
+  driver_name?: string;
+  driver_lastname?: string;
+  external_driver_id?: number;
+  external_driver_name?: string;
+  notes?: string;
+}
+
 export interface TripData {
   trip_id: number;
   service_date: string;
   origin_time: string;
   passengers: number;
-  unit_type: string;
   status: TripStatus;
   origin: Location;
   destination: Location;
-  vehicle: Vehicle;
-  driver: Driver | null;
+  // Vehicle and driver are now sourced from units; kept optional for legacy consumers
+  vehicle?: Vehicle | null;
+  driver?: Driver | null;
   flight?: Flight;
-  driver_accepted?: boolean | null;
   notes?: string;
   internal_notes?: string;
   stops?: TripStop[];
   return_stops?: TripStop[];
+  units?: TripUnitDetail[];
 }
 
 export class Trip {
@@ -100,8 +118,10 @@ export class Trip {
     return this._data.passengers;
   }
 
+  /** Vehicle type label derived from first unit */
   get unitType(): string {
-    return this._data.unit_type;
+    const firstUnit = this._data.units?.[0];
+    return firstUnit?.vehicle_type_name ?? firstUnit?.vehicle_type ?? "";
   }
 
   get notes(): string {
@@ -110,10 +130,6 @@ export class Trip {
 
   get internalNotes(): string {
     return this._data.internal_notes || "";
-  }
-
-  get driverAccepted(): boolean | null {
-    return this._data.driver_accepted ?? null;
   }
 
   // Status getters
@@ -154,42 +170,72 @@ export class Trip {
     return this._data.destination.address;
   }
 
-  // Vehicle getters
+  // Vehicle getters — first check direct field, fall back to first unit
   get vehicle(): Vehicle | null {
-    return this._data.vehicle;
+    if (this._data.vehicle) return this._data.vehicle;
+    const u = this._data.units?.[0];
+    if (!u) return null;
+    if (u.vehicle) return u.vehicle;
+    if (u.vehicle_alias || u.vehicle_license_plate) {
+      return {
+        id: 0,
+        alias: u.vehicle_alias ?? "",
+        type: u.vehicle_type_name ?? u.vehicle_type ?? "",
+        license_plate: u.vehicle_license_plate ?? "",
+      };
+    }
+    return null;
   }
 
   get vehicleAlias(): string {
-    return this._data.vehicle?.alias ?? "";
+    return this.vehicle?.alias ?? "";
   }
 
   get vehicleType(): string {
-    return this._data.vehicle?.type ?? "—";
+    return this.vehicle?.type ?? this.unitType ?? "—";
   }
 
   get licensePlate(): string {
-    return this._data.vehicle?.license_plate ?? "";
+    return this.vehicle?.license_plate ?? "";
   }
 
-  // Driver getters
+  // Driver getters — first check direct field, fall back to first unit
   get driver(): Driver | null {
-    return this._data.driver;
+    if (this._data.driver) return this._data.driver;
+    const u = this._data.units?.[0];
+    if (!u) return null;
+    if (u.driver) return u.driver;
+    if (u.driver_name) {
+      return {
+        id: u.driver_id ?? 0,
+        name: u.driver_name,
+        lastname: u.driver_lastname ?? "",
+        phone: "",
+      };
+    }
+    return null;
   }
 
   get driverName(): string {
-    return this._data.driver ? `${this._data.driver.name} ${this._data.driver.lastname}` : "";
+    const d = this.driver;
+    return d ? `${d.name} ${d.lastname}` : "";
   }
 
   get driverFirstName(): string {
-    return this._data.driver?.name ?? "";
+    return this.driver?.name ?? "";
   }
 
   get driverLastName(): string {
-    return this._data.driver?.lastname ?? "";
+    return this.driver?.lastname ?? "";
   }
 
   get driverPhone(): string {
-    return this._data.driver?.phone ?? "";
+    return this.driver?.phone ?? "";
+  }
+
+  // Units getter
+  get units(): TripUnitDetail[] {
+    return this._data.units ?? [];
   }
 
   // Flight getters
@@ -287,10 +333,6 @@ export class Trip {
     this._data.origin_time = value;
   }
 
-  set driverAccepted(value: boolean | null) {
-    this._data.driver_accepted = value;
-  }
-
   // Method to get all data
   get rawData(): TripData {
     return { ...this._data };
@@ -375,22 +417,22 @@ export class TripCollection {
     return Math.max(...this._trips.map((trip) => trip.passengers));
   }
 
+  /** Collects unique drivers across all trips (from units) */
   get drivers(): Driver[] {
     const uniqueDrivers = new Map<number, Driver>();
     this._trips.forEach((trip) => {
-      if (trip.driver?.id) {
-        uniqueDrivers.set(trip.driver.id, trip.driver);
-      }
+      const d = trip.driver;
+      if (d?.id) uniqueDrivers.set(d.id, d);
     });
     return Array.from(uniqueDrivers.values());
   }
 
+  /** Collects unique vehicles across all trips (from units) */
   get vehicles(): Vehicle[] {
     const uniqueVehicles = new Map<number, Vehicle>();
     this._trips.forEach((trip) => {
-      if (trip.vehicle?.id) {
-        uniqueVehicles.set(trip.vehicle.id, trip.vehicle);
-      }
+      const v = trip.vehicle;
+      if (v?.id) uniqueVehicles.set(v.id, v);
     });
     return Array.from(uniqueVehicles.values());
   }

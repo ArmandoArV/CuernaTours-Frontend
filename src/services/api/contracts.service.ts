@@ -110,9 +110,6 @@ export interface CreateContractWithTripsRequest {
     };
     origin_time: string;
     passengers: number;
-    unit_type?: string;
-    driver_id?: number;
-    vehicle_id?: number;
     observations?: string;
     internal_observations?: string;
     
@@ -130,10 +127,12 @@ export interface CreateContractWithTripsRequest {
     return_date?: string;
     return_time?: string;
 
-    // Units (multiple vehicles)
+    // Units (required — vehicle_type_id is mandatory)
     units?: Array<{
-      vehicle_type_id?: number;
+      vehicle_type_id: number;
       vehicle_id?: number;
+      driver_id?: number;
+      external_driver_id?: number;
       notes?: string;
     }>;
 
@@ -424,12 +423,12 @@ class ContractsService {
   }
 
   /**
-   * Record money received from driver
+   * Record money received from driver (returns a MoneyReceipt record)
    */
   async receiveMoneyFromDriver(
     contractId: number,
     data: { amount_received: number; received_date: string; notes?: string }
-  ): Promise<any> {
+  ): Promise<{ success: boolean; contract_id: number; money_receipt: { money_receipt_id: number; amount: number; received_date: string; received_by: { user_id: number }; notes?: string } }> {
     const endpoint = `/contracts/${contractId}/receive-money`;
     const response = await apiClient.post<any>(endpoint, data);
     return validateResponse<any>(response);

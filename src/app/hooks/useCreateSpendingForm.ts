@@ -13,6 +13,8 @@ export function useCreateSpendingForm() {
   const [customCategory, setCustomCategory] = useState("");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
+  const [contractId, setContractId] = useState<number | null>(null);
+  const [vehicleId, setVehicleId] = useState<number | null>(null);
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -77,6 +79,10 @@ export function useCreateSpendingForm() {
     setAmount,
     description,
     setDescription,
+    contractId,
+    setContractId,
+    vehicleId,
+    setVehicleId,
     files,
     errors,
     validate,

@@ -8,6 +8,7 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
+import { AttachRegular } from "@fluentui/react-icons";
 
 interface Props {
   spending: any;
@@ -21,6 +22,14 @@ const useStyles = makeStyles({
     overflow: "hidden",
     marginBottom: "16px",
     cursor: "pointer",
+    transition: "transform 0.15s, box-shadow 0.15s",
+    ":hover": {
+      transform: "translateY(-1px)",
+      boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+    },
+    ":active": {
+      transform: "translateY(0)",
+    },
   },
 
   statusBar: {
@@ -98,9 +107,21 @@ export default function DriverSpendingsCard({ spending, onClick }: Props) {
       <Card className={styles.card} appearance="subtle">
         <div className={styles.headerRow}>
           <Text weight="semibold">{spending.Categoría}</Text>
-          <Badge appearance="filled" color={getBadgeColor()}>
-            {spending.Estatus}
-          </Badge>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            {spending._raw?.files?.length > 0 && (
+              <Badge
+                appearance="outline"
+                color="informative"
+                icon={<AttachRegular />}
+                size="small"
+              >
+                {spending._raw.files.length}
+              </Badge>
+            )}
+            <Badge appearance="filled" color={getBadgeColor()}>
+              {spending.Estatus}
+            </Badge>
+          </div>
         </div>
 
         <div className={styles.section}>

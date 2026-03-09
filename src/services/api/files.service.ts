@@ -5,7 +5,7 @@
  */
 
 import { apiClient } from './ApiClient';
-import { API_ENDPOINTS } from '@/config/api.config';
+import { apiConfig, API_ENDPOINTS } from '@/config/api.config';
 import { validateResponse } from './validators';
 import type { ApiResponse } from '@/app/backend_models/common_types/common.types';
 import type { FileCategory } from '@/app/backend_models/file.model';
@@ -59,7 +59,7 @@ class FilesService {
       .find(row => row.startsWith('accessToken='))
       ?.split('=')[1];
 
-    const response = await fetch(`${API_ENDPOINTS.FILES.UPLOAD}`, {
+    const response = await fetch(`${apiConfig.baseUrl}${API_ENDPOINTS.FILES.UPLOAD}`, {
       method: 'POST',
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
@@ -91,6 +91,19 @@ class FilesService {
     const endpoint = API_ENDPOINTS.FILES.BY_ENTITY(entityType, entityId);
     const response = await apiClient.get<FileInfo[]>(endpoint);
     return validateResponse<FileInfo[]>(response);
+  }
+
+  /**
+   * Get a pre-signed S3 URL for a file via GET /files/:id/url
+   * Response shape: { success: true, url: string, expires_at: string }
+   */
+  async getUrl(fileId: number): Promise<string> {
+    const response = await apiClient.get<any>(API_ENDPOINTS.FILES.URL(fileId)) as any;
+    // This endpoint returns { success, url, expires_at } — no data wrapper
+    if (!response?.success || !response?.url) {
+      throw new Error(response?.message ?? 'No se pudo obtener la URL del archivo');
+    }
+    return response.url as string;
   }
 
   /**

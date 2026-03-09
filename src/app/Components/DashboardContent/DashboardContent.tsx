@@ -73,6 +73,37 @@ function transformApiData(apiData: any[]): any[] {
     );
   });
 
+  // ── DEBUG: log full raw shape of first active contract ──────────────────
+  if (activeContracts.length > 0) {
+    const sample = activeContracts[0];
+    log.debug("🔍 [DEBUG] Sample contract top-level keys:", Object.keys(sample));
+    log.debug("🔍 [DEBUG] Sample contract trips count:", sample.trips?.length ?? 0);
+    if (sample.trips?.length > 0) {
+      const trip0 = sample.trips[0];
+      log.debug("🔍 [DEBUG] Trip[0] keys:", Object.keys(trip0));
+      log.debug("🔍 [DEBUG] Trip[0] driver_id:", trip0.driver_id);
+      log.debug("🔍 [DEBUG] Trip[0] vehicle_id:", trip0.vehicle_id);
+      log.debug("🔍 [DEBUG] Trip[0] external_driver_id:", trip0.external_driver_id);
+      log.debug("🔍 [DEBUG] Trip[0].units:", JSON.stringify(trip0.units ?? null));
+    }
+    // Log ALL contracts' assignment shapes compactly
+    log.debug(
+      "🔍 [DEBUG] All contract assignment snapshots:",
+      activeContracts.map((c) => ({
+        id: c.contract_id,
+        client: c.client_name,
+        trips: (c.trips || []).map((t: any) => ({
+          trip_id: t.contract_trip_id,
+          driver_id: t.driver_id,
+          vehicle_id: t.vehicle_id,
+          external_driver_id: t.external_driver_id,
+          units: t.units,
+        })),
+      })),
+    );
+  }
+  // ── END DEBUG ─────────────────────────────────────────────────────────────
+
   const now = new Date();
   const nowTime = now.getTime();
 
@@ -90,18 +121,52 @@ function transformApiData(apiData: any[]): any[] {
         contract.status?.name ||
         "";
 
-      // Calculate trip count and assignment status
-      const tripCount = trips.length;
-      const assignedTrips = trips.filter((t: any) => {
-        // Check for driver assignment (either nested driver object or direct driver_id)
-        const hasDriver = t.driver?.id || t.driver_id || t.external_driver_id;
-        // Check for vehicle assignment (either nested vehicle object or direct vehicle_id)
-        const hasVehicle = t.vehicle?.id || t.vehicle_id;
-        return hasDriver && hasVehicle;
-      }).length;
+      // Calculate assignment status based on units (new model) with legacy fallback
+      // Count total unit slots and how many have a driver assigned
+      let totalSlots = 0;
+      let assignedSlots = 0;
+      for (const t of trips) {
+        const units: any[] = t.units && t.units.length > 0 ? t.units : [];
+        if (units.length > 0) {
+          totalSlots += units.length;
+          const assigned = units.filter(
+            (u: any) =>
+              u.driver?.id ||
+              u.driver_id ||
+              u.external_driver?.id ||
+              u.external_driver_id,
+          ).length;
+          assignedSlots += assigned;
+          log.debug(
+            `📊 [ASSIGNMENT] contract=${contract.contract_id} trip=${t.contract_trip_id ?? t.trip_id} units=${units.length} assigned=${assigned}`,
+            units.map((u: any) => ({
+              unit_id: u.contract_trip_unit_id ?? u.unit_id,
+              driver: u.driver ?? u.driver_id,
+              external_driver: u.external_driver ?? u.external_driver_id,
+              vehicle: u.vehicle ?? u.vehicle_id,
+            })),
+          );
+        } else {
+          // Legacy fallback: trip-level flat fields
+          totalSlots += 1;
+          const hasLegacyDriver = !!(
+            t.driver?.id ||
+            t.driver_id ||
+            t.external_driver?.id ||
+            t.external_driver_id
+          );
+          if (hasLegacyDriver) assignedSlots += 1;
+          log.debug(
+            `📊 [ASSIGNMENT] contract=${contract.contract_id} trip=${t.contract_trip_id} (LEGACY) driver_id=${t.driver_id} ext=${t.external_driver_id} hasDriver=${hasLegacyDriver}`,
+          );
+        }
+      }
+      log.debug(
+        `📊 [ASSIGNMENT RESULT] contract=${contract.contract_id} client="${contract.client_name}" → ${assignedSlots}/${totalSlots}`,
+      );
 
       const assignmentStatus =
-        tripCount > 0 ? `${assignedTrips}/${tripCount}` : "0/0";
+        totalSlots > 0 ? `${assignedSlots}/${totalSlots}` : "0/0";
 
       // Extract time from service_date or service_time
       let scheduleTime = "";
@@ -179,6 +244,7 @@ export default function DashboardContent() {
   const [isDriverPaymentModalOpen, setIsDriverPaymentModalOpen] =
     useState(false);
   const [isClientPaymentModalOpen, setIsClientPaymentModalOpen] = useState(false);
+  const [selectedTrips, setSelectedTrips] = useState<any[] | null>(null);
   const [selectedTripData, setSelectedTripData] = useState<any>(null);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [selectedContractId, setSelectedContractId] = useState<number | null>(null);
@@ -320,19 +386,13 @@ export default function DashboardContent() {
   };
 
   const handleAssignDriver = (row: any) => {
-    // Get the first unassigned trip from the contract
     const trips = row._trips || [];
-    const unassignedTrip = trips.find(
-      (t: any) => !t.driver_id && !t.external_driver_id,
-    );
-    const tripToAssign = unassignedTrip || trips[0];
-
-    if (tripToAssign) {
-      setSelectedTripData(tripToAssign);
-      setIsAssignDriverModalOpen(true);
-    } else {
+    if (trips.length === 0) {
       log.warn("No trips found in contract");
+      return;
     }
+    setSelectedTrips(trips);
+    setIsAssignDriverModalOpen(true);
   };
 
   const handlePayDriver = (row: any) => {
@@ -355,9 +415,8 @@ export default function DashboardContent() {
     }
   };
 
-  const handleDriverAssignment= async (assignmentData: any) => {
-    log.info("Driver assigned:", assignmentData);
-    // Refresh table data after assignment
+  const handleDriverAssignment = async () => {
+    log.info("Assignment saved — refreshing dashboard data");
     try {
       const data = await contractsService.getAll();
       setContractsData(data);
@@ -366,6 +425,7 @@ export default function DashboardContent() {
     }
     setIsAssignDriverModalOpen(false);
     setSelectedTripData(null);
+    setSelectedTrips(null);
   };
 
   // Navigate to details page (admin/maestro)
@@ -566,8 +626,10 @@ export default function DashboardContent() {
         isOpen={isAssignDriverModalOpen}
         onClose={() => {
           setIsAssignDriverModalOpen(false);
+          setSelectedTrips(null);
           setSelectedTripData(null);
         }}
+        trips={selectedTrips}
         tripData={selectedTripData}
         onAssign={handleDriverAssignment}
       />

@@ -170,9 +170,6 @@ export const mapCompleteOrderToPayload = (
             annotations: tripData.destinoNotas,
           },
 
-      driver_id: tripData.nombreChofer
-        ? parseInt(tripData.nombreChofer, 10)
-        : undefined,
       observations: tripData.observacionesCliente || undefined,
       internal_observations: tripData.observacionesChofer || undefined,
 
@@ -231,12 +228,16 @@ export const mapCompleteOrderToPayload = (
     payload.trip.reverse_stops_for_return = options.reverseStopsForReturn;
   }
 
-  // Map dynamic unidades to units array
+  // Map dynamic unidades to units array (driver from form goes into the first unit)
   if (options?.unidades && options.unidades.length > 0) {
+    const driverIdFromForm = tripData.nombreChofer
+      ? parseInt(tripData.nombreChofer, 10)
+      : undefined;
     const validUnits = options.unidades
       .filter((u) => u.vehicleTypeId && !isNaN(parseInt(u.vehicleTypeId)))
-      .map((u) => ({
+      .map((u, idx) => ({
         vehicle_type_id: parseInt(u.vehicleTypeId, 10),
+        ...(idx === 0 && driverIdFromForm ? { driver_id: driverIdFromForm } : {}),
         ...(u.notes ? { notes: u.notes } : {}),
       }));
     if (validUnits.length > 0) {

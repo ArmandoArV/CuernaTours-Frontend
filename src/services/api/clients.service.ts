@@ -84,7 +84,7 @@ class ClientsService {
    */
   async update(clientId: number, data: UpdateClientRequest): Promise<Client> {
     const endpoint = API_ENDPOINTS.CLIENTS.BY_ID(clientId);
-    const response = await apiClient.patch<Client>(endpoint, data);
+    const response = await apiClient.put<Client>(endpoint, data);
     return validateResponse<Client>(response);
   }
 

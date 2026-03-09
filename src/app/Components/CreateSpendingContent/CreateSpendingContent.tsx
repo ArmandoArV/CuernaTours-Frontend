@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Button,
   Field,
@@ -7,7 +7,6 @@ import {
   Textarea,
   Dropdown,
   Option,
-  Text,
   Spinner,
 } from "@fluentui/react-components";
 import { AddFilled, DeleteFilled } from "@fluentui/react-icons";
@@ -20,11 +19,11 @@ import {
 import styles from "./CreateSpendingContent.module.css";
 import { useCreateSpendingForm } from "@/app/hooks/useCreateSpendingForm";
 import { spendingsService } from "@/services/api/spendings.service";
+import { referenceService, VehicleReference } from "@/services/api/reference.service";
+import { apiClient } from "@/services/api/ApiClient";
+import { API_ENDPOINTS, NETWORK_ERROR_MESSAGE, SERVER_ERROR_MESSAGE } from "@/config/api.config";
+import { validateResponse } from "@/services/api/validators";
 import { useDriverId } from "@/app/hooks/useDriverId";
-import {
-  NETWORK_ERROR_MESSAGE,
-  SERVER_ERROR_MESSAGE,
-} from "@/config/api.config";
 import { Logger } from "@/app/Utils/Logger";
 
 const log = Logger.getLogger("CreateSpendingContent");
@@ -45,6 +44,11 @@ export default function CreateSpendingContent({ backRoute = "/chofer/gastos" }: 
   const [apiError, setApiError] = useState<string | null>(null);
   const { driverId, error: driverError, loading: driverLoading } = useDriverId();
 
+  // Reference data for dropdowns
+  const [contracts, setContracts] = useState<Array<{ contract_id: number; client_name: string }>>([]);
+  const [vehicles, setVehicles] = useState<VehicleReference[]>([]);
+  const [refsLoading, setRefsLoading] = useState(false);
+
   const {
     category,
     setCategory,
@@ -54,12 +58,43 @@ export default function CreateSpendingContent({ backRoute = "/chofer/gastos" }: 
     setAmount,
     description,
     setDescription,
+    contractId,
+    setContractId,
+    vehicleId,
+    setVehicleId,
     files,
     errors,
     validate,
     addFiles,
     removeFile,
   } = useCreateSpendingForm();
+
+  // Load contracts + vehicles once driverId is known
+  useEffect(() => {
+    if (!driverId) return;
+    const load = async () => {
+      setRefsLoading(true);
+      try {
+        const [contractsRes, prefill] = await Promise.all([
+          apiClient.get<any>(API_ENDPOINTS.CONTRACTS.BY_DRIVER(driverId)),
+          referenceService.getPrefillableData(),
+        ]);
+        const contractsData = validateResponse<any>(contractsRes);
+        // Backend returns { upcoming: [...], historical: [...] }
+        const all = [
+          ...(contractsData?.upcoming ?? []),
+          ...(contractsData?.historical ?? []),
+        ];
+        setContracts(all);
+        setVehicles(prefill.vehicles);
+      } catch (err) {
+        log.error("Error loading reference data:", err);
+      } finally {
+        setRefsLoading(false);
+      }
+    };
+    load();
+  }, [driverId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,23 +113,17 @@ export default function CreateSpendingContent({ backRoute = "/chofer/gastos" }: 
             return;
           }
 
-          const payload = {
-            spending_amount: Number(amount),
-            spending_type: category === "otro" ? customCategory : category,
-            driver_id: driverId,
-            comments: description,
-          };
-
-          // 1️⃣ Create spending
-          const createdSpending = await spendingsService.create(payload);
-
-          // 2️⃣ Upload files (controlled sequential upload)
-          for (const fileObj of files) {
-            await spendingsService.uploadFile(
-              createdSpending.spending_id,
-              fileObj.file,
-            );
-          }
+          await spendingsService.submit(
+            {
+              spending_amount: Number(amount),
+              spending_type: category === "otro" ? customCategory : category,
+              driver_id: driverId,
+              comments: description,
+              ...(contractId && { contract_id: contractId }),
+              ...(vehicleId && { vehicle_id: vehicleId }),
+            },
+            files.map((f) => f.file),
+          );
 
           showSuccessAlert(
             "Gasto Registrado",
@@ -103,10 +132,8 @@ export default function CreateSpendingContent({ backRoute = "/chofer/gastos" }: 
           );
         } catch (error: any) {
           log.error("Spending creation error:", error);
-
           const errorMessage =
             error?.message || NETWORK_ERROR_MESSAGE || SERVER_ERROR_MESSAGE;
-
           showErrorAlert("Error al registrar", errorMessage);
         } finally {
           setLoading(false);
@@ -182,6 +209,50 @@ export default function CreateSpendingContent({ backRoute = "/chofer/gastos" }: 
                   value={amount}
                   onChange={(_, data) => setAmount(data.value)}
                 />
+              </Field>
+            </div>
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.formField}>
+              <Field label="Contrato">
+                <Dropdown
+                  placeholder={refsLoading ? "Cargando..." : "Selecciona contrato (opcional)"}
+                  disabled={refsLoading || contracts.length === 0}
+                  onOptionSelect={(_, data) =>
+                    setContractId(data.optionValue ? Number(data.optionValue) : null)
+                  }
+                >
+                  {contracts.map((c) => (
+                    <Option key={c.contract_id} value={String(c.contract_id)} text={`#${c.contract_id} — ${c.client_name}`}>
+                      #{c.contract_id} — {c.client_name}
+                    </Option>
+                  ))}
+                </Dropdown>
+              </Field>
+            </div>
+
+            <div className={styles.formField}>
+              <Field label="Unidad / Vehículo">
+                <Dropdown
+                  placeholder={refsLoading ? "Cargando..." : "Selecciona unidad (opcional)"}
+                  disabled={refsLoading || vehicles.length === 0}
+                  onOptionSelect={(_, data) =>
+                    setVehicleId(data.optionValue ? Number(data.optionValue) : null)
+                  }
+                >
+                  {vehicles.map((v) => {
+                    const id = (v.vehicle_id ?? v.id)?.toString() ?? "";
+                    const label = v.alias
+                      ? `${v.alias} · ${v.license_plate ?? v.placa ?? ""}`
+                      : `${v.type ?? v.tipo ?? "Vehículo"} · ${v.license_plate ?? v.placa ?? ""}`;
+                    return (
+                      <Option key={id} value={id} text={label}>
+                        {label}
+                      </Option>
+                    );
+                  })}
+                </Dropdown>
               </Field>
             </div>
           </div>

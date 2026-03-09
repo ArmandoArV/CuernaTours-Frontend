@@ -97,9 +97,8 @@ export default function TripsContent({ contractId }: TripsContentProps) {
     setIsDriverPaymentModalOpen(true);
   };
 
-  const handleDriverAssignment = async (assignmentData: any) => {
-    log.debug("Driver assigned:", assignmentData);
-    // Refresh contract data
+  const handleDriverAssignment = async () => {
+    log.debug("Assignment saved — refreshing contract data");
     try {
       const data = await contractsService.getContractDetails(
         Number(contractId),

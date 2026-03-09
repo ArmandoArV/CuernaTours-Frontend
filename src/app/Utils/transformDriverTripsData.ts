@@ -11,13 +11,10 @@ export function transformDriverTripsData(
     .flatMap((contract) =>
       (contract.trips || [])
         .filter((trip: any) => {
-          // Driver can be at top-level OR inside units array
-          const topLevelMatch =
-            (trip.driver?.id || trip.driver_id) === driverId;
-          const unitMatch = (trip.units || []).some(
-            (unit: any) => unit.driver?.id === driverId
+          // Driver is assigned at the unit level (source of truth)
+          return (trip.units || []).some(
+            (unit: any) => unit.driver_id === driverId || unit.driver?.id === driverId
           );
-          return topLevelMatch || unitMatch;
         })
         .map((trip: any) => {
           const contractStatusId =
@@ -31,17 +28,12 @@ export function transformDriverTripsData(
 
           // Find the unit assigned to this driver
           const driverUnit = (trip.units || []).find(
-            (unit: any) => unit.driver?.id === driverId
+            (unit: any) => unit.driver_id === driverId || unit.driver?.id === driverId
           );
 
-          const vehicle =
-            driverUnit?.vehicle ||
-            trip.vehicle;
-
           const vehicleDisplay =
-            vehicle?.license_plate ||
-            vehicle?.plates ||
-            trip.vehicle_plates ||
+            driverUnit?.vehicle?.license_plate ||
+            driverUnit?.vehicle_license_plate ||
             "No asignada";
 
           return {

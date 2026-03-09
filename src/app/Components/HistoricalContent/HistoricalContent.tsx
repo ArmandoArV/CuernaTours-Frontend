@@ -37,17 +37,21 @@ function transformHistoricalData(apiData: any[]): any[] {
       "";
 
     (contract.trips || []).forEach((trip: any) => {
+      // Vehicle type: prefer first unit, fall back gracefully
+      const firstUnit = (trip.units || [])[0];
+      const unitDisplay = firstUnit?.vehicle_type_name || firstUnit?.vehicle_type || "";
+      // Driver: check unit-level driver fields
+      const driverName = firstUnit?.driver_name
+        ? `${firstUnit.driver_name} ${firstUnit.driver_lastname || ""}`.trim()
+        : firstUnit?.external_driver_name || "";
+
       rows.push({
         "Empresa o Cliente": formatPersonName(contract.client_name),
         Origen: trip.origin?.name || "",
         Destino: trip.destination?.name || "",
         Fecha: formatDateStandard(trip.service_date),
-        Unidad: trip.vehicle?.type || trip.unit_type || "",
-        Chofer: trip.driver
-          ? formatPersonName(`${trip.driver.name} ${trip.driver.lastname}`)
-          : trip.external_driver
-          ? formatPersonName(trip.external_driver.name)
-          : "",
+        Unidad: unitDisplay,
+        Chofer: driverName,
         Estatus: contractStatus,
         // Include IDs for functionality
         contract_id: contract.contract_id,

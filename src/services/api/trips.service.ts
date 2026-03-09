@@ -17,10 +17,6 @@ export interface CreateTripRequest {
   origin_time: string; // HH:mm:ss or HH:mm
   destination_id: number;
   passengers: number;
-  unit_type?: string;
-  vehicle_id?: number;
-  driver_id?: number;
-  external_driver_id?: number;
   flight_id?: number;
   observations?: string;
   internal_observations?: string;
@@ -33,24 +29,15 @@ export interface UpdateTripRequest {
   origin_time?: string;
   destination_id?: number;
   passengers?: number;
-  unit_type?: string;
-  vehicle_id?: number;
-  driver_id?: number;
-  external_driver_id?: number;
   observations?: string;
   internal_observations?: string;
   contract_trip_status_id?: number;
 }
 
-export interface AssignDriverRequest {
-  driver_id?: number;
-  external_driver_id?: number;
-}
-
-export interface TripPaymentRequest {
-  amount: number;
-  payment_method: string;
-  notes?: string;
+export interface AssignUnitResourcesRequest {
+  driver_id?: number | null;
+  vehicle_id?: number | null;
+  external_driver_id?: number | null;
 }
 
 class TripsService {
@@ -79,7 +66,7 @@ class TripsService {
    */
   async update(tripId: number, data: UpdateTripRequest): Promise<ContractTrip> {
     const endpoint = API_ENDPOINTS.TRIPS.BY_ID(tripId);
-    const response = await apiClient.post<ContractTrip>(endpoint, data);
+    const response = await apiClient.put<ContractTrip>(endpoint, data);
     return validateResponse<ContractTrip>(response);
   }
 
@@ -91,18 +78,6 @@ class TripsService {
     const response = await apiClient.delete<{ deleted: boolean }>(endpoint);
     const data = validateResponse<{ deleted: boolean }>(response);
     return data.deleted;
-  }
-
-  /**
-   * Assign driver to trip
-   */
-  async assignDriver(
-    tripId: number,
-    driverData: AssignDriverRequest
-  ): Promise<ContractTrip> {
-    const endpoint = API_ENDPOINTS.TRIPS.ASSIGN_DRIVER(tripId);
-    const response = await apiClient.post<ContractTrip>(endpoint, driverData);
-    return validateResponse<ContractTrip>(response);
   }
 
   /**
@@ -165,15 +140,26 @@ class TripsService {
     }
 
     const unitId = units[0].contract_trip_unit_id || units[0].unit_id || units[0].id;
+    return this.assignUnit(unitId, driverId, vehicleId, externalDriverId);
+  }
+
+  /**
+   * Assign driver/vehicle directly to a specific unit (contract_trip_unit).
+   * This is the preferred method — always use this when the unit ID is known.
+   */
+  async assignUnit(
+    unitId: number,
+    driverId?: number | null,
+    vehicleId?: number | null,
+    externalDriverId?: number | null
+  ): Promise<any> {
     const endpoint = API_ENDPOINTS.TRIPS.ASSIGN_RESOURCES(unitId);
-
-    const data: any = {};
-    if (driverId !== undefined) data.driver_id = driverId;
-    if (vehicleId !== undefined) data.vehicle_id = vehicleId;
-    if (externalDriverId !== undefined) data.external_driver_id = externalDriverId;
-
-    const response = await apiClient.post<ContractTrip>(endpoint, data);
-    return validateResponse<ContractTrip>(response);
+    const data: Record<string, any> = {};
+    if (driverId !== undefined && driverId !== null) data.driver_id = driverId;
+    if (vehicleId !== undefined && vehicleId !== null) data.vehicle_id = vehicleId;
+    if (externalDriverId !== undefined && externalDriverId !== null) data.external_driver_id = externalDriverId;
+    const response = await apiClient.post<any>(endpoint, data);
+    return validateResponse<any>(response);
   }
 
   /**
@@ -205,14 +191,6 @@ class TripsService {
     return validateResponse<any[]>(response);
   }
 
-  /**
-   * Get trips by external driver ID
-   */
-  async getTripsByExternalDriverId(externalDriverId: number): Promise<ContractTrip[]> {
-    const endpoint = API_ENDPOINTS.TRIPS.BY_EXTERNAL_DRIVER(externalDriverId);
-    const response = await apiClient.get<ContractTrip[]>(endpoint);
-    return validateResponse<ContractTrip[]>(response);
-  }
 }
 
 // Export singleton instance

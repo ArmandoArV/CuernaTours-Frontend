@@ -1,0 +1,16 @@
+/* Mobile-first responsive overrides for SpendingDetailModal */
+
+/* On small screens make the grid 2 columns */
+@media (max-width: 480px) {
+  /* The filesGrid makeStyles class gets 3 cols by default; override here */
+  .filesGridMobile {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Force overlay visible on touch devices (no hover) */
+@media (hover: none) {
+  .alwaysVisibleOverlay {
+    opacity: 1 !important;
+  }
+}

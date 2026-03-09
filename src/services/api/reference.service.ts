@@ -99,6 +99,7 @@ export interface VehicleReference {
   tipo: string;
   placa: string;
   vehicle_id?: number;
+  vehicle_type_id?: number;
   alias?: string;
   type?: string;
   license_plate?: string;

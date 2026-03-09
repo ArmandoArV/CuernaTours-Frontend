@@ -17,9 +17,6 @@ export interface Contract {
   contract_status_id: number;
   payment_status?: 'pending' | 'paid';
   paid_date?: Date;
-  has_received_money?: boolean;
-  money_received_date?: Date;
-  money_received_by?: number;
 }
 
 export interface ContractStatus {

@@ -66,7 +66,7 @@ class VehiclesService {
    */
   async update(vehicleId: number, data: UpdateVehicleRequest): Promise<Vehicle> {
     const endpoint = API_ENDPOINTS.VEHICLES.BY_ID(vehicleId);
-    const response = await apiClient.patch<Vehicle>(endpoint, data);
+    const response = await apiClient.put<Vehicle>(endpoint, data);
     return validateResponse<Vehicle>(response);
   }
 

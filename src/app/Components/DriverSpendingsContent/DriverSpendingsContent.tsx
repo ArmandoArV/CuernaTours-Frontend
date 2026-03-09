@@ -8,10 +8,12 @@ import { Button } from "@fluentui/react-components";
 import LoadingComponent from "@/app/Components/LoadingComponent/LoadingComponent";
 import ButtonComponent from "@/app/Components/ButtonComponent/ButtonComponent";
 import DriverSpendingsCard from "@/app/Components/DriverSpendingsCard/DriverSpendingsCard";
+import SpendingDetailModal from "@/app/Components/SpendingDetailModal/SpendingDetailModal";
 import { useIsMobile } from "@/app/hooks/useIsMobile";
 import { useAsyncData } from "@/app/hooks/useAsyncData";
 import { useDriverId } from "@/app/hooks/useDriverId";
 import { spendingsService } from "@/services/api";
+import type { SpendingWithFiles } from "@/services/api/spendings.service";
 import { formatDateStandard } from "@/app/Utils/FormatUtil";
 import styles from "./DriverSpendingsContent.module.css";
 import { Logger } from "@/app/Utils/Logger";
@@ -32,7 +34,6 @@ function transformSpendingsData(spendings: any[]): any[] {
     Monto: `$${Number(s.spending_amount || 0).toFixed(2)}`,
     Estatus: statusMap[s.approved_status] || "Pendiente",
     Descripción: s.comments || "",
-    // keep raw data for detail navigation
     _raw: s,
   }));
 }
@@ -43,6 +44,7 @@ export default function DriverSpendingsContent({ createRoute = "/chofer/gastos/c
   const { driverId, error: driverError, loading: driverLoading } = useDriverId();
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileColumnFilters, setMobileColumnFilters] = useState<Record<string, any>>({});
+  const [selectedSpending, setSelectedSpending] = useState<SpendingWithFiles | null>(null);
 
   const { data: rawSpendings, loading, error, refresh } = useAsyncData(
     () => driverId ? spendingsService.getByDriver(driverId) : Promise.resolve([]),
@@ -56,8 +58,9 @@ export default function DriverSpendingsContent({ createRoute = "/chofer/gastos/c
     router.push(createRoute);
   };
 
-  const handleRowClick = (_row: any) => {
-    // TODO: Navigate to spending details when available
+  const handleRowClick = (row: any) => {
+    const raw = row._raw as SpendingWithFiles;
+    setSelectedSpending({ ...raw, files: raw.files ?? [] });
   };
 
   const filterConfigs: FilterConfig[] = useMemo(() => [
@@ -202,8 +205,17 @@ export default function DriverSpendingsContent({ createRoute = "/chofer/gastos/c
           currentPage={currentPage}
           onPageChange={setCurrentPage}
           onFiltersChange={handleFiltersChange}
+          onRowClick={handleRowClick}
         />
       )}
+
+      {/* Spending detail modal */}
+      <SpendingDetailModal
+        spending={selectedSpending}
+        open={!!selectedSpending}
+        onDismiss={() => setSelectedSpending(null)}
+        onFilesChanged={refresh}
+      />
     </div>
   );
 }

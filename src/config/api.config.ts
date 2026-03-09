@@ -54,9 +54,10 @@ export const API_ENDPOINTS = {
   CONTRACTS: {
     BASE: '/contracts',
     CREATE: '/contracts/create',
-    CREATE_WITH_TRIPS: '/contracts/create-with-trips',
+    CREATE_WITH_TRIPS: '/contracts/create',
     UPDATE: (id: number) => `/contracts/${id}`,
     BY_ID: (id: number) => `/contracts/${id}`,
+    BY_DRIVER: (driverId: number) => `/contracts/driver/${driverId}`,
     DETAILS: (id: number) => `/contracts/details/${id}`,
     ALL_DETAILS: '/contracts/details',
     CANCELLED: '/contracts/cancelled',
@@ -89,11 +90,8 @@ export const API_ENDPOINTS = {
     CREATE: '/trips',
     BY_ID: (id: number) => `/trips/${id}`,
     BY_CONTRACT: (contractId: number) => `/trips/contract/${contractId}`,
-    BY_EXTERNAL_DRIVER: (id: number) => `/trips/external-driver/${id}`,
-    ASSIGN_DRIVER: (id: number) => `/trips/${id}/assign-driver`,
-    ASSIGN_RESOURCES: (id: number) => `/trips/units/${id}/assign`,
+    ASSIGN_RESOURCES: (unitId: number) => `/trips/units/${unitId}/assign`,
     UNITS_BY_TRIP: (id: number) => `/trips/${id}/units`,
-    UPDATE_STATUS: (id: number) => `/trips/${id}/status`,
     STATUSES: '/trip/status',
     FLIGHTS: '/flights',
   },
@@ -179,15 +177,16 @@ export const API_ENDPOINTS = {
     BASE: '/files',
     UPLOAD: '/files/upload',
     BY_ID: (id: number) => `/files/${id}`,
+    URL: (id: number) => `/files/${id}/url`,
     DOWNLOAD: (id: number) => `/files/${id}/download`,
-    BY_ENTITY: (entityType: string, entityId: number) => `/files/${entityType}/${entityId}`,
+    BY_ENTITY: (entityType: string, entityId: number) => `/files/entity/${entityType}/${entityId}`,
   },
   
   // Notification endpoints
   NOTIFICATIONS: {
     SEND_EMAIL: '/notifications/send-email',
     SEND_TEXT: '/notifications/send-text',
-    HISTORY: '/notifications/history',
+    HISTORY: '/notifications',
     BY_ID: (id: number) => `/notifications/${id}`,
   },
   
@@ -205,8 +204,8 @@ export const API_ENDPOINTS = {
     BY_DRIVER: (driverId: number) => `/spendings/driver/${driverId}/with-files`,
     APPROVE: (id: number) => `/spendings/${id}/approve`,
     DENY: (id: number) => `/spendings/${id}/deny`,
-    FILES: (spendingId: number) => `/spending-files/${spendingId}`,
-    UPLOAD_FILE: '/spending-files',
+    FILES: (spendingId: number) => `/spendings/${spendingId}/with-files`,
+    UPLOAD_FILE: '/spendings/submit',
   },
 
   // Driver Receipts endpoints

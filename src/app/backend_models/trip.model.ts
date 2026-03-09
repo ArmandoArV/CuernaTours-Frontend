@@ -2,6 +2,8 @@
  * Trip Model (Contract Trips)
  */
 
+import type { ContractTripUnitWithDetails } from './vehicle-type.model';
+
 export interface ContractTrip {
   contract_trip_id: number;
   contract_id: number;
@@ -11,14 +13,15 @@ export interface ContractTrip {
   destination_id: number;
   flight_id?: number;
   passengers: number;
-  unit_type?: string;
   observations?: string;
   internal_observations?: string;
+  contract_trip_status_id?: number;
+  // Legacy flat fields still returned by GET /trips/:id
   vehicle_id?: number;
   driver_id?: number;
   external_driver_id?: number;
-  contract_trip_status_id?: number;
-  driver_accepted?: number; // TINYINT in MySQL
+  // Units are the source of truth for driver/vehicle assignment in detail responses
+  units?: ContractTripUnitWithDetails[];
 }
 
 export interface ContractTripStatus {
