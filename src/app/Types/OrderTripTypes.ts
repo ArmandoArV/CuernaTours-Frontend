@@ -147,7 +147,7 @@ export const mapCompleteOrderToPayload = (
       origin: tripData.origenNombreLugar && !isNaN(parseInt(tripData.origenNombreLugar))
         ? { place_id: parseInt(tripData.origenNombreLugar, 10) }
         : {
-            name: "Origen",
+            name: tripData.origenNombreDisplay || tripData.origenCiudad || tripData.origenCalle || "Origen",
             address: tripData.origenCalle,
             number: tripData.origenNumero,
             colonia: tripData.origenColonia,
@@ -160,7 +160,7 @@ export const mapCompleteOrderToPayload = (
       destination: tripData.destinoNombreLugar && !isNaN(parseInt(tripData.destinoNombreLugar))
         ? { place_id: parseInt(tripData.destinoNombreLugar, 10) }
         : {
-            name: "Destino",
+            name: tripData.destinoNombreDisplay || tripData.destinoCiudad || tripData.destinoCalle || "Destino",
             address: tripData.destinoCalle,
             number: tripData.destinoNumero,
             colonia: tripData.destinoColonia,
