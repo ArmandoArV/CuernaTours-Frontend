@@ -335,7 +335,9 @@ export default function CreateSpendingContent({ backRoute = "/chofer/gastos" }: 
             appearance="secondary"
             onClick={() => router.back()}
             disabled={loading}
-            className={styles.cancelButton}
+            style={{
+              minWidth: "120px",
+            }}
           >
             Cancelar
           </Button>
@@ -343,11 +345,11 @@ export default function CreateSpendingContent({ backRoute = "/chofer/gastos" }: 
           <Button
             type="submit"
             disabled={loading}
-            className={styles.submitButton}
             style={{
               backgroundColor: "var(--Main-96781A, #96781a)",
               borderColor: "var(--Main-96781A, #96781a)",
               color: "#ffffff",
+              minWidth: "150px",
             }}
           >
             {loading ? <Spinner size="tiny" /> : "Guardar Gasto"}
