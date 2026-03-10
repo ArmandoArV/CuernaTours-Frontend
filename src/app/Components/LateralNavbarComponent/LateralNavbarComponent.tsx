@@ -94,9 +94,17 @@ const LateralNavbarComponent: React.FC<Props> = ({
         {/* Items */}
         <ul className={styles.navList}>
           {filteredItems.map((item, index) => {
+            const getMatchScore = (link: string) => {
+              if (pathname === link) return link.length + 10000; // exact match wins
+              if (link !== "/" && pathname.startsWith(link + "/")) return link.length;
+              return -1;
+            };
+
+            const bestScore = Math.max(
+              ...filteredItems.map((i) => getMatchScore(i.link)),
+            );
             const isActive =
-              pathname === item.link ||
-              (item.link !== "/" && pathname.startsWith(item.link));
+              bestScore >= 0 && getMatchScore(item.link) === bestScore;
 
             return (
               <li key={index} className={styles.navItem}>

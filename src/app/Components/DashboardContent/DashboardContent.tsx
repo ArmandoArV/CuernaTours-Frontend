@@ -583,6 +583,7 @@ export default function DashboardContent() {
                 <ContractCard
                   key={contract.contract_id || idx}
                   contract={contract}
+                  animationIndex={idx}
                   showActions={canAssignResources || hasFullAccess}
                   showViewDetails={true}
                   onViewDetails={!isChofer ? handleViewDetails : undefined}

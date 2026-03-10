@@ -26,6 +26,7 @@ const log = Logger.getLogger("ContractCard");
 
 interface ContractCardProps {
   contract: any;
+  animationIndex?: number;
   onEdit?: (contract: any) => void;
   onAssignDriver?: (contract: any) => void;
   onPayDriver?: (contract: any) => void;
@@ -44,6 +45,11 @@ const useStyles = makeStyles({
     overflow: "hidden",
     marginBottom: "12px",
     boxShadow: tokens.shadow4,
+    transition: "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+    ":hover": {
+      transform: "translateY(-3px)",
+      boxShadow: tokens.shadow16,
+    },
   },
 
   statusBar: {
@@ -113,6 +119,7 @@ import { getStatusColor, getStatusTextColor } from "@/app/Utils/statusUtils";
 
 export default function ContractCard({
   contract,
+  animationIndex = 0,
   onEdit,
   onAssignDriver,
   onPayDriver,
@@ -165,7 +172,10 @@ export default function ContractCard({
   };
 
   return (
-    <div className={styles.wrapper}>
+    <div
+      className={`${styles.wrapper} anim-stagger`}
+      style={{ "--i": animationIndex } as React.CSSProperties}
+    >
       <div className={styles.statusBar} style={{ backgroundColor: statusTextColor }} />
 
       <Card className={styles.card} appearance="subtle">

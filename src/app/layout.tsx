@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Raleway } from "next/font/google";
 import "./globals.css";
 import FluentUIProvider from "./Components/Providers/FluentUIProvider";
+import PageTransition from "./Components/PageTransition/PageTransition";
 
 const raleway = Raleway({
   variable: "--font-raleway",
@@ -27,9 +28,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={raleway.variable}>
         <FluentUIProvider>
-          {children}
+          <PageTransition>
+            {children}
+          </PageTransition>
         </FluentUIProvider>
       </body>
     </html>
   );
 }
+

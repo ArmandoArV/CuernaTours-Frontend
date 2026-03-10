@@ -252,6 +252,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                     className={`${styles.rowWithColorIndicator} ${
                       isSelected ? styles.selectedRow : ""
                     }`}
+                    style={{ "--row-index": paginatedIndex } as React.CSSProperties}
                     onClick={() => {
                       if (isChofer) {
                         handleRowToggle(row, globalRowIndex);
