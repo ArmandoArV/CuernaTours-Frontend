@@ -23,6 +23,7 @@ interface FilterableTableProps extends Omit<TableComponentProps, "data"> {
   actionButtons?: React.ReactNode;
   title?: string;
   description?: string;
+  groupBy?: (row: any) => string;
 }
 const FilterableTableComponent: React.FC<FilterableTableProps> = ({
   originalData,

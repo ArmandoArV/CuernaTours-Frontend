@@ -63,6 +63,7 @@ export type TableComponentProps = {
   title?: string;
   description?: string;
   emptyMessage?: string;
+  groupBy?: (row: any) => string;
 };
 
 const TableComponent: React.FC<TableComponentProps> = ({
@@ -77,6 +78,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
   title,
   description,
   emptyMessage = "No se encontraron datos",
+  groupBy,
 }) => {
   const router = useRouter();
   const { isChofer, isAdmin, isMaestro, isOficina } = useUserRole();
@@ -224,8 +226,24 @@ const TableComponent: React.FC<TableComponentProps> = ({
               const status = getStatusFromRow(row);
               const id = getRowId(row);
 
+              // Group header: render when groupBy is set and this is the first row of a new group
+              const groupLabel = groupBy ? groupBy(row) : null;
+              const prevRow = paginatedIndex > 0 ? paginatedData[paginatedIndex - 1] : null;
+              const prevGroupLabel = prevRow && groupBy ? groupBy(prevRow) : null;
+              const showGroupHeader = groupBy && groupLabel && groupLabel !== prevGroupLabel;
+
               return (
                 <React.Fragment key={globalRowIndex}>
+                  {showGroupHeader && (
+                    <TableRow className={styles.groupHeaderRow}>
+                      <TableCell
+                        colSpan={columns.length + (showActions ? 1 : 0)}
+                        className={styles.groupHeaderCell}
+                      >
+                        {groupLabel}
+                      </TableCell>
+                    </TableRow>
+                  )}
                   <TableRow
                     className={`${styles.tableRow} ${isSelected ? styles.selectedRow : ""}`}
                     style={{

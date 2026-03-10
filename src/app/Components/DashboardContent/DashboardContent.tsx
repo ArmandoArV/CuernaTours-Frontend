@@ -191,13 +191,41 @@ function transformApiData(apiData: any[]): any[] {
       return {
         "ID Contrato": contract.contract_id,
         "Empresa O Cliente": formatPersonName(contract.client_name) || "",
+        Origen: (firstTrip as any).origin_name || (firstTrip as any).origin?.name || "",
+        Destino: (firstTrip as any).destination_name || (firstTrip as any).destination?.name || "",
         Fecha: formatDateStandard(firstTrip.service_date),
+        Unidad: (() => {
+          for (const t of trips) {
+            const units: any[] = t.units && t.units.length > 0 ? t.units : [];
+            for (const u of units) {
+              const plate = u.vehicle?.license_plate || u.vehicle?.plate;
+              if (plate) return plate;
+            }
+            const tripPlate = t.vehicle?.license_plate || t.vehicle?.plate;
+            if (tripPlate) return tripPlate;
+          }
+          return "";
+        })(),
+        Chofer: (() => {
+          for (const t of trips) {
+            const units: any[] = t.units && t.units.length > 0 ? t.units : [];
+            for (const u of units) {
+              const driverName = u.driver?.name || u.driver?.full_name;
+              if (driverName) return formatPersonName(driverName);
+              const extName = u.external_driver?.name || u.external_driver?.full_name;
+              if (extName) return formatPersonName(extName);
+            }
+            const dName = t.driver?.name || t.driver?.full_name;
+            if (dName) return formatPersonName(dName);
+          }
+          return "";
+        })(),
+        Estatus: contractStatus,
         Horario: scheduleTime,
         Asignados: assignmentStatus,
         Monto: contract.amount ? `$${contract.amount.toLocaleString()}` : "",
         IDA: (firstTrip as any).origin_name || (firstTrip as any).origin?.name || "",
         REGRESO: (firstTrip as any).destination_name || (firstTrip as any).destination?.name || "",
-        Estatus: contractStatus,
         "Estado de Pago":
           contract.payment_status === "paid" ? "Pagado" : "Pendiente",
         // Include IDs and data for functionality
@@ -215,19 +243,14 @@ function transformApiData(apiData: any[]): any[] {
       };
     })
     .sort((a, b) => {
-      // Sort by proximity to current date (closest first)
+      // Sort chronologically (today first, then tomorrow, then future)
 
       // Handle cases where dates are missing
       if (!a._sortDate && !b._sortDate) return 0;
       if (!a._sortDate) return 1; // Items without dates go to the end
       if (!b._sortDate) return -1;
 
-      // Calculate absolute difference from current date
-      const diffA = Math.abs(a._sortDate.getTime() - nowTime);
-      const diffB = Math.abs(b._sortDate.getTime() - nowTime);
-
-      // Sort by closest date first (smallest difference)
-      return diffA - diffB;
+      return a._sortDate.getTime() - b._sortDate.getTime();
     });
 }
 export default function DashboardContent() {
@@ -294,13 +317,32 @@ export default function DashboardContent() {
 
   const columns = [
     "Empresa O Cliente",
+    "Origen",
+    "Destino",
     "Fecha",
-    "Horario",
-    "Asignados",
-    "Monto",
+    "Unidad",
+    "Chofer",
     "Estatus",
-    "Estado de Pago",
   ];
+
+  // Group rows by date relative to today
+  const groupByDate = (row: any): string => {
+    if (!row._sortDate) return "Futuros servicios";
+    const rowDate = new Date(row._sortDate);
+    const today = new Date();
+    const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const tomorrowDay = todayDay + 86400000;
+    const rowDay = new Date(rowDate.getFullYear(), rowDate.getMonth(), rowDate.getDate()).getTime();
+
+    const months = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+    const dayNum = rowDate.getDate();
+    const monthStr = months[rowDate.getMonth()];
+
+    if (rowDay === todayDay) return `${dayNum} ${monthStr} (Hoy)`;
+    if (rowDay === tomorrowDay) return `${dayNum} ${monthStr} (Mañana)`;
+    if (rowDay < todayDay) return `${dayNum} ${monthStr} (Pasado)`;
+    return "Futuros servicios";
+  };
 
   // Configure filters for the table
   const filterConfigs: FilterConfig[] = useMemo(
@@ -611,6 +653,7 @@ export default function DashboardContent() {
           currentPage={currentPage}
           onPageChange={setCurrentPage}
           onFiltersChange={handleFiltersChange}
+          groupBy={groupByDate}
           actionButtons={
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
               <ButtonComponent
