@@ -13,6 +13,7 @@ import { getStatusColor, getStatusTextColor } from "@/app/Utils/statusUtils";
 
 interface Props {
   trip: any;
+  animationIndex?: number;
   onClick: (trip: any) => void;
 }
 
@@ -23,6 +24,11 @@ const useStyles = makeStyles({
     overflow: "hidden",
     marginBottom: "16px",
     cursor: "pointer",
+    transition: "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+    ":hover": {
+      transform: "translateY(-3px)",
+      boxShadow: tokens.shadow16,
+    },
   },
 
   statusBar: {
@@ -67,11 +73,15 @@ const useStyles = makeStyles({
   },
 });
 
-export default function DriverTripCard({ trip, onClick }: Props) {
+export default function DriverTripCard({ trip, animationIndex = 0, onClick }: Props) {
   const styles = useStyles();
 
   return (
-    <div className={styles.wrapper} onClick={() => onClick(trip)}>
+    <div
+      className={`${styles.wrapper} anim-stagger`}
+      style={{ "--i": animationIndex } as React.CSSProperties}
+      onClick={() => onClick(trip)}
+    >
       {/* LEFT STATUS BAR */}
       <div
         className={styles.statusBar}

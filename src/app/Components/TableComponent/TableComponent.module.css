@@ -1,14 +1,9 @@
 @keyframes fadeSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Wrapper ───────────────────────────────────────────────────────── */
 .tableContainer {
   position: relative;
   overflow-x: auto;
@@ -17,133 +12,111 @@
 
 .table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: collapse !important;
   margin: 16px 0;
   font-size: 14px;
-  border-radius: 8px;
-  overflow: visible;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.table th,
-.table td {
-  padding: 12px 16px;
-  text-align: left;
-  vertical-align: middle;
-  background-color: white;
-}
-
-.actionsContainer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.actionsContainer > * {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.actionsContainer button {
-  min-width: unset;
-  height: 32px;
-  width: 32px;
-  padding: 0;
-}
-
-.table td {
-  vertical-align: middle;
-}
-
-.actionsWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
-.table tbody tr td:first-child {
-  padding-left: 36px; /* 16px + 20px for the color bar */
-}
-
+/* ── Header ─────────────────────────────────────────────────────────── */
 .tableHeader {
   position: sticky;
   top: 0;
   z-index: 2;
-  border-radius: 5px;
 }
 
-.table thead tr {
-  border-left: none;
+.headerRow {
+  background-color: var(--Main-1A2E47) !important;
+  border: none !important;
 }
 
-.table th:first-child {
-  padding-left: 36px; /* Match the body cells */
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
-}
-
-.table th {
-  background-color: var(--Main-1A2E47);
-  font-weight: 600;
-  color: #fff;
-  font-size: 14px;
-  height: 48px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #e0e0e0;
+.headerCell {
+  background-color: var(--Main-1A2E47) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  height: 48px !important;
+  padding: 12px 16px !important;
+  border: none !important;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
 }
 
-.table th:last-child {
+.headerCellFirst {
+  padding-left: 36px !important;
+  border-top-left-radius: 8px !important;
+  border-bottom-left-radius: 8px !important;
+}
+
+.headerCellLast {
+  border-top-right-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+}
+
+.actionsHeaderCell {
   width: 80px;
-  text-align: center;
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+  text-align: center !important;
 }
 
-.table td {
-  border-bottom: 1px solid #e0e0e0;
-  color: #555;
-  font-size: 14px;
-  height: 48px;
-  padding: 12px 16px;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.table tbody tr {
+/* ── Body rows ──────────────────────────────────────────────────────── */
+.tableRow {
+  cursor: pointer;
+  border-bottom: 8px solid #f8f9fa !important;
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
-  border-bottom: 8px solid #f8f9fa;
   animation: fadeSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: calc(var(--row-index, 0) * 35ms);
 }
 
-.table tbody tr:first-child {
-  border-top: 16px solid transparent;
+.tableRow:first-child {
+  border-top: 16px solid transparent !important;
 }
 
-.table tbody tr:hover {
-  background-color: #eef2f8;
-  box-shadow: inset 3px 0 0 var(--Main-1A2E47);
+.tableRow:last-child {
+  border-bottom: none !important;
 }
 
-.table tbody tr:last-child {
-  border-bottom: none;
+.tableRow:hover {
+  background-color: #eef2f8 !important;
 }
 
-.table tbody tr:last-child td {
-  border-bottom: none;
+.tableRow:hover .cell,
+.tableRow:hover .firstCell {
+  background-color: #eef2f8 !important;
 }
 
-.rowWithColorIndicator td:first-child {
-  position: relative;
+/* ── Cells ──────────────────────────────────────────────────────────── */
+.cell {
+  background-color: #fff;
+  color: #555 !important;
+  font-size: 14px !important;
+  height: 48px !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: middle !important;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-.rowWithColorIndicator td:first-child::before {
+/* First cell: has the left color-indicator bar via ::before */
+.firstCell {
+  position: relative !important;
+  background-color: #fff;
+  color: #555 !important;
+  font-size: 14px !important;
+  height: 48px !important;
+  padding: 12px 16px 12px 36px !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: middle !important;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.firstCell::before {
   content: "";
   position: absolute;
   left: 0;
@@ -155,13 +128,54 @@
   border-bottom-left-radius: 7px;
 }
 
-.emptyMessage {
-  text-align: center;
-  padding: 40px;
-  color: #999;
-  font-style: italic;
+/* ── Actions cell ───────────────────────────────────────────────────── */
+.actionsContainer {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #fff;
+  height: 48px !important;
+  padding: 4px 8px !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+  width: 80px;
+  transition: background-color 0.2s ease;
 }
 
+.tableRow:hover .actionsContainer {
+  background-color: #eef2f8 !important;
+}
+
+.actionsContainer button {
+  min-width: unset;
+  height: 32px;
+  width: 32px;
+  padding: 0;
+}
+
+/* ── Empty state ────────────────────────────────────────────────────── */
+.emptyMessage {
+  text-align: center !important;
+  padding: 40px !important;
+  color: #999 !important;
+  font-style: italic;
+  background-color: #fff;
+  animation: gentleBounce 1.5s ease-in-out 0.5s;
+}
+
+@keyframes gentleBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+/* ── Chofer inline details ──────────────────────────────────────────── */
+.detailsRowCell {
+  padding: 10px 16px !important;
+  background-color: #fbfdff !important;
+  border-bottom: 1px solid #e8e8e8 !important;
+}
+
+/* ── Title / description ────────────────────────────────────────────── */
 .title {
   font-size: 24px;
   font-weight: 600;
@@ -175,7 +189,7 @@
   line-height: 1.5;
 }
 
-/* Pagination wrapper */
+/* ── Pagination ─────────────────────────────────────────────────────── */
 .paginationWrapper {
   display: flex;
   justify-content: center;
@@ -183,9 +197,3 @@
   padding: 16px 0;
 }
 
-/* Details row styling (inserted directly under a selected row) */
-.detailsRowCell {
-  padding: 10px 16px;
-  background-color: #fbfdff;
-  border-bottom: 1px solid #e8e8e8;
-}

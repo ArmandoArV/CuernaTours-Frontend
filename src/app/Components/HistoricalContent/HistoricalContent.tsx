@@ -214,6 +214,7 @@ export default function HistoricalContent() {
                 <HistoricalCard
                   key={`${trip.contract_id}-${trip.trip_id}-${idx}`}
                   trip={trip}
+                  animationIndex={idx}
                   onViewDetails={hasFullAccess ? handleViewDetails : undefined}
                 />
               ))

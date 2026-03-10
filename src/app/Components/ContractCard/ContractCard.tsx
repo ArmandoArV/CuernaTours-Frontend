@@ -184,7 +184,10 @@ export default function ContractCard({
           <Text weight="semibold" size={400}>
             {contract["Empresa O Cliente"]}
           </Text>
-          <span className={styles.badge} style={{ backgroundColor: statusColor, color: getStatusTextColor(status) }}>
+          <span
+            className={`${styles.badge} ${status === "En curso" || status === "Por pagar" ? "status-pulse" : ""}`}
+            style={{ backgroundColor: statusColor, color: getStatusTextColor(status) }}
+          >
             {status}
           </span>
         </div>

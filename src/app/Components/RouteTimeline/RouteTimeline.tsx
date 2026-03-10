@@ -22,7 +22,8 @@ export default function RouteTimeline({ locations }: RouteTimelineProps) {
       {locations.map((location, index) => (
         <div
           key={location.id ?? `${location.label}-${index}`}
-          className={styles.routeItem}
+          className={`${styles.routeItem} anim-stagger`}
+          style={{ "--i": index } as React.CSSProperties}
         >
           <div
             className={`${styles.outsideBubble} ${

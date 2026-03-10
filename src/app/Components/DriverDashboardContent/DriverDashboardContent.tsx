@@ -123,10 +123,11 @@ export default function DriverDashboardContent() {
           {filteredTrips.length === 0 ? (
             <p>No tienes viajes asignados</p>
           ) : (
-            filteredTrips.map((trip) => (
+            filteredTrips.map((trip, idx) => (
               <DriverTripCard
                 key={trip.trip_id ?? trip["ID Viaje"]}
                 trip={trip}
+                animationIndex={idx}
                 onClick={handleRowClick}
               />
             ))

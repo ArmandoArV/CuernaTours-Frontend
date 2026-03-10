@@ -7,13 +7,18 @@ import styles from "./TableComponent.module.css";
 import {
   Button,
   Tooltip,
-  Badge,
   Menu,
   MenuTrigger,
   MenuPopover,
   MenuList,
   MenuItem,
   MenuDivider,
+  Table,
+  TableHeader,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
   tokens,
 } from "@fluentui/react-components";
 
@@ -35,9 +40,9 @@ import DriverPaymentModal from "@/app/Components/DriverPaymentModal/DriverPaymen
 import ClientPaymentModal from "@/app/Components/ClientPaymentModal/ClientPaymentModal";
 import { useUserRole } from "@/app/hooks/useUserRole";
 import { contractsService } from "@/services/api/contracts.service";
-import { 
-  showInputAlert, 
-  showSuccessAlert, 
+import {
+  showInputAlert,
+  showSuccessAlert,
   showErrorAlert,
 } from "@/app/Utils/AlertUtil";
 import { Logger } from "@/app/Utils/Logger";
@@ -46,7 +51,7 @@ import ChangeStatusModal from "@/app/Components/ChangeStatusModal/ChangeStatusMo
 
 const log = Logger.getLogger("TableComponent");
 
-export type TableComponentProps= {
+export type TableComponentProps = {
   data: Array<{ [key: string]: any }>;
   columns: string[];
   showActions?: boolean;
@@ -78,10 +83,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
   const canManage = isAdmin || isMaestro;
   const canViewDetails = canManage || isOficina;
 
-  const [internalCurrentPage, setInternalCurrentPage] = useState(
-    currentPage || 1,
-  );
-
+  const [internalCurrentPage, setInternalCurrentPage] = useState(currentPage || 1);
   const [selectedRow, setSelectedRow] = useState<any | null>(null);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
 
@@ -100,21 +102,14 @@ const TableComponent: React.FC<TableComponentProps> = ({
     currentStatus?: string;
   }>({ open: false, contractId: null });
 
-  const activePage =
-    currentPage !== undefined ? currentPage : internalCurrentPage;
-
+  const activePage = currentPage !== undefined ? currentPage : internalCurrentPage;
   const sortedData = useMemo(() => [...data], [data]);
 
   const { paginatedData, totalPages } = useMemo(() => {
-    if (!enablePagination) {
-      return { paginatedData: sortedData, totalPages: 1 };
-    }
-
+    if (!enablePagination) return { paginatedData: sortedData, totalPages: 1 };
     const startIndex = (activePage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-
     return {
-      paginatedData: sortedData.slice(startIndex, endIndex),
+      paginatedData: sortedData.slice(startIndex, startIndex + itemsPerPage),
       totalPages: Math.ceil(sortedData.length / itemsPerPage),
     };
   }, [sortedData, activePage, itemsPerPage, enablePagination]);
@@ -122,15 +117,12 @@ const TableComponent: React.FC<TableComponentProps> = ({
   const handlePageChange = (page: number) => {
     if (onPageChange) onPageChange(page);
     else setInternalCurrentPage(page);
-
     setSelectedRow(null);
     setSelectedRowIndex(null);
   };
 
   const getRowId = (row: any) => row?.contract_id || row?.id || row?.ID || null;
-
-  const getStatusFromRow = (row: any) =>
-    row.Estatus || row.status || row.estatus || "";
+  const getStatusFromRow = (row: any) => row.Estatus || row.status || row.estatus || "";
 
   const handleRowToggle = async (row: any, rowIndex: number) => {
     if (selectedRowIndex === rowIndex) {
@@ -138,20 +130,11 @@ const TableComponent: React.FC<TableComponentProps> = ({
       setSelectedRowIndex(null);
       return;
     }
-
     setSelectedRowIndex(rowIndex);
-
     const id = getRowId(row);
-
-    if (!id) {
-      setSelectedRow(row);
-      return;
-    }
-
+    if (!id) { setSelectedRow(row); return; }
     try {
-      const contractData = await contractsService.getContractDetails(
-        Number(id),
-      );
+      const contractData = await contractsService.getContractDetails(Number(id));
       setSelectedRow(contractData);
     } catch (err) {
       log.error("Error fetching contract details:", err);
@@ -166,19 +149,12 @@ const TableComponent: React.FC<TableComponentProps> = ({
       "Motivo de cancelación",
       "Escribe el motivo aquí...",
       "Sí, cancelar contrato",
-      "No, mantener"
+      "No, mantener",
     );
-
     if (reason) {
       try {
         await contractsService.cancelContract(id, reason);
-        showSuccessAlert(
-          "Contrato cancelado", 
-          "El contrato ha sido cancelado exitosamente.", 
-          () => {
-             window.location.reload(); 
-          }
-        );
+        showSuccessAlert("Contrato cancelado", "El contrato ha sido cancelado exitosamente.", () => { window.location.reload(); });
       } catch (error) {
         log.error("Error cancelling contract:", error);
         showErrorAlert("Error", "No se pudo cancelar el contrato. Inténtalo de nuevo.");
@@ -195,41 +171,49 @@ const TableComponent: React.FC<TableComponentProps> = ({
     setStatusModal(prev => ({ ...prev, open: false }));
     try {
       await contractsService.updateStatus(statusModal.contractId, parseInt(value, 10));
-      showSuccessAlert(
-        "Estatus actualizado",
-        "El estatus del contrato ha sido actualizado exitosamente.",
-        () => { window.location.reload(); },
-      );
+      showSuccessAlert("Estatus actualizado", "El estatus del contrato ha sido actualizado exitosamente.", () => { window.location.reload(); });
     } catch (error) {
       log.error("Error updating contract status:", error);
       showErrorAlert("Error", "No se pudo actualizar el estatus. Inténtalo de nuevo.");
     }
   };
 
+  /* ─────────────────────────────────────────────────────────────────── */
+
   return (
     <div className={styles.tableContainer}>
       {title && <div className={styles.title}>{title}</div>}
       {description && <div className={styles.description}>{description}</div>}
-      <table className={styles.table}>
-        <thead className={styles.tableHeader}>
-          <tr>
-            {columns.map((col) => (
-              <th key={col}>{col}</th>
-            ))}
-            {showActions && <th />}
-          </tr>
-        </thead>
 
-        <tbody>
+      <Table className={styles.table} noNativeElements={false}>
+        {/* ── Header ── */}
+        <TableHeader className={styles.tableHeader}>
+          <TableRow className={styles.headerRow}>
+            {columns.map((col, index) => (
+              <TableHeaderCell
+                key={col}
+                className={`${styles.headerCell} ${index === 0 ? styles.headerCellFirst : ""} ${index === columns.length - 1 && !showActions ? styles.headerCellLast : ""}`}
+              >
+                {col}
+              </TableHeaderCell>
+            ))}
+            {showActions && (
+              <TableHeaderCell className={`${styles.headerCell} ${styles.headerCellLast} ${styles.actionsHeaderCell}`} />
+            )}
+          </TableRow>
+        </TableHeader>
+
+        {/* ── Body ── */}
+        <TableBody>
           {paginatedData.length === 0 ? (
-            <tr>
-              <td
+            <TableRow>
+              <TableCell
                 colSpan={columns.length + (showActions ? 1 : 0)}
                 className={styles.emptyMessage}
               >
                 {emptyMessage}
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ) : (
             paginatedData.map((row, paginatedIndex) => {
               const globalRowIndex = enablePagination
@@ -242,44 +226,35 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
               return (
                 <React.Fragment key={globalRowIndex}>
-                  <tr
-                    className={`${styles.rowWithColorIndicator} ${
-                      isSelected ? styles.selectedRow : ""
-                    }`}
-                    style={{ "--row-index": paginatedIndex } as React.CSSProperties}
+                  <TableRow
+                    className={`${styles.tableRow} ${isSelected ? styles.selectedRow : ""}`}
+                    style={{
+                      "--indicator-color": getStatusTextColor(status),
+                      "--row-index": paginatedIndex,
+                    } as React.CSSProperties}
                     onClick={() => {
-                      if (isChofer) {
-                        handleRowToggle(row, globalRowIndex);
-                        return;
-                      }
-
-                      if (canViewDetails && id) {
-                        router.push(`/dashboard/trips/${id}`);
-                        return;
-                      }
-
+                      if (isChofer) { handleRowToggle(row, globalRowIndex); return; }
+                      if (canViewDetails && id) { router.push(`/dashboard/trips/${id}`); return; }
                       if (onRowClick) onRowClick(row);
                     }}
                   >
                     {columns.map((col, colIndex) => {
                       const value = row[col];
                       const isStatusColumn =
-                        col.toLowerCase() === "estatus" ||
-                        col.toLowerCase() === "status";
+                        col.toLowerCase() === "estatus" || col.toLowerCase() === "status";
 
                       return (
-                        <td
+                        <TableCell
                           key={col}
-                          style={
-                            colIndex === 0
-                              ? ({
-                                  "--indicator-color": getStatusTextColor(status),
-                                } as React.CSSProperties)
-                              : undefined
-                          }
+                          className={colIndex === 0 ? styles.firstCell : styles.cell}
                         >
                           {isStatusColumn ? (
                             <span
+                              className={
+                                value === "En curso" || value === "Por pagar"
+                                  ? "status-pulse"
+                                  : ""
+                              }
                               style={{
                                 backgroundColor: getStatusColor(value),
                                 color: getStatusTextColor(value),
@@ -289,41 +264,32 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                 fontSize: "12px",
                                 fontWeight: "600",
                                 textAlign: "center",
-                                minWidth: "80px"
+                                minWidth: "80px",
                               }}
                             >
                               {value}
                             </span>
                           ) : (
-                            value
+                            value ?? "—"
                           )}
-                        </td>
+                        </TableCell>
                       );
                     })}
 
                     {showActions && (
-                      <td className={styles.actionsContainer}>
-                        {/* Ver Detalles for ALL roles */}
+                      <TableCell className={styles.actionsContainer}>
                         <Tooltip content="Ver Detalles" relationship="label">
                           <Button
                             appearance="subtle"
                             icon={<EyeFilled />}
                             onClick={(e) => {
                               e.stopPropagation();
-
-                              if (isChofer) {
-                                handleRowToggle(row, globalRowIndex);
-                                return;
-                              }
-
-                              if (canViewDetails && id) {
-                                router.push(`/dashboard/trips/${id}`);
-                              }
+                              if (isChofer) { handleRowToggle(row, globalRowIndex); return; }
+                              if (canViewDetails && id) router.push(`/dashboard/trips/${id}`);
                             }}
                           />
                         </Tooltip>
 
-                        {/* 3-dot menu for Admin/Maestro */}
                         {canManage && (
                           <Menu>
                             <MenuTrigger disableButtonEnhancement>
@@ -333,7 +299,6 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                 onClick={(e) => e.stopPropagation()}
                               />
                             </MenuTrigger>
-
                             <MenuPopover>
                               <MenuList>
                                 <MenuItem
@@ -341,9 +306,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     if (row._trips && Array.isArray(row._trips) && row._trips.length > 0) {
-                                       setAssignRow(row._trips[0]);
+                                      setAssignRow(row._trips[0]);
                                     } else {
-                                       setAssignRow(row);
+                                      setAssignRow(row);
                                     }
                                     setIsAssignModalOpen(true);
                                   }}
@@ -355,8 +320,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   icon={<EditRegular />}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (id)
-                                      router.push(`/dashboard/order/${id}`);
+                                    if (id) router.push(`/dashboard/order/${id}`);
                                   }}
                                 >
                                   Editar Orden
@@ -407,9 +371,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   icon={<DismissRegular />}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (id) {
-                                      handleCancelContract(Number(id));
-                                    }
+                                    if (id) handleCancelContract(Number(id));
                                   }}
                                   style={{ color: tokens.colorPaletteRedForeground1 }}
                                 >
@@ -419,27 +381,27 @@ const TableComponent: React.FC<TableComponentProps> = ({
                             </MenuPopover>
                           </Menu>
                         )}
-                      </td>
+                      </TableCell>
                     )}
-                  </tr>
+                  </TableRow>
 
-                  {/* Inline details only for Chofer */}
+                  {/* Inline details for Chofer only */}
                   {isChofer && isSelected && (
-                    <tr>
-                      <td
+                    <TableRow>
+                      <TableCell
                         colSpan={columns.length + (showActions ? 1 : 0)}
                         className={styles.detailsRowCell}
                       >
                         <DetailsPanel data={selectedRow} />
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   )}
                 </React.Fragment>
               );
             })
           )}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
 
       {enablePagination && totalPages > 1 && (
         <div className={styles.paginationWrapper}>
@@ -453,29 +415,20 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
       <AssignDriverModal
         isOpen={isAssignModalOpen}
-        onClose={() => {
-          setIsAssignModalOpen(false);
-          setAssignRow(null);
-        }}
+        onClose={() => { setIsAssignModalOpen(false); setAssignRow(null); }}
         tripData={assignRow}
         onAssign={() => setIsAssignModalOpen(false)}
       />
 
       <DriverPaymentModal
         isOpen={isPaymentModalOpen}
-        onClose={() => {
-          setIsPaymentModalOpen(false);
-          setPaymentTripId(null);
-        }}
+        onClose={() => { setIsPaymentModalOpen(false); setPaymentTripId(null); }}
         tripId={paymentTripId !== null ? String(paymentTripId) : null}
       />
 
       <ClientPaymentModal
         isOpen={isClientPaymentModalOpen}
-        onClose={() => {
-          setIsClientPaymentModalOpen(false);
-          setClientPaymentContractId(null);
-        }}
+        onClose={() => { setIsClientPaymentModalOpen(false); setClientPaymentContractId(null); }}
         contractId={clientPaymentContractId}
       />
 

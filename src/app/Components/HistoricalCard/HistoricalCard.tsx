@@ -12,6 +12,7 @@ import { EyeFilled } from "@fluentui/react-icons";
 
 interface HistoricalCardProps {
   trip: any;
+  animationIndex?: number;
   onViewDetails?: (trip: any) => void;
 }
 
@@ -22,6 +23,11 @@ const useStyles = makeStyles({
     overflow: "hidden",
     marginBottom: "12px",
     boxShadow: tokens.shadow4,
+    transition: "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+    ":hover": {
+      transform: "translateY(-3px)",
+      boxShadow: tokens.shadow16,
+    },
   },
   statusBar: {
     width: "6px",
@@ -68,14 +74,17 @@ const useStyles = makeStyles({
 
 import { getStatusColor, getStatusTextColor } from "@/app/Utils/statusUtils";
 
-export default function HistoricalCard({ trip, onViewDetails }: HistoricalCardProps) {
+export default function HistoricalCard({ trip, animationIndex = 0, onViewDetails }: HistoricalCardProps) {
   const styles = useStyles();
   const status = trip["Estatus"] || "";
   const statusColor = getStatusColor(status);
   const statusTextColor = getStatusTextColor(status);
 
   return (
-    <div className={styles.wrapper}>
+    <div
+      className={`${styles.wrapper} anim-stagger`}
+      style={{ "--i": animationIndex } as React.CSSProperties}
+    >
       <div className={styles.statusBar} style={{ backgroundColor: statusTextColor }} />
       <Card className={styles.card} appearance="subtle">
         <div className={styles.headerRow}>
