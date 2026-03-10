@@ -47,7 +47,8 @@ const useStyles = makeStyles({
     width: "100%",
     maxWidth: "100%",
     boxSizing: "border-box",
-    transition: "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+    transition:
+      "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
     ":hover": {
       transform: "translateY(-3px)",
       boxShadow: tokens.shadow16,
@@ -233,7 +234,10 @@ export default function ContractCard({
       style={{ "--i": animationIndex } as React.CSSProperties}
     >
       {/* LEFT STATUS BAR with vertical text */}
-      <div className={styles.statusBar} style={{ backgroundColor: statusTextColor }}>
+      <div
+        className={styles.statusBar}
+        style={{ backgroundColor: statusTextColor }}
+      >
         {status}
       </div>
 
