@@ -129,9 +129,10 @@ export const mapCompleteOrderToPayload = (
     amount: parseFloat(orderData.costoViaje) || 0,
     observations: orderData.comentarios || undefined,
     internal_observations: orderData.observacionesInternas || undefined,
-    coordinator_id: orderData.coordinadorViaje
-      ? parseInt(orderData.coordinadorViaje, 10)
-      : undefined,
+    coordinator_id:
+      orderData.coordinadorViaje && orderData.coordinadorViaje !== "POR_ASIGNAR"
+        ? parseInt(orderData.coordinadorViaje, 10)
+        : undefined,
     send_notification: false,
 
     trip: {
@@ -235,11 +236,22 @@ export const mapCompleteOrderToPayload = (
       : undefined;
     const validUnits = options.unidades
       .filter((u) => u.vehicleTypeId && !isNaN(parseInt(u.vehicleTypeId)))
-      .map((u, idx) => ({
-        vehicle_type_id: parseInt(u.vehicleTypeId, 10),
-        ...(idx === 0 && driverIdFromForm ? { driver_id: driverIdFromForm } : {}),
-        ...(u.notes ? { notes: u.notes } : {}),
-      }));
+      .map((u, idx) => {
+        const unitDriverId =
+          u.driverId && !isNaN(parseInt(u.driverId))
+            ? parseInt(u.driverId, 10)
+            : idx === 0 && driverIdFromForm
+              ? driverIdFromForm
+              : undefined;
+        return {
+          vehicle_type_id: parseInt(u.vehicleTypeId, 10),
+          ...(unitDriverId ? { driver_id: unitDriverId } : {}),
+          ...(u.vehicleId && !isNaN(parseInt(u.vehicleId))
+            ? { vehicle_id: parseInt(u.vehicleId, 10) }
+            : {}),
+          ...(u.notes ? { notes: u.notes } : {}),
+        };
+      });
     if (validUnits.length > 0) {
       payload.trip.units = validUnits;
     }
@@ -255,8 +267,8 @@ export const mapCompleteOrderToPayload = (
     if (orderData.tipoComision === "Porcentaje" && orderData.porcentaje) {
       payload.commission.amount = parseFloat(orderData.porcentaje);
     }
-    if (orderData.montoArreglado) {
-      payload.commission.arranged_deal = orderData.montoArreglado;
+    if (orderData.tipoComision === "Arreglada" && orderData.montoArreglado) {
+      payload.commission.amount = parseFloat(orderData.montoArreglado);
     }
   }
 

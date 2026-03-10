@@ -44,6 +44,7 @@ interface Props {
   hasError?: boolean;
   errorMessage?: string;
   className?: string;
+  selectedLabel?: string;
 }
 
 export default function SearchableSelectComponent({
@@ -63,6 +64,7 @@ export default function SearchableSelectComponent({
   hasError = false,
   errorMessage = "",
   className = "",
+  selectedLabel,
 }: Props) {
   const [options, setOptions] = useState<SearchableSelectOption[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -75,7 +77,12 @@ export default function SearchableSelectComponent({
 
   useEffect(() => {
     setSelectedValue(value || undefined);
-  }, [value]);
+    if (value && selectedLabel !== undefined) {
+      setInputValue(selectedLabel);
+    } else if (!value) {
+      setInputValue("");
+    }
+  }, [value, selectedLabel]);
 
   const performSearch = useCallback(
     async (query: string) => {

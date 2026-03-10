@@ -38,7 +38,7 @@ function transformDriverHistoricalData(apiData: any[], driverId: number): any[] 
         const contractStatus = CONTRACT_STATUS_MAP[contractStatusId] || contract.contract_status_name || contract.status?.name || "";
 
         // Only show completed or cancelled trips
-        if (contractStatusId === 3 || contractStatusId === 4) {
+        if (contractStatusId === 6 || contractStatusId === 7) {
           const vehiclePlate = driverUnit?.vehicle_license_plate
             || driverUnit?.vehicle?.license_plate
             || "No asignada";

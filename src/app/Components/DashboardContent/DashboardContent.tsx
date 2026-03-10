@@ -43,6 +43,7 @@ import {
   showInputAlert,
   showSuccessAlert,
   showErrorAlert,
+  showSelectAlert,
 } from "@/app/Utils/AlertUtil";
 import { CONTRACT_STATUS_MAP } from "@/app/Utils/statusUtils";
 
@@ -61,13 +62,13 @@ const toDayNumber = (date: Date) =>
 // Function to transform API data to table format (contract-based)
 // Function to transform API data to table format (contract-based)
 function transformApiData(apiData: any[]): any[] {
-  // Filter out "Finalizado" (3) and "Cancelado" (4) contracts
+  // Filter out "Finalizado" (6) and "Cancelado" (7) contracts
   const activeContracts = apiData.filter((contract) => {
     const statusId = Number(contract.contract_status_id || contract.status?.id);
     const statusName = (contract.contract_status_name || contract.status?.name || "").toLowerCase();
     return (
-      statusId !== 3 &&
-      statusId !== 4 &&
+      statusId !== 6 &&
+      statusId !== 7 &&
       statusName !== "finalizado" &&
       statusName !== "cancelado"
     );
@@ -465,6 +466,41 @@ export default function DashboardContent() {
     }
   };
 
+  const handleChangeContractStatus = async (row: any) => {
+    const id = row.contract_id || row.id;
+    if (!id) return;
+
+    const statusOptions = [
+      { value: "2", label: "Por asignar" },
+      { value: "3", label: "Próximo" },
+      { value: "4", label: "En curso" },
+      { value: "5", label: "Por pagar" },
+      { value: "6", label: "Finalizado" },
+    ];
+
+    const selected = await showSelectAlert(
+      "Cambiar estatus del contrato",
+      "Selecciona el nuevo estatus:",
+      statusOptions,
+      "Cambiar",
+      "Cancelar",
+    );
+
+    if (selected) {
+      try {
+        await contractsService.updateStatus(Number(id), parseInt(selected, 10));
+        showSuccessAlert(
+          "Estatus actualizado",
+          "El estatus del contrato ha sido actualizado exitosamente.",
+          fetchContracts,
+        );
+      } catch (error) {
+        log.error("Error updating contract status:", error);
+        showErrorAlert("Error", "No se pudo actualizar el estatus. Inténtalo de nuevo.");
+      }
+    }
+  };
+
   if (loading) {
     return <LoadingComponent message="Cargando Contratos..." />;
   }
@@ -555,6 +591,7 @@ export default function DashboardContent() {
                   onPayDriver={hasFullAccess ? handlePayDriver : undefined}
                   onRegisterPayment={hasFullAccess ? handleRegisterClientPayment : undefined}
                   onCancel={hasFullAccess ? handleCancelContract : undefined}
+                  onChangeStatus={hasFullAccess ? handleChangeContractStatus : undefined}
                 />
               ))
             )}

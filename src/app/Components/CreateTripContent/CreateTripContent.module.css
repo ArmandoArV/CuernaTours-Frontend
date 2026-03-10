@@ -311,6 +311,11 @@
   resize: vertical;
 }
 
+.textareaContainer {
+  width: 100%;
+  display: block;
+}
+
 .sectionButtons {
   width: 100%;
   display: flex;

@@ -112,7 +112,7 @@ export default function CreateTripContent({
       
       // Special validation for Place ID fields (can be empty if manual address is provided)
       if (field === "origenNombreLugar") {
-        if (!valueToCheck && !(tripFormData.origenCalle && tripFormData.origenColonia && tripFormData.origenCiudad)) {
+        if (!valueToCheck && !tripFormData.origenCalle) {
              setErrors(prev => ({...prev, [field]: "Este campo es obligatorio"}));
              return;
         } else {
@@ -126,7 +126,7 @@ export default function CreateTripContent({
       }
       
       if (field === "destinoNombreLugar") {
-        if (!valueToCheck && !(tripFormData.destinoCalle && tripFormData.destinoColonia && tripFormData.destinoCiudad)) {
+        if (!valueToCheck && !tripFormData.destinoCalle) {
              setErrors(prev => ({...prev, [field]: "Este campo es obligatorio"}));
              return;
         } else {
@@ -590,18 +590,8 @@ export default function CreateTripContent({
     const requiredFields = [
       "origenNombreLugar",
       "origenCalle",
-      "origenNumero",
-      "origenColonia",
-      "origenCodigoPostal",
-      "origenCiudad",
-      "origenEstado",
       "destinoNombreLugar",
       "destinoCalle",
-      "destinoNumero",
-      "destinoColonia",
-      "destinoCodigoPostal",
-      "destinoCiudad",
-      "destinoEstado",
       "idaFecha",
       "numeroPasajeros",
     ];
@@ -624,14 +614,14 @@ export default function CreateTripContent({
     requiredFields.forEach((field) => {
       // If manually editing origin (no Place ID), skip ID validation if address fields are present
       if (field === "origenNombreLugar" && !tripFormData.origenNombreLugar) {
-        if (tripFormData.origenCalle && tripFormData.origenColonia && tripFormData.origenCiudad) {
+        if (tripFormData.origenCalle) {
           return; // Valid custom address
         }
       }
       
       // If manually editing destination (no Place ID), skip ID validation if address fields are present
       if (field === "destinoNombreLugar" && !tripFormData.destinoNombreLugar) {
-        if (tripFormData.destinoCalle && tripFormData.destinoColonia && tripFormData.destinoCiudad) {
+        if (tripFormData.destinoCalle) {
           return; // Valid custom address
         }
       }
@@ -731,7 +721,7 @@ export default function CreateTripContent({
         };
         log.debug("Contract payload:", contractPayload);
 
-        const result = await contractsService.create(contractPayload);
+        const result = await contractsService.createWithTrips(contractPayload);
         log.debug("Contract created:", result);
 
         showSuccessAlert("Éxito", "Contrato y viaje creados correctamente");
@@ -883,6 +873,7 @@ export default function CreateTripContent({
             <SearchableSelectComponent
               label="Seleccionar Dirección"
               value={tripFormData.origenNombreLugar || ""}
+              selectedLabel={tripFormData.origenNombreDisplay || ""}
               onChange={(value, option) =>
                 handlePlaceSelect("origenNombreLugar", value, option)
               }
@@ -918,12 +909,7 @@ export default function CreateTripContent({
               onChange={handleTripInputChange("origenNumero")}
               disabled={!origenEditor.isEditing}
               label="Número"
-              required
               containerClassName={styles.numberInputContainer}
-              hasError={fieldErrors.origenNumero}
-              errorMessage={
-                fieldErrors.origenNumero ? "Este campo es obligatorio" : ""
-              }
             />
           </div>
           <div className={styles.section}>
@@ -933,13 +919,8 @@ export default function CreateTripContent({
               onChange={handleTripInputChange("origenColonia")}
               disabled={!origenEditor.isEditing}
               label="Colonia"
-              required
               className={styles.input}
               containerClassName={styles.streetInputContainer}
-              hasError={fieldErrors.origenColonia}
-              errorMessage={
-                fieldErrors.origenColonia ? "Este campo es obligatorio" : ""
-              }
             />
             <InputComponent
               type="text"
@@ -947,15 +928,8 @@ export default function CreateTripContent({
               onChange={handleTripInputChange("origenCodigoPostal")}
               disabled={!origenEditor.isEditing}
               label="Código Postal"
-              required
               className={styles.input}
               containerClassName={styles.numberInputContainer}
-              hasError={fieldErrors.origenCodigoPostal}
-              errorMessage={
-                fieldErrors.origenCodigoPostal
-                  ? "Este campo es obligatorio"
-                  : ""
-              }
             />
           </div>
           <div className={styles.section}>
@@ -965,12 +939,7 @@ export default function CreateTripContent({
               onChange={handleTripInputChange("origenCiudad")}
               disabled={!origenEditor.isEditing}
               label="Ciudad"
-              required
               className={styles.input}
-              hasError={fieldErrors.origenCiudad}
-              errorMessage={
-                fieldErrors.origenCiudad ? "Este campo es obligatorio" : ""
-              }
             />
             <InputComponent
               type="text"
@@ -978,12 +947,7 @@ export default function CreateTripContent({
               onChange={handleTripInputChange("origenEstado")}
               disabled={!origenEditor.isEditing}
               label="Estado"
-              required
               className={styles.input}
-              hasError={fieldErrors.origenEstado}
-              errorMessage={
-                fieldErrors.origenEstado ? "Este campo es obligatorio" : ""
-              }
             />
           </div>
 
@@ -1048,6 +1012,8 @@ export default function CreateTripContent({
                 onChange={handleTripInputChange("origenNotas")}
                 label="Notas adicionales"
                 className={styles.textarea}
+                containerClassName={styles.textareaContainer}
+                style={{ width: "100%" }}
               />
             </div>
           )}
@@ -1091,6 +1057,7 @@ export default function CreateTripContent({
             <SearchableSelectComponent
               label="Seleccionar Dirección"
               value={tripFormData.destinoNombreLugar || ""}
+              selectedLabel={tripFormData.destinoNombreDisplay || ""}
               onChange={(value, option) =>
                 handlePlaceSelect("destinoNombreLugar", value, option)
               }
@@ -1128,12 +1095,7 @@ export default function CreateTripContent({
               onChange={handleTripInputChange("destinoNumero")}
               disabled={!destinoEditor.isEditing}
               label="Número"
-              required
               containerClassName={styles.numberInputContainer}
-              hasError={fieldErrors.destinoNumero}
-              errorMessage={
-                fieldErrors.destinoNumero ? "Este campo es obligatorio" : ""
-              }
             />
           </div>
           <div className={styles.section}>
@@ -1143,13 +1105,8 @@ export default function CreateTripContent({
               onChange={handleTripInputChange("destinoColonia")}
               disabled={!destinoEditor.isEditing}
               label="Colonia"
-              required
               className={styles.input}
               containerClassName={styles.streetInputContainer}
-              hasError={fieldErrors.destinoColonia}
-              errorMessage={
-                fieldErrors.destinoColonia ? "Este campo es obligatorio" : ""
-              }
             />
             <InputComponent
               type="text"
@@ -1157,15 +1114,8 @@ export default function CreateTripContent({
               onChange={handleTripInputChange("destinoCodigoPostal")}
               disabled={!destinoEditor.isEditing}
               label="Código Postal"
-              required
               className={styles.input}
               containerClassName={styles.numberInputContainer}
-              hasError={fieldErrors.destinoCodigoPostal}
-              errorMessage={
-                fieldErrors.destinoCodigoPostal
-                  ? "Este campo es obligatorio"
-                  : ""
-              }
             />
           </div>
           <div className={styles.section}>
@@ -1175,12 +1125,7 @@ export default function CreateTripContent({
               onChange={handleTripInputChange("destinoCiudad")}
               disabled={!destinoEditor.isEditing}
               label="Ciudad"
-              required
               className={styles.input}
-              hasError={fieldErrors.destinoCiudad}
-              errorMessage={
-                fieldErrors.destinoCiudad ? "Este campo es obligatorio" : ""
-              }
             />
             <InputComponent
               type="text"
@@ -1188,12 +1133,7 @@ export default function CreateTripContent({
               onChange={handleTripInputChange("destinoEstado")}
               disabled={!destinoEditor.isEditing}
               label="Estado"
-              required
               className={styles.input}
-              hasError={fieldErrors.destinoEstado}
-              errorMessage={
-                fieldErrors.destinoEstado ? "Este campo es obligatorio" : ""
-              }
             />
           </div>
 
@@ -1501,6 +1441,8 @@ export default function CreateTripContent({
                   onChange={handleTripInputChange("observacionesChofer")}
                   label="Notas Adicionales"
                   className={styles.textarea}
+                  containerClassName={styles.textareaContainer}
+                  style={{ width: "100%" }}
                 />
               </div>
             </>
@@ -1512,6 +1454,8 @@ export default function CreateTripContent({
               onChange={handleTripInputChange("observacionesCliente")}
               label="Observaciones Para El Cliente"
               className={styles.textarea}
+              containerClassName={styles.textareaContainer}
+              style={{ width: "100%" }}
             />
           </div>
           <div className={styles.sectionButtons}>

@@ -61,14 +61,6 @@ export default function CreatePlaceModal({
       newErrors.address = 'La calle es requerida';
     }
 
-    if (!formData.city.trim()) {
-      newErrors.city = 'La ciudad es requerida';
-    }
-
-    if (!formData.state.trim()) {
-      newErrors.state = 'El estado es requerido';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -213,13 +205,10 @@ export default function CreatePlaceModal({
                 <InputComponent
                   type="text"
                   label="Ciudad"
-                  required
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                   placeholder="Ciudad"
                   disabled={isSubmitting}
-                  hasError={!!errors.city}
-                  errorMessage={errors.city}
                 />
               </div>
 
@@ -227,13 +216,10 @@ export default function CreatePlaceModal({
                 <InputComponent
                   type="text"
                   label="Estado"
-                  required
                   value={formData.state}
                   onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                   placeholder="Estado"
                   disabled={isSubmitting}
-                  hasError={!!errors.state}
-                  errorMessage={errors.state}
                 />
               </div>
             </div>

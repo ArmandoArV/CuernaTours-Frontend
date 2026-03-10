@@ -4,10 +4,13 @@
 
 /** Maps contract status IDs to display names */
 export const CONTRACT_STATUS_MAP: Record<number, string> = {
-  1: "Pendiente",
-  2: "En curso",
-  3: "Finalizado",
-  4: "Cancelado",
+  1: "Agendado",
+  2: "Por asignar",
+  3: "Próximo",
+  4: "En curso",
+  5: "Por pagar",
+  6: "Finalizado",
+  7: "Cancelado",
 };
 
 /** Maps trip status IDs to display names (driver-facing) */

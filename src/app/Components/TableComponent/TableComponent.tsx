@@ -25,6 +25,7 @@ import {
   EyeFilled,
   DismissRegular,
   WalletRegular,
+  ArrowSyncRegular,
 } from "@fluentui/react-icons";
 
 import { Pagination } from "@/app/PaginationComponent/PaginationComponent";
@@ -37,7 +38,8 @@ import { contractsService } from "@/services/api/contracts.service";
 import { 
   showInputAlert, 
   showSuccessAlert, 
-  showErrorAlert 
+  showErrorAlert,
+  showSelectAlert,
 } from "@/app/Utils/AlertUtil";
 import { Logger } from "@/app/Utils/Logger";
 import { getStatusColor, getStatusTextColor } from "@/app/Utils/statusUtils";
@@ -174,6 +176,38 @@ const TableComponent: React.FC<TableComponentProps> = ({
       } catch (error) {
         log.error("Error cancelling contract:", error);
         showErrorAlert("Error", "No se pudo cancelar el contrato. Inténtalo de nuevo.");
+      }
+    }
+  };
+
+  const handleChangeStatus = async (id: number) => {
+    const statusOptions = [
+      { value: "2", label: "Por asignar" },
+      { value: "3", label: "Próximo" },
+      { value: "4", label: "En curso" },
+      { value: "5", label: "Por pagar" },
+      { value: "6", label: "Finalizado" },
+    ];
+
+    const selected = await showSelectAlert(
+      "Cambiar estatus del contrato",
+      "Selecciona el nuevo estatus:",
+      statusOptions,
+      "Cambiar",
+      "Cancelar",
+    );
+
+    if (selected) {
+      try {
+        await contractsService.updateStatus(id, parseInt(selected, 10));
+        showSuccessAlert(
+          "Estatus actualizado",
+          "El estatus del contrato ha sido actualizado exitosamente.",
+          () => { window.location.reload(); },
+        );
+      } catch (error) {
+        log.error("Error updating contract status:", error);
+        showErrorAlert("Error", "No se pudo actualizar el estatus. Inténtalo de nuevo.");
       }
     }
   };
@@ -331,6 +365,16 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   }}
                                 >
                                   Editar Orden
+                                </MenuItem>
+
+                                <MenuItem
+                                  icon={<ArrowSyncRegular />}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (id) handleChangeStatus(Number(id));
+                                  }}
+                                >
+                                  Cambiar Estatus
                                 </MenuItem>
 
                                 <MenuDivider />

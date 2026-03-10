@@ -20,10 +20,10 @@ const log = Logger.getLogger("HistoricalContent");
 
 // Function to transform API data to table format (historical trips from finished/cancelled contracts)
 function transformHistoricalData(apiData: any[]): any[] {
-  // Filter to get only "Finalizado" (3) and "Cancelado" (4) contracts
+  // Filter to get only "Finalizado" (6) and "Cancelado" (7) contracts
   const historicalContracts = apiData.filter((contract) => {
     const statusId = contract.contract_status_id || contract.status?.id;
-    return statusId === 3 || statusId === 4;
+    return statusId === 6 || statusId === 7;
   });
 
   // Transform to trip-based rows

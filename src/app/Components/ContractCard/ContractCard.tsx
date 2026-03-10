@@ -16,6 +16,7 @@ import {
   EyeFilled,
   DismissRegular,
   WalletRegular,
+  ArrowSyncRegular,
 } from "@fluentui/react-icons";
 import DetailsPanel from "@/app/Components/DetailsPanel/DetailsPanel";
 import { contractsService } from "@/services/api/contracts.service";
@@ -31,6 +32,7 @@ interface ContractCardProps {
   onRegisterPayment?: (contract: any) => void;
   onViewDetails?: (contract: any) => void;
   onCancel?: (contract: any) => void;
+  onChangeStatus?: (contract: any) => void;
   showActions?: boolean;
   showViewDetails?: boolean;
 }
@@ -117,6 +119,7 @@ export default function ContractCard({
   onRegisterPayment,
   onViewDetails,
   onCancel,
+  onChangeStatus,
   showActions = true,
   showViewDetails = false,
 }: ContractCardProps) {
@@ -303,6 +306,19 @@ export default function ContractCard({
                   }}
                 >
                   Registrar Pago
+                </Button>
+              )}
+              {onChangeStatus && (
+                <Button
+                  appearance="subtle"
+                  size="small"
+                  icon={<ArrowSyncRegular />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onChangeStatus(contract);
+                  }}
+                >
+                  Cambiar Estatus
                 </Button>
               )}
               {onCancel && (

@@ -133,6 +133,44 @@ export const showCustomAlert = (options: AlertOptions) => {
   showAlert(options);
 };
 
+export const showSelectAlert = async (
+  title: string,
+  text: string,
+  options: { value: string; label: string }[],
+  confirmButtonText: string = "Confirmar",
+  cancelButtonText: string = "Cancelar",
+): Promise<string | null> => {
+  const inputOptions: Record<string, string> = {};
+  options.forEach((opt) => {
+    inputOptions[opt.value] = opt.label;
+  });
+
+  const result = await Swal.fire({
+    title,
+    text,
+    input: "select",
+    inputOptions,
+    inputPlaceholder: "Selecciona una opción",
+    showCancelButton: true,
+    confirmButtonText,
+    cancelButtonText,
+    confirmButtonColor: "#96781a",
+    cancelButtonColor: "#ffffff",
+    customClass: {
+      container: "swal2-container-override",
+      confirmButton: "swal-confirm-button",
+      cancelButton: "swal-cancel-button",
+    },
+    inputValidator: (value) => {
+      if (!value) return "¡Selecciona un estatus!";
+      return null;
+    },
+  });
+
+  if (result.isConfirmed) return result.value;
+  return null;
+};
+
 export const showInputAlert = async (
   title: string,
   text: string,
