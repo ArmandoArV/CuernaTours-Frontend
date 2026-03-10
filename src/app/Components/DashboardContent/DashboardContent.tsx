@@ -43,9 +43,9 @@ import {
   showInputAlert,
   showSuccessAlert,
   showErrorAlert,
-  showSelectAlert,
 } from "@/app/Utils/AlertUtil";
 import { CONTRACT_STATUS_MAP } from "@/app/Utils/statusUtils";
+import ChangeStatusModal from "@/app/Components/ChangeStatusModal/ChangeStatusModal";
 
 const log = Logger.getLogger("DashboardContent");
 
@@ -249,6 +249,12 @@ export default function DashboardContent() {
   const [selectedTripData, setSelectedTripData] = useState<any>(null);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [selectedContractId, setSelectedContractId] = useState<number | null>(null);
+
+  const [statusModal, setStatusModal] = useState<{
+    open: boolean;
+    contractId: number | null;
+    currentStatus?: string;
+  }>({ open: false, contractId: null });
 
   // Date range filter states
   const [dateRangeStart, setDateRangeStart] = useState("");
@@ -466,38 +472,29 @@ export default function DashboardContent() {
     }
   };
 
-  const handleChangeContractStatus = async (row: any) => {
+  const handleChangeContractStatus = (row: any) => {
     const id = row.contract_id || row.id;
     if (!id) return;
+    setStatusModal({
+      open: true,
+      contractId: Number(id),
+      currentStatus: row["Estatus"] || row.status,
+    });
+  };
 
-    const statusOptions = [
-      { value: "2", label: "Por asignar" },
-      { value: "3", label: "Próximo" },
-      { value: "4", label: "En curso" },
-      { value: "5", label: "Por pagar" },
-      { value: "6", label: "Finalizado" },
-    ];
-
-    const selected = await showSelectAlert(
-      "Cambiar estatus del contrato",
-      "Selecciona el nuevo estatus:",
-      statusOptions,
-      "Cambiar",
-      "Cancelar",
-    );
-
-    if (selected) {
-      try {
-        await contractsService.updateStatus(Number(id), parseInt(selected, 10));
-        showSuccessAlert(
-          "Estatus actualizado",
-          "El estatus del contrato ha sido actualizado exitosamente.",
-          fetchContracts,
-        );
-      } catch (error) {
-        log.error("Error updating contract status:", error);
-        showErrorAlert("Error", "No se pudo actualizar el estatus. Inténtalo de nuevo.");
-      }
+  const handleStatusConfirm = async (value: string) => {
+    if (!statusModal.contractId) return;
+    setStatusModal(prev => ({ ...prev, open: false }));
+    try {
+      await contractsService.updateStatus(statusModal.contractId, parseInt(value, 10));
+      showSuccessAlert(
+        "Estatus actualizado",
+        "El estatus del contrato ha sido actualizado exitosamente.",
+        fetchContracts,
+      );
+    } catch (error) {
+      log.error("Error updating contract status:", error);
+      showErrorAlert("Error", "No se pudo actualizar el estatus. Inténtalo de nuevo.");
     }
   };
 
@@ -689,6 +686,13 @@ export default function DashboardContent() {
         }}
         contractId={selectedContractId}
         onPaymentRegistered={fetchContracts}
+      />
+
+      <ChangeStatusModal
+        open={statusModal.open}
+        currentStatus={statusModal.currentStatus}
+        onClose={() => setStatusModal({ open: false, contractId: null })}
+        onConfirm={handleStatusConfirm}
       />
     </div>
   );

@@ -39,10 +39,10 @@ import {
   showInputAlert, 
   showSuccessAlert, 
   showErrorAlert,
-  showSelectAlert,
 } from "@/app/Utils/AlertUtil";
 import { Logger } from "@/app/Utils/Logger";
 import { getStatusColor, getStatusTextColor } from "@/app/Utils/statusUtils";
+import ChangeStatusModal from "@/app/Components/ChangeStatusModal/ChangeStatusModal";
 
 const log = Logger.getLogger("TableComponent");
 
@@ -93,6 +93,12 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
   const [isClientPaymentModalOpen, setIsClientPaymentModalOpen] = useState(false);
   const [clientPaymentContractId, setClientPaymentContractId] = useState<number | null>(null);
+
+  const [statusModal, setStatusModal] = useState<{
+    open: boolean;
+    contractId: number | null;
+    currentStatus?: string;
+  }>({ open: false, contractId: null });
 
   const activePage =
     currentPage !== undefined ? currentPage : internalCurrentPage;
@@ -180,35 +186,23 @@ const TableComponent: React.FC<TableComponentProps> = ({
     }
   };
 
-  const handleChangeStatus = async (id: number) => {
-    const statusOptions = [
-      { value: "2", label: "Por asignar" },
-      { value: "3", label: "Próximo" },
-      { value: "4", label: "En curso" },
-      { value: "5", label: "Por pagar" },
-      { value: "6", label: "Finalizado" },
-    ];
+  const handleChangeStatus = (id: number, currentStatus?: string) => {
+    setStatusModal({ open: true, contractId: id, currentStatus });
+  };
 
-    const selected = await showSelectAlert(
-      "Cambiar estatus del contrato",
-      "Selecciona el nuevo estatus:",
-      statusOptions,
-      "Cambiar",
-      "Cancelar",
-    );
-
-    if (selected) {
-      try {
-        await contractsService.updateStatus(id, parseInt(selected, 10));
-        showSuccessAlert(
-          "Estatus actualizado",
-          "El estatus del contrato ha sido actualizado exitosamente.",
-          () => { window.location.reload(); },
-        );
-      } catch (error) {
-        log.error("Error updating contract status:", error);
-        showErrorAlert("Error", "No se pudo actualizar el estatus. Inténtalo de nuevo.");
-      }
+  const handleStatusConfirm = async (value: string) => {
+    if (!statusModal.contractId) return;
+    setStatusModal(prev => ({ ...prev, open: false }));
+    try {
+      await contractsService.updateStatus(statusModal.contractId, parseInt(value, 10));
+      showSuccessAlert(
+        "Estatus actualizado",
+        "El estatus del contrato ha sido actualizado exitosamente.",
+        () => { window.location.reload(); },
+      );
+    } catch (error) {
+      log.error("Error updating contract status:", error);
+      showErrorAlert("Error", "No se pudo actualizar el estatus. Inténtalo de nuevo.");
     }
   };
 
@@ -372,7 +366,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   icon={<ArrowSyncRegular />}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (id) handleChangeStatus(Number(id));
+                                    if (id) handleChangeStatus(Number(id), getStatusFromRow(row));
                                   }}
                                 >
                                   Cambiar Estatus
@@ -483,6 +477,13 @@ const TableComponent: React.FC<TableComponentProps> = ({
           setClientPaymentContractId(null);
         }}
         contractId={clientPaymentContractId}
+      />
+
+      <ChangeStatusModal
+        open={statusModal.open}
+        currentStatus={statusModal.currentStatus}
+        onClose={() => setStatusModal({ open: false, contractId: null })}
+        onConfirm={handleStatusConfirm}
       />
     </div>
   );
