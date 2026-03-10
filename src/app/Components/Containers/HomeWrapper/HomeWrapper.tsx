@@ -28,11 +28,13 @@ export default function HomeWrapper() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [type === "text" ? "email" : "password"]: value,
-    }));
+    const { name, value } = e.target;
+    if (name === "email" || name === "password") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const authenticateUser = useCallback(async () => {
@@ -133,6 +135,7 @@ export default function HomeWrapper() {
           <div className={styles["inputContainers"]}>
             <InputComponent
               type="text"
+              name="email"
               value={formData.email}
               onChange={handleInputChange}
               placeholder="Usuario"
@@ -140,6 +143,7 @@ export default function HomeWrapper() {
             />
             <InputComponent
               type="password"
+              name="password"
               value={formData.password}
               onChange={handleInputChange}
               placeholder="Contraseña"

@@ -28,16 +28,18 @@
 }
 
 .logoDefault {
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   object-fit: contain;
   opacity: 1;
   transform: scale(1);
 }
 
 .logoExpanded {
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   object-fit: contain;
   opacity: 0;
   transform: translate(-50%, -50%) scale(0.92);
@@ -78,8 +80,9 @@
   padding: 15px 10px;
   color: white;
   text-decoration: none;
-  transition: background-color 0.2s ease,
-              padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    background-color 0.2s ease,
+    padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   border-radius: 0.25rem;
   position: relative;
@@ -138,8 +141,9 @@
   opacity: 0;
   max-width: 0;
   overflow: hidden;
-  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1) 0.05s,
-              max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1) 0.05s,
+    max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .lateralNavbar:hover .title {
@@ -217,8 +221,9 @@
   .lateralNavbar {
     width: 60px;
     transform: translateX(-100%);
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .lateralNavbar.mobileOpen {
@@ -251,14 +256,30 @@
     animation: slideInItem 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
   }
 
-  .lateralNavbar.mobileOpen .navItem:nth-child(1) { animation-delay: 0.05s; }
-  .lateralNavbar.mobileOpen .navItem:nth-child(2) { animation-delay: 0.08s; }
-  .lateralNavbar.mobileOpen .navItem:nth-child(3) { animation-delay: 0.11s; }
-  .lateralNavbar.mobileOpen .navItem:nth-child(4) { animation-delay: 0.14s; }
-  .lateralNavbar.mobileOpen .navItem:nth-child(5) { animation-delay: 0.17s; }
-  .lateralNavbar.mobileOpen .navItem:nth-child(6) { animation-delay: 0.20s; }
-  .lateralNavbar.mobileOpen .navItem:nth-child(7) { animation-delay: 0.23s; }
-  .lateralNavbar.mobileOpen .navItem:nth-child(8) { animation-delay: 0.26s; }
+  .lateralNavbar.mobileOpen .navItem:nth-child(1) {
+    animation-delay: 0.05s;
+  }
+  .lateralNavbar.mobileOpen .navItem:nth-child(2) {
+    animation-delay: 0.08s;
+  }
+  .lateralNavbar.mobileOpen .navItem:nth-child(3) {
+    animation-delay: 0.11s;
+  }
+  .lateralNavbar.mobileOpen .navItem:nth-child(4) {
+    animation-delay: 0.14s;
+  }
+  .lateralNavbar.mobileOpen .navItem:nth-child(5) {
+    animation-delay: 0.17s;
+  }
+  .lateralNavbar.mobileOpen .navItem:nth-child(6) {
+    animation-delay: 0.2s;
+  }
+  .lateralNavbar.mobileOpen .navItem:nth-child(7) {
+    animation-delay: 0.23s;
+  }
+  .lateralNavbar.mobileOpen .navItem:nth-child(8) {
+    animation-delay: 0.26s;
+  }
 
   @keyframes slideInItem {
     from {

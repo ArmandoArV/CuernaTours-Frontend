@@ -85,7 +85,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
   const canManage = isAdmin || isMaestro;
   const canViewDetails = canManage || isOficina;
 
-  const [internalCurrentPage, setInternalCurrentPage] = useState(currentPage || 1);
+  const [internalCurrentPage, setInternalCurrentPage] = useState(
+    currentPage || 1,
+  );
   const [selectedRow, setSelectedRow] = useState<any | null>(null);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
 
@@ -95,8 +97,11 @@ const TableComponent: React.FC<TableComponentProps> = ({
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentTripId, setPaymentTripId] = useState<number | null>(null);
 
-  const [isClientPaymentModalOpen, setIsClientPaymentModalOpen] = useState(false);
-  const [clientPaymentContractId, setClientPaymentContractId] = useState<number | null>(null);
+  const [isClientPaymentModalOpen, setIsClientPaymentModalOpen] =
+    useState(false);
+  const [clientPaymentContractId, setClientPaymentContractId] = useState<
+    number | null
+  >(null);
 
   const [statusModal, setStatusModal] = useState<{
     open: boolean;
@@ -104,7 +109,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
     currentStatus?: string;
   }>({ open: false, contractId: null });
 
-  const activePage = currentPage !== undefined ? currentPage : internalCurrentPage;
+  const activePage =
+    currentPage !== undefined ? currentPage : internalCurrentPage;
   const sortedData = useMemo(() => [...data], [data]);
 
   const { paginatedData, totalPages } = useMemo(() => {
@@ -124,7 +130,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
   };
 
   const getRowId = (row: any) => row?.contract_id || row?.id || row?.ID || null;
-  const getStatusFromRow = (row: any) => row.Estatus || row.status || row.estatus || "";
+  const getStatusFromRow = (row: any) =>
+    row.Estatus || row.status || row.estatus || "";
 
   const handleRowToggle = async (row: any, rowIndex: number) => {
     if (selectedRowIndex === rowIndex) {
@@ -134,9 +141,14 @@ const TableComponent: React.FC<TableComponentProps> = ({
     }
     setSelectedRowIndex(rowIndex);
     const id = getRowId(row);
-    if (!id) { setSelectedRow(row); return; }
+    if (!id) {
+      setSelectedRow(row);
+      return;
+    }
     try {
-      const contractData = await contractsService.getContractDetails(Number(id));
+      const contractData = await contractsService.getContractDetails(
+        Number(id),
+      );
       setSelectedRow(contractData);
     } catch (err) {
       log.error("Error fetching contract details:", err);
@@ -156,10 +168,19 @@ const TableComponent: React.FC<TableComponentProps> = ({
     if (reason) {
       try {
         await contractsService.cancelContract(id, reason);
-        showSuccessAlert("Contrato cancelado", "El contrato ha sido cancelado exitosamente.", () => { window.location.reload(); });
+        showSuccessAlert(
+          "Contrato cancelado",
+          "El contrato ha sido cancelado exitosamente.",
+          () => {
+            window.location.reload();
+          },
+        );
       } catch (error) {
         log.error("Error cancelling contract:", error);
-        showErrorAlert("Error", "No se pudo cancelar el contrato. Inténtalo de nuevo.");
+        showErrorAlert(
+          "Error",
+          "No se pudo cancelar el contrato. Inténtalo de nuevo.",
+        );
       }
     }
   };
@@ -170,13 +191,25 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
   const handleStatusConfirm = async (value: string) => {
     if (!statusModal.contractId) return;
-    setStatusModal(prev => ({ ...prev, open: false }));
+    setStatusModal((prev) => ({ ...prev, open: false }));
     try {
-      await contractsService.updateStatus(statusModal.contractId, parseInt(value, 10));
-      showSuccessAlert("Estatus actualizado", "El estatus del contrato ha sido actualizado exitosamente.", () => { window.location.reload(); });
+      await contractsService.updateStatus(
+        statusModal.contractId,
+        parseInt(value, 10),
+      );
+      showSuccessAlert(
+        "Estatus actualizado",
+        "El estatus del contrato ha sido actualizado exitosamente.",
+        () => {
+          window.location.reload();
+        },
+      );
     } catch (error) {
       log.error("Error updating contract status:", error);
-      showErrorAlert("Error", "No se pudo actualizar el estatus. Inténtalo de nuevo.");
+      showErrorAlert(
+        "Error",
+        "No se pudo actualizar el estatus. Inténtalo de nuevo.",
+      );
     }
   };
 
@@ -200,7 +233,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
               </TableHeaderCell>
             ))}
             {showActions && (
-              <TableHeaderCell className={`${styles.headerCell} ${styles.headerCellLast} ${styles.actionsHeaderCell}`} />
+              <TableHeaderCell
+                className={`${styles.headerCell} ${styles.headerCellLast} ${styles.actionsHeaderCell}`}
+              />
             )}
           </TableRow>
         </TableHeader>
@@ -228,9 +263,12 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
               // Group header: render when groupBy is set and this is the first row of a new group
               const groupLabel = groupBy ? groupBy(row) : null;
-              const prevRow = paginatedIndex > 0 ? paginatedData[paginatedIndex - 1] : null;
-              const prevGroupLabel = prevRow && groupBy ? groupBy(prevRow) : null;
-              const showGroupHeader = groupBy && groupLabel && groupLabel !== prevGroupLabel;
+              const prevRow =
+                paginatedIndex > 0 ? paginatedData[paginatedIndex - 1] : null;
+              const prevGroupLabel =
+                prevRow && groupBy ? groupBy(prevRow) : null;
+              const showGroupHeader =
+                groupBy && groupLabel && groupLabel !== prevGroupLabel;
 
               return (
                 <React.Fragment key={globalRowIndex}>
@@ -246,25 +284,36 @@ const TableComponent: React.FC<TableComponentProps> = ({
                   )}
                   <TableRow
                     className={`${styles.tableRow} ${isSelected ? styles.selectedRow : ""}`}
-                    style={{
-                      "--indicator-color": getStatusTextColor(status),
-                      "--row-index": paginatedIndex,
-                    } as React.CSSProperties}
+                    style={
+                      {
+                        "--indicator-color": getStatusTextColor(status),
+                        "--row-index": paginatedIndex,
+                      } as React.CSSProperties
+                    }
                     onClick={() => {
-                      if (isChofer) { handleRowToggle(row, globalRowIndex); return; }
-                      if (canViewDetails && id) { router.push(`/dashboard/trips/${id}`); return; }
+                      if (isChofer) {
+                        handleRowToggle(row, globalRowIndex);
+                        return;
+                      }
+                      if (canViewDetails && id) {
+                        router.push(`/dashboard/trips/${id}`);
+                        return;
+                      }
                       if (onRowClick) onRowClick(row);
                     }}
                   >
                     {columns.map((col, colIndex) => {
                       const value = row[col];
                       const isStatusColumn =
-                        col.toLowerCase() === "estatus" || col.toLowerCase() === "status";
+                        col.toLowerCase() === "estatus" ||
+                        col.toLowerCase() === "status";
 
                       return (
                         <TableCell
                           key={col}
-                          className={colIndex === 0 ? styles.firstCell : styles.cell}
+                          className={
+                            colIndex === 0 ? styles.firstCell : styles.cell
+                          }
                         >
                           {isStatusColumn ? (
                             <span
@@ -288,7 +337,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               {value}
                             </span>
                           ) : (
-                            value ?? "—"
+                            (value ?? "—")
                           )}
                         </TableCell>
                       );
@@ -302,8 +351,12 @@ const TableComponent: React.FC<TableComponentProps> = ({
                             icon={<EyeFilled />}
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (isChofer) { handleRowToggle(row, globalRowIndex); return; }
-                              if (canViewDetails && id) router.push(`/dashboard/trips/${id}`);
+                              if (isChofer) {
+                                handleRowToggle(row, globalRowIndex);
+                                return;
+                              }
+                              if (canViewDetails && id)
+                                router.push(`/dashboard/trips/${id}`);
                             }}
                           />
                         </Tooltip>
@@ -323,7 +376,11 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   icon={<PersonAddRegular />}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (row._trips && Array.isArray(row._trips) && row._trips.length > 0) {
+                                    if (
+                                      row._trips &&
+                                      Array.isArray(row._trips) &&
+                                      row._trips.length > 0
+                                    ) {
                                       setAssignRow(row._trips[0]);
                                     } else {
                                       setAssignRow(row);
@@ -338,7 +395,8 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   icon={<EditRegular />}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (id) router.push(`/dashboard/order/${id}`);
+                                    if (id)
+                                      router.push(`/dashboard/order/${id}`);
                                   }}
                                 >
                                   Editar Orden
@@ -348,7 +406,11 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                   icon={<ArrowSyncRegular />}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (id) handleChangeStatus(Number(id), getStatusFromRow(row));
+                                    if (id)
+                                      handleChangeStatus(
+                                        Number(id),
+                                        getStatusFromRow(row),
+                                      );
                                   }}
                                 >
                                   Cambiar Estatus
@@ -375,7 +437,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                     e.stopPropagation();
                                     const contractId = row.contract_id || id;
                                     if (contractId) {
-                                      setClientPaymentContractId(Number(contractId));
+                                      setClientPaymentContractId(
+                                        Number(contractId),
+                                      );
                                       setIsClientPaymentModalOpen(true);
                                     }
                                   }}
@@ -391,7 +455,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                     e.stopPropagation();
                                     if (id) handleCancelContract(Number(id));
                                   }}
-                                  style={{ color: tokens.colorPaletteRedForeground1 }}
+                                  style={{
+                                    color: tokens.colorPaletteRedForeground1,
+                                  }}
                                 >
                                   Cancelar Contrato
                                 </MenuItem>
@@ -433,20 +499,29 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
       <AssignDriverModal
         isOpen={isAssignModalOpen}
-        onClose={() => { setIsAssignModalOpen(false); setAssignRow(null); }}
+        onClose={() => {
+          setIsAssignModalOpen(false);
+          setAssignRow(null);
+        }}
         tripData={assignRow}
         onAssign={() => setIsAssignModalOpen(false)}
       />
 
       <DriverPaymentModal
         isOpen={isPaymentModalOpen}
-        onClose={() => { setIsPaymentModalOpen(false); setPaymentTripId(null); }}
+        onClose={() => {
+          setIsPaymentModalOpen(false);
+          setPaymentTripId(null);
+        }}
         tripId={paymentTripId !== null ? String(paymentTripId) : null}
       />
 
       <ClientPaymentModal
         isOpen={isClientPaymentModalOpen}
-        onClose={() => { setIsClientPaymentModalOpen(false); setClientPaymentContractId(null); }}
+        onClose={() => {
+          setIsClientPaymentModalOpen(false);
+          setClientPaymentContractId(null);
+        }}
         contractId={clientPaymentContractId}
       />
 

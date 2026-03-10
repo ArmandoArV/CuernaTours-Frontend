@@ -41,6 +41,13 @@
   box-sizing: border-box;
 }
 
+.mobileGroupHeader {
+  font-size: 14px;
+  font-weight: 700;
+  color: #444;
+  padding: 12px 4px 4px;
+}
+
 .errorContainer {
   display: flex;
   flex-direction: column;

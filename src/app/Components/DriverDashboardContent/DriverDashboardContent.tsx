@@ -28,6 +28,46 @@ export default function DriverDashboardContent() {
     log.info("Row clicked:", row);
   };
 
+  const groupByDate = (row: any): string => {
+    const serviceDate = row._tripData?.service_date;
+    if (!serviceDate) return "Futuros servicios";
+    const rowDate = new Date(serviceDate);
+    const today = new Date();
+    const todayDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    ).getTime();
+    const tomorrowDay = todayDay + 86400000;
+    const rowDay = new Date(
+      rowDate.getFullYear(),
+      rowDate.getMonth(),
+      rowDate.getDate(),
+    ).getTime();
+
+    const months = [
+      "ene",
+      "feb",
+      "mar",
+      "abr",
+      "may",
+      "jun",
+      "jul",
+      "ago",
+      "sep",
+      "oct",
+      "nov",
+      "dic",
+    ];
+    const dayNum = rowDate.getDate();
+    const monthStr = months[rowDate.getMonth()];
+
+    if (rowDay === todayDay) return `${dayNum} ${monthStr} (Hoy)`;
+    if (rowDay === tomorrowDay) return `${dayNum} ${monthStr} (Mañana)`;
+    if (rowDay < todayDay) return `${dayNum} ${monthStr} (Pasado)`;
+    return "Futuros servicios";
+  };
+
   const handleFiltersChange = (filters: Record<string, any>) => {
     if (filters.Fecha && typeof filters.Fecha === "object") {
       setDateRange({ start: filters.Fecha.start, end: filters.Fecha.end });
@@ -142,14 +182,26 @@ export default function DriverDashboardContent() {
           {filteredTrips.length === 0 ? (
             <p>No tienes viajes asignados</p>
           ) : (
-            filteredTrips.map((trip, idx) => (
-              <DriverTripCard
-                key={trip.trip_id ?? trip["ID Viaje"]}
-                trip={trip}
-                animationIndex={idx}
-                onClick={handleRowClick}
-              />
-            ))
+            filteredTrips.map((trip, idx) => {
+              const prevLabel =
+                idx > 0 ? groupByDate(filteredTrips[idx - 1]) : null;
+              const currentLabel = groupByDate(trip);
+              const showHeader = currentLabel !== prevLabel;
+              return (
+                <div key={trip.trip_id ?? trip["ID Viaje"]}>
+                  {showHeader && (
+                    <div className={styles.mobileGroupHeader}>
+                      {currentLabel}
+                    </div>
+                  )}
+                  <DriverTripCard
+                    trip={trip}
+                    animationIndex={idx}
+                    onClick={handleRowClick}
+                  />
+                </div>
+              );
+            })
           )}
         </div>
       ) : (
@@ -172,6 +224,7 @@ export default function DriverDashboardContent() {
           showActions
           onRowClick={handleRowClick}
           onFiltersChange={handleFiltersChange}
+          groupBy={groupByDate}
           enablePagination
           itemsPerPage={10}
           currentPage={currentPage}

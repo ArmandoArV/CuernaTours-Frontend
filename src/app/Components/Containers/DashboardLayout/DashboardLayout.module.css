@@ -27,10 +27,11 @@
   .dashboardLayout {
     padding-top: 64px; /* Ensure top navbar space is maintained on mobile */
   }
-  
+
   .mainContent {
     padding: 12px;
     margin-left: 0; /* Remove margin on mobile - navbar will overlay */
+    width: 100%;
     min-height: calc(100vh - 64px); /* Maintain proper height on mobile */
   }
 }

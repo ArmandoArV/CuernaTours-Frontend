@@ -9,7 +9,9 @@
   height: 40px !important;
   padding: 8px 16px !important;
   font-size: 1rem !important;
-  transition: transform 0.2s ease, background-color 0.2s ease !important;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease !important;
 }
 
 .createOrderButton:hover {
@@ -89,6 +91,13 @@
   gap: 4px;
 }
 
+.mobileGroupHeader {
+  font-size: 14px;
+  font-weight: 700;
+  color: #444;
+  padding: 12px 4px 4px;
+}
+
 .mobileFilters {
   margin-bottom: 16px;
 }
@@ -107,7 +116,10 @@
   width: 100% !important;
 }
 
-.mobileFilters :global(.ms-Stack) > :global(.ms-Stack):first-child > :global(.ms-StackItem) {
+.mobileFilters
+  :global(.ms-Stack)
+  > :global(.ms-Stack):first-child
+  > :global(.ms-StackItem) {
   min-width: unset !important;
   max-width: unset !important;
   width: 100% !important;

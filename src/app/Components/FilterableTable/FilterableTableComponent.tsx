@@ -126,20 +126,36 @@ const FilterableTableComponent: React.FC<FilterableTableProps> = ({
             if (!filterValue || filterValue === "") return true;
 
             // Handle dateRange filter type
-            if (filterConfig?.type === ("dateRange" as any) && typeof filterValue === "object" && !Array.isArray(filterValue)) {
+            if (
+              filterConfig?.type === ("dateRange" as any) &&
+              typeof filterValue === "object" &&
+              !Array.isArray(filterValue)
+            ) {
               const { start, end } = filterValue as any;
               if (!start && !end) return true;
               const rowDate = row[filterKey] ? new Date(row[filterKey]) : null;
               if (!rowDate) return false;
-              const rowDay = new Date(rowDate.getFullYear(), rowDate.getMonth(), rowDate.getDate()).getTime();
+              const rowDay = new Date(
+                rowDate.getFullYear(),
+                rowDate.getMonth(),
+                rowDate.getDate(),
+              ).getTime();
               if (start) {
                 const s = new Date(start);
-                const startDay = new Date(s.getFullYear(), s.getMonth(), s.getDate()).getTime();
+                const startDay = new Date(
+                  s.getFullYear(),
+                  s.getMonth(),
+                  s.getDate(),
+                ).getTime();
                 if (rowDay < startDay) return false;
               }
               if (end) {
                 const e = new Date(end);
-                const endDay = new Date(e.getFullYear(), e.getMonth(), e.getDate()).getTime();
+                const endDay = new Date(
+                  e.getFullYear(),
+                  e.getMonth(),
+                  e.getDate(),
+                ).getTime();
                 if (rowDay > endDay) return false;
               }
               return true;

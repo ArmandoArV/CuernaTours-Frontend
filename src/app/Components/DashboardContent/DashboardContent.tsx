@@ -1,7 +1,10 @@
 "use client";
 import { useState, useMemo } from "react";
 import FilterableTableComponent from "../FilterableTable/FilterableTableComponent";
-import FilterComponent, { FilterConfig, FilterPresets } from "../FilterComponent";
+import FilterComponent, {
+  FilterConfig,
+  FilterPresets,
+} from "../FilterComponent";
 
 import {
   AddFilled,
@@ -65,7 +68,11 @@ function transformApiData(apiData: any[]): any[] {
   // Filter out "Finalizado" (6) and "Cancelado" (7) contracts
   const activeContracts = apiData.filter((contract) => {
     const statusId = Number(contract.contract_status_id || contract.status?.id);
-    const statusName = (contract.contract_status_name || contract.status?.name || "").toLowerCase();
+    const statusName = (
+      contract.contract_status_name ||
+      contract.status?.name ||
+      ""
+    ).toLowerCase();
     return (
       statusId !== 6 &&
       statusId !== 7 &&
@@ -77,15 +84,27 @@ function transformApiData(apiData: any[]): any[] {
   // ── DEBUG: log full raw shape of first active contract ──────────────────
   if (activeContracts.length > 0) {
     const sample = activeContracts[0];
-    log.debug("🔍 [DEBUG] Sample contract top-level keys:", Object.keys(sample));
-    log.debug("🔍 [DEBUG] Sample contract trips count:", sample.trips?.length ?? 0);
+    log.debug(
+      "🔍 [DEBUG] Sample contract top-level keys:",
+      Object.keys(sample),
+    );
+    log.debug(
+      "🔍 [DEBUG] Sample contract trips count:",
+      sample.trips?.length ?? 0,
+    );
     if (sample.trips?.length > 0) {
       const trip0 = sample.trips[0];
       log.debug("🔍 [DEBUG] Trip[0] keys:", Object.keys(trip0));
       log.debug("🔍 [DEBUG] Trip[0] driver_id:", trip0.driver_id);
       log.debug("🔍 [DEBUG] Trip[0] vehicle_id:", trip0.vehicle_id);
-      log.debug("🔍 [DEBUG] Trip[0] external_driver_id:", trip0.external_driver_id);
-      log.debug("🔍 [DEBUG] Trip[0].units:", JSON.stringify(trip0.units ?? null));
+      log.debug(
+        "🔍 [DEBUG] Trip[0] external_driver_id:",
+        trip0.external_driver_id,
+      );
+      log.debug(
+        "🔍 [DEBUG] Trip[0].units:",
+        JSON.stringify(trip0.units ?? null),
+      );
     }
     // Log ALL contracts' assignment shapes compactly
     log.debug(
@@ -191,8 +210,14 @@ function transformApiData(apiData: any[]): any[] {
       return {
         "ID Contrato": contract.contract_id,
         "Empresa O Cliente": formatPersonName(contract.client_name) || "",
-        Origen: (firstTrip as any).origin_name || (firstTrip as any).origin?.name || "",
-        Destino: (firstTrip as any).destination_name || (firstTrip as any).destination?.name || "",
+        Origen:
+          (firstTrip as any).origin_name ||
+          (firstTrip as any).origin?.name ||
+          "",
+        Destino:
+          (firstTrip as any).destination_name ||
+          (firstTrip as any).destination?.name ||
+          "",
         Fecha: formatDateStandard(firstTrip.service_date),
         Unidad: (() => {
           for (const t of trips) {
@@ -212,7 +237,8 @@ function transformApiData(apiData: any[]): any[] {
             for (const u of units) {
               const driverName = u.driver?.name || u.driver?.full_name;
               if (driverName) return formatPersonName(driverName);
-              const extName = u.external_driver?.name || u.external_driver?.full_name;
+              const extName =
+                u.external_driver?.name || u.external_driver?.full_name;
               if (extName) return formatPersonName(extName);
             }
             const dName = t.driver?.name || t.driver?.full_name;
@@ -224,8 +250,14 @@ function transformApiData(apiData: any[]): any[] {
         Horario: scheduleTime,
         Asignados: assignmentStatus,
         Monto: contract.amount ? `$${contract.amount.toLocaleString()}` : "",
-        IDA: (firstTrip as any).origin_name || (firstTrip as any).origin?.name || "",
-        REGRESO: (firstTrip as any).destination_name || (firstTrip as any).destination?.name || "",
+        IDA:
+          (firstTrip as any).origin_name ||
+          (firstTrip as any).origin?.name ||
+          "",
+        REGRESO:
+          (firstTrip as any).destination_name ||
+          (firstTrip as any).destination?.name ||
+          "",
         "Estado de Pago":
           contract.payment_status === "paid" ? "Pagado" : "Pendiente",
         // Include IDs and data for functionality
@@ -255,23 +287,30 @@ function transformApiData(apiData: any[]): any[] {
 }
 export default function DashboardContent() {
   const router = useRouter();
-  const { hasFullAccess, canCreateOrders, canAssignResources, isChofer } = useUserRole();
+  const { hasFullAccess, canCreateOrders, canAssignResources, isChofer } =
+    useUserRole();
   const isMobile = useIsMobile();
   const [currentPage, setCurrentPage] = useState(1);
-  const { data: contractsData, loading, error, setData: setContractsData, refresh: fetchContracts } = useAsyncData(
-    () => contractsService.getAll(),
-    [] as any[],
-  );
+  const {
+    data: contractsData,
+    loading,
+    error,
+    setData: setContractsData,
+    refresh: fetchContracts,
+  } = useAsyncData(() => contractsService.getAll(), [] as any[]);
 
   // Modal states
   const [isAssignDriverModalOpen, setIsAssignDriverModalOpen] = useState(false);
   const [isDriverPaymentModalOpen, setIsDriverPaymentModalOpen] =
     useState(false);
-  const [isClientPaymentModalOpen, setIsClientPaymentModalOpen] = useState(false);
+  const [isClientPaymentModalOpen, setIsClientPaymentModalOpen] =
+    useState(false);
   const [selectedTrips, setSelectedTrips] = useState<any[] | null>(null);
   const [selectedTripData, setSelectedTripData] = useState<any>(null);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
-  const [selectedContractId, setSelectedContractId] = useState<number | null>(null);
+  const [selectedContractId, setSelectedContractId] = useState<number | null>(
+    null,
+  );
 
   const [statusModal, setStatusModal] = useState<{
     open: boolean;
@@ -283,7 +322,9 @@ export default function DashboardContent() {
   const [dateRangeStart, setDateRangeStart] = useState("");
   const [dateRangeEnd, setDateRangeEnd] = useState("");
   // Mobile column filter state (non-date filters)
-  const [mobileColumnFilters, setMobileColumnFilters] = useState<Record<string, any>>({});
+  const [mobileColumnFilters, setMobileColumnFilters] = useState<
+    Record<string, any>
+  >({});
 
   // Transform API data for the table
   const transformedData = transformApiData(contractsData);
@@ -330,11 +371,32 @@ export default function DashboardContent() {
     if (!row._sortDate) return "Futuros servicios";
     const rowDate = new Date(row._sortDate);
     const today = new Date();
-    const todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const todayDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    ).getTime();
     const tomorrowDay = todayDay + 86400000;
-    const rowDay = new Date(rowDate.getFullYear(), rowDate.getMonth(), rowDate.getDate()).getTime();
+    const rowDay = new Date(
+      rowDate.getFullYear(),
+      rowDate.getMonth(),
+      rowDate.getDate(),
+    ).getTime();
 
-    const months = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+    const months = [
+      "ene",
+      "feb",
+      "mar",
+      "abr",
+      "may",
+      "jun",
+      "jul",
+      "ago",
+      "sep",
+      "oct",
+      "nov",
+      "dic",
+    ];
     const dayNum = rowDate.getDate();
     const monthStr = months[rowDate.getMonth()];
 
@@ -380,13 +442,17 @@ export default function DashboardContent() {
       const { start, end } = activeFilters.dateRange;
       if (start) {
         const d = new Date(start);
-        setDateRangeStart(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+        setDateRangeStart(
+          `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
+        );
       } else {
         setDateRangeStart("");
       }
       if (end) {
         const d = new Date(end);
-        setDateRangeEnd(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+        setDateRangeEnd(
+          `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
+        );
       } else {
         setDateRangeEnd("");
       }
@@ -496,7 +562,7 @@ export default function DashboardContent() {
       "Motivo de cancelación",
       "Escribe el motivo aquí...",
       "Sí, cancelar contrato",
-      "No, mantener"
+      "No, mantener",
     );
 
     if (reason) {
@@ -505,11 +571,16 @@ export default function DashboardContent() {
         showSuccessAlert(
           "Contrato cancelado",
           "El contrato ha sido cancelado exitosamente.",
-          () => { window.location.reload(); }
+          () => {
+            window.location.reload();
+          },
         );
       } catch (error) {
         log.error("Error cancelling contract:", error);
-        showErrorAlert("Error", "No se pudo cancelar el contrato. Inténtalo de nuevo.");
+        showErrorAlert(
+          "Error",
+          "No se pudo cancelar el contrato. Inténtalo de nuevo.",
+        );
       }
     }
   };
@@ -526,9 +597,12 @@ export default function DashboardContent() {
 
   const handleStatusConfirm = async (value: string) => {
     if (!statusModal.contractId) return;
-    setStatusModal(prev => ({ ...prev, open: false }));
+    setStatusModal((prev) => ({ ...prev, open: false }));
     try {
-      await contractsService.updateStatus(statusModal.contractId, parseInt(value, 10));
+      await contractsService.updateStatus(
+        statusModal.contractId,
+        parseInt(value, 10),
+      );
       showSuccessAlert(
         "Estatus actualizado",
         "El estatus del contrato ha sido actualizado exitosamente.",
@@ -536,7 +610,10 @@ export default function DashboardContent() {
       );
     } catch (error) {
       log.error("Error updating contract status:", error);
-      showErrorAlert("Error", "No se pudo actualizar el estatus. Inténtalo de nuevo.");
+      showErrorAlert(
+        "Error",
+        "No se pudo actualizar el estatus. Inténtalo de nuevo.",
+      );
     }
   };
 
@@ -575,7 +652,10 @@ export default function DashboardContent() {
                       appearance="primary"
                       icon={<AddFilled />}
                       className={styles.createOrderButton}
-                      style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47" }}
+                      style={{
+                        backgroundColor: "#1a2e47",
+                        borderColor: "#1a2e47",
+                      }}
                     >
                       Crear
                     </Button>
@@ -618,22 +698,43 @@ export default function DashboardContent() {
                 No hay contratos disponibles.
               </p>
             ) : (
-              mobileFilteredData.map((contract, idx) => (
-                <ContractCard
-                  key={contract.contract_id || idx}
-                  contract={contract}
-                  animationIndex={idx}
-                  showActions={canAssignResources || hasFullAccess}
-                  showViewDetails={true}
-                  onViewDetails={!isChofer ? handleViewDetails : undefined}
-                  onEdit={handleEditOrder}
-                  onAssignDriver={canAssignResources ? handleAssignDriver : undefined}
-                  onPayDriver={hasFullAccess ? handlePayDriver : undefined}
-                  onRegisterPayment={hasFullAccess ? handleRegisterClientPayment : undefined}
-                  onCancel={hasFullAccess ? handleCancelContract : undefined}
-                  onChangeStatus={hasFullAccess ? handleChangeContractStatus : undefined}
-                />
-              ))
+              mobileFilteredData.map((contract, idx) => {
+                const prevLabel =
+                  idx > 0 ? groupByDate(mobileFilteredData[idx - 1]) : null;
+                const currentLabel = groupByDate(contract);
+                const showHeader = currentLabel !== prevLabel;
+                return (
+                  <div key={contract.contract_id || idx}>
+                    {showHeader && (
+                      <div className={styles.mobileGroupHeader}>
+                        {currentLabel}
+                      </div>
+                    )}
+                    <ContractCard
+                      key={contract.contract_id || idx}
+                      contract={contract}
+                      animationIndex={idx}
+                      showActions={canAssignResources || hasFullAccess}
+                      showViewDetails={true}
+                      onViewDetails={!isChofer ? handleViewDetails : undefined}
+                      onEdit={handleEditOrder}
+                      onAssignDriver={
+                        canAssignResources ? handleAssignDriver : undefined
+                      }
+                      onPayDriver={hasFullAccess ? handlePayDriver : undefined}
+                      onRegisterPayment={
+                        hasFullAccess ? handleRegisterClientPayment : undefined
+                      }
+                      onCancel={
+                        hasFullAccess ? handleCancelContract : undefined
+                      }
+                      onChangeStatus={
+                        hasFullAccess ? handleChangeContractStatus : undefined
+                      }
+                    />
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
@@ -671,7 +772,11 @@ export default function DashboardContent() {
                       appearance="primary"
                       icon={<AddFilled />}
                       className={styles.createOrderButton}
-                      style={{ backgroundColor: "#96781a", borderColor: "#96781a", color: "white" }}
+                      style={{
+                        backgroundColor: "#96781a",
+                        borderColor: "#96781a",
+                        color: "white",
+                      }}
                     >
                       Crear Orden
                     </Button>
