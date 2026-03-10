@@ -1,6 +1,12 @@
 @keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Wrapper ───────────────────────────────────────────────────────── */
@@ -8,14 +14,32 @@
   position: relative;
   overflow-x: auto;
   overflow-y: visible;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .table {
   width: 100%;
+  min-width: 800px; /* Minimum table width for proper column layout */
   border-collapse: collapse !important;
   margin: 16px 0;
   font-size: 14px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+/* Mobile: Allow horizontal scroll for table */
+@media (max-width: 768px) {
+  .tableContainer {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  }
+
+  .table {
+    min-width: 600px; /* Reduced minimum width for mobile */
+    font-size: 13px;
+  }
 }
 
 /* ── Header ─────────────────────────────────────────────────────────── */
@@ -23,11 +47,15 @@
   position: sticky;
   top: 0;
   z-index: 2;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .headerRow {
   background-color: var(--Main-1A2E47) !important;
   border: none !important;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .headerCell {
@@ -41,6 +69,8 @@
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+  box-sizing: border-box;
+  max-width: 300px;
 }
 
 .headerCellFirst {
@@ -56,16 +86,41 @@
 
 .actionsHeaderCell {
   width: 80px;
+  min-width: 80px;
+  max-width: 80px;
   text-align: center !important;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .headerCell {
+    font-size: 13px !important;
+    padding: 10px 12px !important;
+    max-width: 200px;
+  }
+
+  .headerCellFirst {
+    padding-left: 32px !important;
+  }
+
+  .actionsHeaderCell {
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+  }
 }
 
 /* ── Body rows ──────────────────────────────────────────────────────── */
 .tableRow {
   cursor: pointer;
   border-bottom: 8px solid #f8f9fa !important;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
   animation: fadeSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: calc(var(--row-index, 0) * 35ms);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .tableRow:first-child {
@@ -97,7 +152,11 @@
   overflow: hidden;
   white-space: nowrap;
   vertical-align: middle !important;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
+  box-sizing: border-box;
+  max-width: 300px; /* Prevent extremely wide cells */
 }
 
 /* First cell: has the left color-indicator bar via ::before */
@@ -113,7 +172,30 @@
   overflow: hidden;
   white-space: nowrap;
   vertical-align: middle !important;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
+  box-sizing: border-box;
+  max-width: 300px;
+}
+
+@media (max-width: 768px) {
+  .cell,
+  .firstCell {
+    max-width: 200px;
+    font-size: 13px !important;
+    padding: 10px 12px !important;
+  }
+
+  .firstCell {
+    padding: 10px 12px 10px 32px !important;
+  }
+  
+  .actionsContainer {
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+  }
 }
 
 .firstCell::before {
@@ -139,7 +221,10 @@
   padding: 4px 8px !important;
   border-bottom: 1px solid #e0e0e0 !important;
   width: 80px;
+  min-width: 80px;
+  max-width: 80px;
   transition: background-color 0.2s ease;
+  box-sizing: border-box;
 }
 
 .tableRow:hover .actionsContainer {
@@ -164,8 +249,13 @@
 }
 
 @keyframes gentleBounce {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 /* ── Chofer inline details ──────────────────────────────────────────── */
@@ -173,6 +263,21 @@
   padding: 10px 16px !important;
   background-color: #fbfdff !important;
   border-bottom: 1px solid #e8e8e8 !important;
+  overflow-x: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+  .detailsRowCell {
+    padding: 8px 12px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .detailsRowCell {
+    padding: 6px 8px !important;
+  }
 }
 
 /* ── Title / description ────────────────────────────────────────────── */
@@ -181,12 +286,28 @@
   font-weight: 600;
   color: #333;
   margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
 }
 
 .description {
   color: #666;
   margin-bottom: 16px;
   line-height: 1.5;
+  width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 20px;
+  }
+
+  .description {
+    font-size: 14px;
+  }
 }
 
 /* ── Pagination ─────────────────────────────────────────────────────── */
@@ -196,4 +317,3 @@
   margin-top: 20px;
   padding: 16px 0;
 }
-

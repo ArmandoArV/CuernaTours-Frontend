@@ -68,17 +68,31 @@ export default function DriverDashboardContent() {
     return trips.filter((trip) => {
       // Date range filter
       if (dateRange.start || dateRange.end) {
-        const tripDate = trip._tripData?.service_date ? new Date(trip._tripData.service_date) : null;
+        const tripDate = trip._tripData?.service_date
+          ? new Date(trip._tripData.service_date)
+          : null;
         if (!tripDate) return false;
-        const tripDay = new Date(tripDate.getFullYear(), tripDate.getMonth(), tripDate.getDate()).getTime();
+        const tripDay = new Date(
+          tripDate.getFullYear(),
+          tripDate.getMonth(),
+          tripDate.getDate(),
+        ).getTime();
         if (dateRange.start) {
           const s = dateRange.start;
-          const startDay = new Date(s.getFullYear(), s.getMonth(), s.getDate()).getTime();
+          const startDay = new Date(
+            s.getFullYear(),
+            s.getMonth(),
+            s.getDate(),
+          ).getTime();
           if (tripDay < startDay) return false;
         }
         if (dateRange.end) {
           const e = dateRange.end;
-          const endDay = new Date(e.getFullYear(), e.getMonth(), e.getDate()).getTime();
+          const endDay = new Date(
+            e.getFullYear(),
+            e.getMonth(),
+            e.getDate(),
+          ).getTime();
           if (tripDay > endDay) return false;
         }
       }
@@ -86,7 +100,12 @@ export default function DriverDashboardContent() {
       for (const [key, value] of Object.entries(activeFilters)) {
         if (key === "Fecha") continue;
         if (!value) continue;
-        if (String(trip[key] ?? "").toLowerCase().trim() !== String(value).toLowerCase().trim()) return false;
+        if (
+          String(trip[key] ?? "")
+            .toLowerCase()
+            .trim() !== String(value).toLowerCase().trim()
+        )
+          return false;
       }
       return true;
     });

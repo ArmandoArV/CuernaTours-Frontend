@@ -1,8 +1,12 @@
 .container {
   padding: 24px;
   background-color: #fff;
-  font-family: "Inter", sans-serif; /* Use a clean sans-serif */
+  font-family: "Inter", sans-serif;
   color: #333;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* HEADER STYLES */
@@ -11,6 +15,8 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .clientName {
@@ -26,12 +32,14 @@
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .headerRight {
   display: flex;
   align-items: center;
   gap: 30px;
+  flex-wrap: wrap;
 }
 
 .tripTypeBox label {
@@ -83,8 +91,10 @@
 /* GRID STYLES */
 .mainGrid {
   display: grid;
-  grid-template-columns: 1fr 1.5fr 1.5fr; /* Matches the image proportions */
+  grid-template-columns: 1fr 1.5fr 1.5fr;
   gap: 40px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .column {
@@ -110,24 +120,104 @@
   line-height: 1.3;
   margin: 0;
   color: #444;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .observationsText {
   font-size: 1.2rem;
   color: #666;
   line-height: 1.4;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
-@media (max-width: 768px) {
+/* Tablet breakpoint */
+@media (max-width: 1024px) {
+  .container {
+    padding: 16px;
+  }
+
   .mainGrid {
-    grid-template-columns: 1fr; /* Stack columns on mobile */
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .headerRight {
+    gap: 16px;
+    width: 100%;
+  }
+
+  .clientName {
+    font-size: 1.15rem;
+  }
+
+  .contactRow {
+    font-size: 1rem;
+  }
+
+  .tripTypeBox label {
+    font-size: 1rem;
+  }
+
+  .tripTypeBox strong {
+    font-size: 1.05rem;
+  }
+
+  .infoGroup label {
+    font-size: 1rem;
+  }
+
+  .infoGroup span,
+  .infoGroup strong {
+    font-size: 1.05rem;
+  }
+
+  .addressText,
+  .observationsText {
+    font-size: 1.05rem;
+  }
+}
+
+/* Mobile breakpoint */
+@media (max-width: 768px) {
+  .container {
+    padding: 12px;
+  }
+
+  .mainGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
     width: 100%;
   }
 
   .header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 15px;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .headerRight {
+    width: 100%;
+  }
+
+  .clientName {
+    font-size: 1.1rem;
+  }
+
+  .contactRow {
+    font-size: 0.9rem;
+  }
+
+  .divider {
+    display: none;
   }
 
   .serviceTypeBox {
@@ -137,9 +227,33 @@
   .datesWrapper {
     flex-direction: column;
     align-items: flex-start;
+    width: 100%;
   }
 
   .verticalDivider {
-    display: none; /* Hide divider on mobile */
+    display: none;
+  }
+
+  .tripTypeBox label {
+    font-size: 0.9rem;
+  }
+
+  .tripTypeBox strong {
+    font-size: 1rem;
+  }
+
+  .infoGroup label {
+    font-size: 0.9rem;
+  }
+
+  .infoGroup span,
+  .infoGroup strong {
+    font-size: 0.95rem;
+  }
+
+  .addressText,
+  .observationsText {
+    font-size: 0.95rem;
+    word-break: break-word;
   }
 }

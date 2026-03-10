@@ -16,10 +16,14 @@ export function useDriverTrips(driverId: number | null) {
     setError(null);
 
     try {
-      const response = await contractsService.getAll();
+      // Use driver-specific endpoint without query params
+      const response = await contractsService.getDriverContracts(driverId);
+      console.log("🔍 Raw API response:", response);
       const transformed = transformDriverTripsData(response, driverId);
+      console.log("✨ Transformed trips:", transformed);
       setTrips(transformed);
     } catch (err) {
+      console.error("❌ Error fetching trips:", err);
       setError(
         err instanceof ApiError ? err.message : "Error al cargar tus viajes",
       );

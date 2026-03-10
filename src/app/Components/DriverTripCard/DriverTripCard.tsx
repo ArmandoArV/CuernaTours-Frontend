@@ -25,6 +25,9 @@ const useStyles = makeStyles({
     marginBottom: "16px",
     cursor: "pointer",
     transition: "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+    width: "100%",
+    maxWidth: "100%",
+    boxSizing: "border-box",
     ":hover": {
       transform: "translateY(-3px)",
       boxShadow: tokens.shadow16,
@@ -33,6 +36,7 @@ const useStyles = makeStyles({
 
   statusBar: {
     width: "6px",
+    flexShrink: 0,
   },
 
   success: {
@@ -51,6 +55,9 @@ const useStyles = makeStyles({
     flex: 1,
     backgroundColor: tokens.colorNeutralBackground2,
     padding: "16px",
+    minWidth: 0,
+    width: "100%",
+    boxSizing: "border-box",
   },
 
   headerRow: {
@@ -58,18 +65,26 @@ const useStyles = makeStyles({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: "12px",
+    flexWrap: "wrap",
+    gap: "8px",
+    width: "100%",
   },
 
   section: {
     display: "flex",
     flexDirection: "column",
     gap: "2px",
+    minWidth: 0,
+    wordBreak: "break-word",
   },
 
   footerRow: {
     display: "flex",
     justifyContent: "space-between",
     marginTop: "12px",
+    flexWrap: "wrap",
+    gap: "8px",
+    width: "100%",
   },
 });
 

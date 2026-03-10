@@ -1,5 +1,8 @@
 .container {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .title {
@@ -25,6 +28,8 @@
   align-items: flex-start;
   margin-bottom: 16px;
   flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .searchSection {
@@ -33,6 +38,7 @@
   max-width: 350px;
   display: flex;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .filterSection {
@@ -40,11 +46,13 @@
   min-width: auto;
   display: flex;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .actionSection {
   margin-left: auto;
   flex: none;
+  box-sizing: border-box;
 }
 
 .activeFiltersDisplay {

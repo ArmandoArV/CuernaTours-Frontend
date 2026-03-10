@@ -6,6 +6,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  box-sizing: border-box;
 }
 
 .header {
@@ -20,6 +21,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
 }
 
 .title {
@@ -27,12 +30,14 @@
   font-weight: 600;
   color: #323130;
   margin: 0;
+  word-break: break-word;
 }
 
 .subtitle {
   font-size: 0.95rem;
   color: #605e5c;
   margin: 0;
+  word-break: break-word;
 }
 
 /* Avatar + name card */
@@ -44,6 +49,8 @@
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .avatarSection {
@@ -51,6 +58,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .avatar {
@@ -64,6 +72,7 @@
   justify-content: center;
   font-size: 2rem;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .profileMainInfo {
@@ -72,6 +81,7 @@
   gap: 0.25rem;
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 .profileName {
@@ -79,12 +89,14 @@
   font-weight: 600;
   color: #323130;
   margin: 0;
+  word-break: break-word;
 }
 
 .profileEmail {
   font-size: 0.95rem;
   color: #605e5c;
   margin: 0;
+  word-break: break-all;
 }
 
 /* Info sections */
@@ -93,6 +105,8 @@
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .sectionHeader {
@@ -102,6 +116,7 @@
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
   border-bottom: 2px solid #edebe9;
+  gap: 0.5rem;
 }
 
 .sectionTitle {
@@ -112,18 +127,22 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-width: 0;
+  flex: 1;
 }
 
 .infoGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.25rem;
+  width: 100%;
 }
 
 .infoItem {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  min-width: 0;
 }
 
 .infoLabel {
@@ -137,6 +156,7 @@
 .infoValue {
   font-size: 0.95rem;
   color: #323130;
+  word-break: break-word;
 }
 
 /* Edit form layout */
@@ -144,6 +164,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
+  width: 100%;
 }
 
 .formFieldFull {
@@ -157,6 +178,7 @@
   padding-top: 1rem;
   border-top: 1px solid #edebe9;
   margin-top: 0.5rem;
+  flex-wrap: wrap;
 }
 
 /* Responsive */
@@ -177,6 +199,7 @@
 
   .profileMainInfo {
     align-items: center;
+    text-align: center;
   }
 
   .profileName {
@@ -202,6 +225,10 @@
 
   .formActions button {
     width: 100%;
+  }
+  
+  .sectionTitle {
+    font-size: 1rem;
   }
 }
 
@@ -231,6 +258,10 @@
   }
 
   .sectionTitle {
-    font-size: 1rem;
+    font-size: 0.95rem;
+  }
+  
+  .sectionHeader {
+    flex-wrap: wrap;
   }
 }

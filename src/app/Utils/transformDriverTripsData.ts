@@ -1,61 +1,80 @@
 // utils/transformDriverTripsData.ts
 
 import { formatDateStandard, formatPersonName } from "@/app/Utils/FormatUtil";
-import { TRIP_STATUS_MAP } from "@/app/Utils/statusUtils";
+import { CONTRACT_STATUS_MAP } from "@/app/Utils/statusUtils";
+import { Logger } from "@/app/Utils/Logger";
+
+const log = Logger.getLogger("transformDriverTripsData");
 
 export function transformDriverTripsData(
-  apiData: any[],
+  apiResponse: any,
   driverId: number
 ): any[] {
-  return apiData
-    .flatMap((contract) =>
-      (contract.trips || [])
-        .filter((trip: any) => {
-          // Driver is assigned at the unit level (source of truth)
-          return (trip.units || []).some(
-            (unit: any) => unit.driver_id === driverId || unit.driver?.id === driverId
-          );
-        })
-        .map((trip: any) => {
-          const contractStatusId =
-            contract.contract_status_id || contract.status?.id;
+  log.info("🔍 Raw API response:", apiResponse);
+  
+  // Handle new API response format: { driver_id, upcoming: [], historical: [], summary }
+  let contracts: any[] = [];
+  
+  if (apiResponse?.upcoming !== undefined && apiResponse?.historical !== undefined) {
+    // New format from /contracts/driver/:id endpoint (direct structure)
+    const { upcoming = [], historical = [] } = apiResponse;
+    contracts = [...upcoming, ...historical];
+    log.info(`📦 Merged contracts: ${contracts.length} (${upcoming.length} upcoming + ${historical.length} historical)`);
+  } else if (apiResponse?.data) {
+    // Wrapped format: { data: { upcoming: [], historical: [] } }
+    const { upcoming = [], historical = [] } = apiResponse.data;
+    contracts = [...upcoming, ...historical];
+    log.info(`📦 Wrapped format: ${contracts.length} contracts`);
+  } else if (Array.isArray(apiResponse)) {
+    // Old format (array of contracts)
+    contracts = apiResponse;
+    log.info(`📦 Array format: ${contracts.length} contracts`);
+  } else {
+    log.warn("⚠️ Unexpected response format, returning empty array");
+    return [];
+  }
 
-          const contractStatus =
-            TRIP_STATUS_MAP[contractStatusId] ||
-            contract.contract_status_name ||
-            contract.status?.name ||
-            "";
+  const transformed = contracts
+    .flatMap((contract) => {
+      const trips = contract.trips || [];
+      log.info(`Contract ${contract.contract_id}: ${trips.length} trips`);
+      
+      return trips.map((trip: any) => {
+        const contractStatusId = contract.contract_status?.contract_status_id || contract.contract_status_id;
+        const contractStatusName = contract.contract_status?.name || "";
+        const contractStatus = CONTRACT_STATUS_MAP[contractStatusId] || contractStatusName || "";
 
-          // Find the unit assigned to this driver
-          const driverUnit = (trip.units || []).find(
-            (unit: any) => unit.driver_id === driverId || unit.driver?.id === driverId
-          );
+        // New format: single unit per trip for this driver
+        const driverUnit = trip.unit;
+        const vehicleDisplay = driverUnit?.vehicle?.license_plate || "No asignada";
 
-          const vehicleDisplay =
-            driverUnit?.vehicle?.license_plate ||
-            driverUnit?.vehicle_license_plate ||
-            "No asignada";
+        const transformed = {
+          trip_id: trip.contract_trip_id,
+          contract_id: contract.contract_id,
 
-          return {
-            trip_id: trip.trip_id,
-            contract_id: contract.contract_id,
+          "ID Viaje": trip.contract_trip_id,
+          Cliente: formatPersonName(contract.client_name) || "",
+          Fecha: formatDateStandard(trip.service_date),
+          Hora: trip.origin_time || "",
+          Origen: trip.origin?.name || "",
+          Destino: trip.destination?.name || "",
+          Unidad: vehicleDisplay,
+          Estatus: contractStatus,
 
-            "ID Viaje": trip.trip_id,
-            Cliente: formatPersonName(contract.client_name) || "",
-            Fecha: formatDateStandard(trip.service_date),
-            Hora: trip.origin_time || trip.service_time || "",
-            Origen: trip.origin?.name || trip.origin_name || "",
-            Destino: trip.destination?.name || trip.destination_name || "",
-            Unidad: vehicleDisplay,
-            Estatus: contractStatus,
-
-            _tripData: trip,
-          };
-        })
-    )
+          _tripData: trip,
+          _contractData: contract,
+        };
+        
+        log.info(`✅ Transformed trip ${trip.contract_trip_id}:`, transformed);
+        return transformed;
+      });
+    })
     .sort(
       (a, b) =>
         new Date(a._tripData.service_date).getTime() -
         new Date(b._tripData.service_date).getTime()
     );
+
+  log.info(`✨ Final result: ${transformed.length} trips`);
+  return transformed;
 }

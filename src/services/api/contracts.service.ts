@@ -449,12 +449,8 @@ class ContractsService {
   /**
    * Get contracts for a driver (mobile dashboard)
    */
-  async getDriverContracts(
-    driverId: number,
-    filter: 'upcoming' | 'historical' | 'all' = 'all',
-    historicalDays: number = 7
-  ): Promise<any> {
-    const endpoint = `/contracts/driver/${driverId}?filter=${filter}&historicalDays=${historicalDays}`;
+  async getDriverContracts(driverId: number): Promise<any> {
+    const endpoint = `/contracts/driver/${driverId}`;
     const response = await apiClient.get<any>(endpoint);
     return validateResponse<any>(response);
   }
