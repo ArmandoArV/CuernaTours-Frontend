@@ -12,9 +12,11 @@ import {
   DialogBody,
   DialogTitle,
   DialogContent,
+  DialogActions,
   Field,
   Textarea,
   Spinner,
+  Link as FluentLink,
 } from "@fluentui/react-components";
 import {
   ArrowClockwiseRegular,
@@ -29,14 +31,18 @@ import {
   CheckmarkRegular,
   DismissRegular,
   AddRegular,
+  EyeRegular,
+  AttachRegular,
+  DocumentRegular,
+  OpenRegular,
 } from "@fluentui/react-icons";
 import LoadingComponent from "../LoadingComponent/LoadingComponent";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import { useAsyncData } from "@/app/hooks/useAsyncData";
 import { useDriverId } from "@/app/hooks/useDriverId";
 import { useRouter } from "next/navigation";
-import { spendingsService, type Spending } from "@/services/api/spendings.service";
-import { usersService } from "@/services/api";
+import { spendingsService, type Spending, type SpendingWithFiles } from "@/services/api/spendings.service";
+import { usersService, filesService } from "@/services/api";
 import { getRoleName } from "@/app/hooks/useUserRole";
 import { formatDateStandard } from "@/app/Utils/FormatUtil";
 import {
@@ -92,6 +98,16 @@ export default function AdminSpendingsContent() {
   }>({ open: false, type: "approve", spending: null });
   const [actionComments, setActionComments] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Details dialog
+  const [detailsDialog, setDetailsDialog] = useState<{
+    open: boolean;
+    spending: SpendingWithFiles | null;
+    loading: boolean;
+  }>({ open: false, spending: null, loading: false });
+
+  // File URLs cache for images
+  const [fileUrls, setFileUrls] = useState<Record<number, string>>({});
 
   const {
     data: spendings,
@@ -186,6 +202,61 @@ export default function AdminSpendingsContent() {
       showErrorAlert("Error", err?.message || "No se pudo procesar la acción");
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const openDetailsDialog = async (spending: Spending) => {
+    setDetailsDialog({ open: true, spending: null, loading: true });
+    setFileUrls({}); // Clear previous URLs
+    
+    try {
+      const spendingWithFiles = await spendingsService.getWithFiles(spending.spending_id);
+      setDetailsDialog({ open: true, spending: spendingWithFiles, loading: false });
+      
+      // Fetch URLs for image files
+      if (spendingWithFiles.files && spendingWithFiles.files.length > 0) {
+        const imageFiles = spendingWithFiles.files.filter(f => 
+          f.mime_type.startsWith('image/')
+        );
+        
+        // Fetch all image URLs in parallel
+        const urlPromises = imageFiles.map(async (file) => {
+          try {
+            const url = await filesService.getUrl(file.file_id);
+            return { fileId: file.file_id, url };
+          } catch (err) {
+            log.error(`Error fetching URL for file ${file.file_id}:`, err);
+            return null;
+          }
+        });
+        
+        const results = await Promise.all(urlPromises);
+        const urlsMap: Record<number, string> = {};
+        results.forEach(result => {
+          if (result) {
+            urlsMap[result.fileId] = result.url;
+          }
+        });
+        setFileUrls(urlsMap);
+      }
+    } catch (err: any) {
+      log.error("Error fetching spending details:", err);
+      showErrorAlert("Error", "No se pudieron cargar los detalles del gasto");
+      setDetailsDialog({ open: false, spending: null, loading: false });
+    }
+  };
+
+  const isImageFile = (mimeType: string) => {
+    return mimeType.startsWith('image/');
+  };
+
+  const handleOpenFile = async (fileId: number, fileName: string) => {
+    try {
+      const url = await filesService.getUrl(fileId);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err: any) {
+      log.error("Error getting file URL:", err);
+      showErrorAlert("Error", `No se pudo abrir el archivo: ${fileName}`);
     }
   };
 
@@ -414,28 +485,38 @@ export default function AdminSpendingsContent() {
               </div>
 
               {/* Card actions */}
-              {spending.approved_status === "pending" && (
-                <div className={styles.cardActions}>
-                  <Button
-                    appearance="subtle"
-                    size="small"
-                    icon={<CheckmarkRegular />}
-                    className={styles.approveBtn}
-                    onClick={() => openActionDialog("approve", spending)}
-                  >
-                    Aprobar
-                  </Button>
-                  <Button
-                    appearance="subtle"
-                    size="small"
-                    icon={<DismissRegular />}
-                    className={styles.denyBtn}
-                    onClick={() => openActionDialog("deny", spending)}
-                  >
-                    Rechazar
-                  </Button>
-                </div>
-              )}
+              <div className={styles.cardActions}>
+                <Button
+                  appearance="subtle"
+                  size="small"
+                  icon={<EyeRegular />}
+                  onClick={() => openDetailsDialog(spending)}
+                >
+                  Ver Detalles
+                </Button>
+                {spending.approved_status === "pending" && (
+                  <>
+                    <Button
+                      appearance="subtle"
+                      size="small"
+                      icon={<CheckmarkRegular />}
+                      className={styles.approveBtn}
+                      onClick={() => openActionDialog("approve", spending)}
+                    >
+                      Aprobar
+                    </Button>
+                    <Button
+                      appearance="subtle"
+                      size="small"
+                      icon={<DismissRegular />}
+                      className={styles.denyBtn}
+                      onClick={() => openActionDialog("deny", spending)}
+                    >
+                      Rechazar
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -511,6 +592,183 @@ export default function AdminSpendingsContent() {
                 </Button>
               </div>
             </DialogContent>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
+
+      {/* Details Dialog */}
+      <Dialog
+        open={detailsDialog.open}
+        onOpenChange={(_, d) =>
+          setDetailsDialog((prev) => ({ ...prev, open: d.open }))
+        }
+      >
+        <DialogSurface style={{ maxWidth: "600px" }}>
+          <DialogBody>
+            <DialogTitle>Detalles del Gasto</DialogTitle>
+            <DialogContent>
+              {detailsDialog.loading ? (
+                <div style={{ padding: "2rem", textAlign: "center" }}>
+                  <Spinner label="Cargando detalles..." />
+                </div>
+              ) : detailsDialog.spending ? (
+                <div className={styles.detailsContent}>
+                  {/* Driver Info */}
+                  <div className={styles.detailSection}>
+                    <h3 className={styles.detailSectionTitle}>
+                      <PersonRegular /> Información del Chofer
+                    </h3>
+                    <div className={styles.detailGrid}>
+                      <div className={styles.detailItem}>
+                        <span className={styles.detailLabel}>Nombre:</span>
+                        <span className={styles.detailValue}>
+                          {getUserName(detailsDialog.spending.driver_id)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Spending Info */}
+                  <div className={styles.detailSection}>
+                    <h3 className={styles.detailSectionTitle}>
+                      <MoneyRegular /> Información del Gasto
+                    </h3>
+                    <div className={styles.detailGrid}>
+                      <div className={styles.detailItem}>
+                        <span className={styles.detailLabel}>Monto:</span>
+                        <span className={styles.detailValue} style={{ fontWeight: 600, color: "#1a2e47" }}>
+                          ${Number(detailsDialog.spending.spending_amount || 0).toLocaleString("es-MX", {
+                            minimumFractionDigits: 2,
+                          })}
+                        </span>
+                      </div>
+                      <div className={styles.detailItem}>
+                        <span className={styles.detailLabel}>Categoría:</span>
+                        <span className={styles.detailValue}>
+                          {CATEGORY_LABELS[detailsDialog.spending.spending_type || ""] ||
+                            detailsDialog.spending.spending_type ||
+                            "Sin categoría"}
+                        </span>
+                      </div>
+                      <div className={styles.detailItem}>
+                        <span className={styles.detailLabel}>Fecha de envío:</span>
+                        <span className={styles.detailValue}>
+                          {formatDateStandard(detailsDialog.spending.submitted_at)}
+                        </span>
+                      </div>
+                      <div className={styles.detailItem}>
+                        <span className={styles.detailLabel}>Estado:</span>
+                        <Badge
+                          appearance="tint"
+                          color={STATUS_COLORS[detailsDialog.spending.approved_status] || "warning"}
+                        >
+                          {STATUS_MAP[detailsDialog.spending.approved_status] || "Pendiente"}
+                        </Badge>
+                      </div>
+                      <div className={styles.detailItem}>
+                        <span className={styles.detailLabel}>Pago:</span>
+                        <Badge
+                          appearance="tint"
+                          color={detailsDialog.spending.payment_status === "paid" ? "success" : "subtle"}
+                        >
+                          {PAYMENT_MAP[detailsDialog.spending.payment_status] || "Sin pagar"}
+                        </Badge>
+                      </div>
+                      {detailsDialog.spending.contract_id && (
+                        <div className={styles.detailItem}>
+                          <span className={styles.detailLabel}>Contrato:</span>
+                          <span className={styles.detailValue}>#{detailsDialog.spending.contract_id}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Comments */}
+                  {detailsDialog.spending.comments && (
+                    <div className={styles.detailSection}>
+                      <h3 className={styles.detailSectionTitle}>Comentarios</h3>
+                      <p className={styles.commentsText}>{detailsDialog.spending.comments}</p>
+                    </div>
+                  )}
+
+                  {/* Attachments */}
+                  <div className={styles.detailSection}>
+                    <h3 className={styles.detailSectionTitle}>
+                      <AttachRegular /> Archivos Adjuntos ({detailsDialog.spending.files?.length || 0})
+                    </h3>
+                    {detailsDialog.spending.files && detailsDialog.spending.files.length > 0 ? (
+                      <div className={styles.attachmentsList}>
+                        {detailsDialog.spending.files.map((file) => {
+                          const isImage = isImageFile(file.mime_type);
+                          const imageUrl = fileUrls[file.file_id];
+                          
+                          return (
+                            <div key={file.file_id} className={styles.attachmentItem}>
+                              {isImage && imageUrl ? (
+                                <div className={styles.imagePreviewContainer}>
+                                  <img
+                                    src={imageUrl}
+                                    alt={file.original_name}
+                                    className={styles.imagePreview}
+                                    onClick={() => handleOpenFile(file.file_id, file.original_name)}
+                                  />
+                                  <div className={styles.attachmentDetails}>
+                                    <DocumentRegular className={styles.attachmentIcon} />
+                                    <div className={styles.attachmentInfo}>
+                                      <span className={styles.attachmentName}>{file.original_name}</span>
+                                      <span className={styles.attachmentMeta}>
+                                        {(file.file_size / 1024).toFixed(1)} KB • {file.mime_type}
+                                      </span>
+                                    </div>
+                                    <Button
+                                      appearance="subtle"
+                                      size="small"
+                                      icon={<OpenRegular />}
+                                      onClick={() => handleOpenFile(file.file_id, file.original_name)}
+                                    >
+                                      Abrir
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <DocumentRegular className={styles.attachmentIcon} />
+                                  <div className={styles.attachmentInfo}>
+                                    <span className={styles.attachmentName}>{file.original_name}</span>
+                                    <span className={styles.attachmentMeta}>
+                                      {(file.file_size / 1024).toFixed(1)} KB • {file.mime_type}
+                                    </span>
+                                  </div>
+                                  <Button
+                                    appearance="subtle"
+                                    size="small"
+                                    icon={<OpenRegular />}
+                                    onClick={() => handleOpenFile(file.file_id, file.original_name)}
+                                  >
+                                    Abrir
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className={styles.noAttachments}>No hay archivos adjuntos</p>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+            </DialogContent>
+            <DialogActions>
+              <Button
+                appearance="secondary"
+                onClick={() => setDetailsDialog({ open: false, spending: null, loading: false })}
+                style={{ backgroundColor: "#1a2e47", color: "white" }}
+              >
+                Cerrar
+              </Button>
+            </DialogActions>
           </DialogBody>
         </DialogSurface>
       </Dialog>
