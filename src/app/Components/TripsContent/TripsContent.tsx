@@ -42,7 +42,12 @@ export default function TripsContent({ contractId }: TripsContentProps) {
   const router = useRouter();
   const { canAssignResources, isChofer } = useUserRole();
 
-  const { data: contractData, loading, error, setData: setContractData } = useAsyncData(
+  const {
+    data: contractData,
+    loading,
+    error,
+    setData: setContractData,
+  } = useAsyncData(
     () => contractsService.getContractDetails(Number(contractId)),
     null as any,
     [contractId],
@@ -175,12 +180,12 @@ export default function TripsContent({ contractId }: TripsContentProps) {
       {/* Header */}
       <div className={styles.header}>
         <ButtonComponent
-          text="Volver"
+          text=""
           icon={<ArrowLeftRegular />}
           onClick={() => router.back()}
           className={styles.backButton}
         />
-        <h1 className={styles.title}>Orden #{contractId}</h1>
+        <h1 className={styles.title}>Detalles del servicio</h1>
       </div>
       <ContractDetailsPanel contract={new Contract(contractData)} />
       <AssignDriverModal
