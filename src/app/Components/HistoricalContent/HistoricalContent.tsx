@@ -41,9 +41,13 @@ function transformHistoricalData(apiData: any[]): any[] {
       const firstUnit = (trip.units || [])[0];
       const unitDisplay = firstUnit?.vehicle_type_name || firstUnit?.vehicle_type || "";
       // Driver: check unit-level driver fields
-      const driverName = firstUnit?.driver_name
-        ? `${firstUnit.driver_name} ${firstUnit.driver_lastname || ""}`.trim()
-        : firstUnit?.external_driver_name || "";
+      // Driver: read from nested driver object returned by the API
+      const driver = firstUnit?.driver;
+      const driverName = driver
+        ? driver.is_external
+          ? driver.name || ""
+          : `${driver.name || ""} ${driver.lastname || ""}`.trim()
+        : "";
 
       rows.push({
         "Empresa o Cliente": formatPersonName(contract.client_name),
