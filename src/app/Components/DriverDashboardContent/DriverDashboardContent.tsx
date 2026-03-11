@@ -46,18 +46,18 @@ export default function DriverDashboardContent() {
     ).getTime();
 
     const months = [
-      "ene",
-      "feb",
-      "mar",
-      "abr",
-      "may",
-      "jun",
-      "jul",
-      "ago",
-      "sep",
-      "oct",
-      "nov",
-      "dic",
+      "Enero",
+      "Febrero",
+      "Marzo",
+      "Abril",
+      "Mayo",
+      "Junio",
+      "Julio",
+      "Agosto",
+      "Septiembre",
+      "Octubre",
+      "Noviembre",
+      "Diciembre",
     ];
     const dayNum = rowDate.getDate();
     const monthStr = months[rowDate.getMonth()];
@@ -78,6 +78,17 @@ export default function DriverDashboardContent() {
     setCurrentPage(1);
   };
 
+  const sortedTrips = useMemo(() => {
+    return [...trips].sort((a, b) => {
+      const aTime = a._tripData?.service_date ? new Date(a._tripData.service_date).getTime() : null;
+      const bTime = b._tripData?.service_date ? new Date(b._tripData.service_date).getTime() : null;
+      if (aTime == null && bTime == null) return 0;
+      if (aTime == null) return 1;
+      if (bTime == null) return -1;
+      return bTime - aTime;
+    });
+  }, [trips]);
+
   const filterConfigs: FilterConfig[] = useMemo(
     () => [
       {
@@ -96,16 +107,16 @@ export default function DriverDashboardContent() {
       FilterPresets.createSelectFilter(
         "Unidad",
         "Unidad",
-        Array.from(new Set(trips.map((item) => item.Unidad).filter(Boolean))),
+        Array.from(new Set(sortedTrips.map((item) => item.Unidad).filter(Boolean))),
         "Filtrar por Unidad",
       ),
     ],
-    [trips],
+    [sortedTrips],
   );
 
   // Filter trips for mobile cards
   const filteredTrips = useMemo(() => {
-    return trips.filter((trip) => {
+    return sortedTrips.filter((trip) => {
       // Date range filter
       if (dateRange.start || dateRange.end) {
         const tripDate = trip._tripData?.service_date
@@ -149,7 +160,7 @@ export default function DriverDashboardContent() {
       }
       return true;
     });
-  }, [trips, dateRange, activeFilters]);
+  }, [sortedTrips, dateRange, activeFilters]);
 
   if (driverError) {
     return <ErrorBlock message={driverError} onRetry={refresh} />;
@@ -207,7 +218,7 @@ export default function DriverDashboardContent() {
       ) : (
         <FilterableTableComponent
           title="Viajes Asignados"
-          originalData={trips}
+          originalData={sortedTrips}
           columns={[
             "ID Viaje",
             "Cliente",

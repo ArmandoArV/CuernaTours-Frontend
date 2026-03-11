@@ -215,7 +215,7 @@ export default function CreateSpendingContent({ backRoute = "/chofer/gastos" }: 
 
           <div className={styles.formRow}>
             <div className={styles.formField}>
-              <Field label="Contrato">
+              <Field label="Servicio">
                 <Dropdown
                   placeholder={refsLoading ? "Cargando..." : "Selecciona contrato (opcional)"}
                   disabled={refsLoading || contracts.length === 0}

@@ -724,7 +724,7 @@ export default function CreateTripContent({
         const result = await contractsService.createWithTrips(contractPayload);
         log.debug("Contract created:", result);
 
-        showSuccessAlert("Éxito", "Contrato y viaje creados correctamente");
+        showSuccessAlert("Éxito", "Servicio y viaje creados correctamente");
 
         // Clear all form data
         clearData();

@@ -169,7 +169,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
       try {
         await contractsService.cancelContract(id, reason);
         showSuccessAlert(
-          "Contrato cancelado",
+          "Servicio cancelado",
           "El contrato ha sido cancelado exitosamente.",
           () => {
             window.location.reload();
@@ -459,7 +459,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                     color: tokens.colorPaletteRedForeground1,
                                   }}
                                 >
-                                  Cancelar Contrato
+                                  Cancelar Servicio
                                 </MenuItem>
                               </MenuList>
                             </MenuPopover>

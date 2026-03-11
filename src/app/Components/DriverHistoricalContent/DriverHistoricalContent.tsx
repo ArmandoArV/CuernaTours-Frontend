@@ -45,7 +45,7 @@ function transformDriverHistoricalData(apiData: any[], driverId: number): any[] 
 
           historicalTrips.push({
             "ID Viaje": trip.trip_id,
-            "ID Contrato": contract.contract_id,
+            "ID Servicio": contract.contract_id,
             "Cliente": formatPersonName(contract.client_name) || "",
             "Fecha": formatDateStandard(trip.service_date),
             "Hora": trip.service_time || "",

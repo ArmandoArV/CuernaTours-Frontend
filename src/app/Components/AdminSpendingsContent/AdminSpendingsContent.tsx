@@ -478,7 +478,7 @@ export default function AdminSpendingsContent() {
                   </Badge>
                   {spending.contract_id && (
                     <span className={styles.metaItem}>
-                      Contrato #{spending.contract_id}
+                      Servicio #{spending.contract_id}
                     </span>
                   )}
                 </div>
@@ -676,7 +676,7 @@ export default function AdminSpendingsContent() {
                       </div>
                       {detailsDialog.spending.contract_id && (
                         <div className={styles.detailItem}>
-                          <span className={styles.detailLabel}>Contrato:</span>
+                          <span className={styles.detailLabel}>Servicio:</span>
                           <span className={styles.detailValue}>#{detailsDialog.spending.contract_id}</span>
                         </div>
                       )}

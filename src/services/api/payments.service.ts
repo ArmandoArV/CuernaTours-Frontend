@@ -29,8 +29,10 @@ export interface UpdateContractPaymentRequest {
 export interface PaymentSummary {
   contract_id: number;
   total_amount: number;
-  total_paid: number;
-  remaining_amount: number;
+  amount_paid: number;
+  amount_remaining: number;
+  is_fully_paid: boolean;
+  payment_count: number;
   payments: ContractPayment[];
 }
 

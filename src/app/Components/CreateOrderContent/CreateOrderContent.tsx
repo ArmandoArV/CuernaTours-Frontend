@@ -244,7 +244,7 @@ export default function CreateOrderContent({
 
         // TODO: Implement commission update if backend supports it in the future
 
-        showSuccessAlert("Éxito", "Contrato actualizado correctamente");
+        showSuccessAlert("Éxito", "Servicio actualizado correctamente");
 
         // Navigate back to contract details
         router.push(`/dashboard/order/${contractId}`);

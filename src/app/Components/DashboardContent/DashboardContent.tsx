@@ -208,7 +208,7 @@ function transformApiData(apiData: any[]): any[] {
       }
 
       return {
-        "ID Contrato": contract.contract_id,
+        "ID Servicio": contract.contract_id,
         "Empresa O Cliente": formatPersonName(contract.client_name) || "",
         Origen:
           (firstTrip as any).origin_name ||
@@ -329,10 +329,18 @@ export default function DashboardContent() {
   // Transform API data for the table
   const transformedData = transformApiData(contractsData);
 
+  const sortByDateDesc = (data: any[]) =>
+    [...data].sort((a, b) => {
+      if (a._sortTimestamp == null && b._sortTimestamp == null) return 0;
+      if (a._sortTimestamp == null) return 1;
+      if (b._sortTimestamp == null) return -1;
+      return b._sortTimestamp - a._sortTimestamp;
+    });
+
   const sampleData = useMemo(() => {
     // No filter applied
     if (!dateRangeStart || !dateRangeEnd) {
-      return transformedData;
+      return sortByDateDesc(transformedData);
     }
 
     const startDate = parseLocalDate(dateRangeStart);
@@ -341,13 +349,15 @@ export default function DashboardContent() {
     const startDay = toDayNumber(startDate);
     const endDay = toDayNumber(endDate);
 
-    return transformedData.filter((item) => {
-      if (!item._sortDate) return false;
+    return sortByDateDesc(
+      transformedData.filter((item) => {
+        if (!item._sortDate) return false;
 
-      const itemDay = toDayNumber(new Date(item._sortDate));
+        const itemDay = toDayNumber(new Date(item._sortDate));
 
-      return itemDay >= startDay && itemDay <= endDay;
-    });
+        return itemDay >= startDay && itemDay <= endDay;
+      })
+    );
   }, [transformedData, dateRangeStart, dateRangeEnd]);
 
   const handleDateRangeChange = (start: string, end: string) => {
@@ -384,18 +394,18 @@ export default function DashboardContent() {
     ).getTime();
 
     const months = [
-      "ene",
-      "feb",
-      "mar",
-      "abr",
-      "may",
-      "jun",
-      "jul",
-      "ago",
-      "sep",
-      "oct",
-      "nov",
-      "dic",
+      "Enero",
+      "Febrero",
+      "Marzo",
+      "Abril",
+      "Mayo",
+      "Junio",
+      "Julio",
+      "Agosto",
+      "Septiembre",
+      "Octubre",
+      "Noviembre",
+      "Diciembre",
     ];
     const dayNum = rowDate.getDate();
     const monthStr = months[rowDate.getMonth()];
@@ -569,7 +579,7 @@ export default function DashboardContent() {
       try {
         await contractsService.cancelContract(Number(id), reason);
         showSuccessAlert(
-          "Contrato cancelado",
+          "Servicio cancelado",
           "El contrato ha sido cancelado exitosamente.",
           () => {
             window.location.reload();
@@ -618,7 +628,7 @@ export default function DashboardContent() {
   };
 
   if (loading) {
-    return <LoadingComponent message="Cargando Contratos..." />;
+    return <LoadingComponent message="Cargando Servicios..." />;
   }
 
   if (error) {
@@ -636,7 +646,7 @@ export default function DashboardContent() {
         /* ─── MOBILE VIEW: Cards ─── */
         <div className={styles.mobileContainer}>
           <div className={styles.mobileHeader}>
-            <h2 className={styles.mobileTitle}>Lista De Contratos</h2>
+            <h2 className={styles.mobileTitle}>Lista De Servicios</h2>
             <div className={styles.mobileActions}>
               <ButtonComponent
                 text="Actualizar"
@@ -741,7 +751,7 @@ export default function DashboardContent() {
       ) : (
         /* ─── DESKTOP VIEW: Table ─── */
         <FilterableTableComponent
-          title="Lista De Contratos"
+          title="Lista De Servicios"
           originalData={sampleData}
           columns={columns}
           filterConfigs={filterConfigs}

@@ -82,7 +82,7 @@ const ClientPaymentModal: React.FC<ClientPaymentModalProps> = ({
 
   const [contractData, setContractData] = useState<ContractWithDetails | null>(null);
   const [paymentTypes, setPaymentTypes] = useState<PaymentTypeReference[]>([]);
-  const [existingPayments, setExistingPayments] = useState<{ total_paid: number }>({ total_paid: 0 });
+  const [existingPayments, setExistingPayments] = useState<{ total_paid: number; total_amount: number }>({ total_paid: 0, total_amount: 0 });
 
   // Form
   const [amount, setAmount] = useState("");
@@ -109,6 +109,7 @@ const ClientPaymentModal: React.FC<ClientPaymentModalProps> = ({
     setFormErrors({});
     setError(null);
     setContractData(null);
+    setExistingPayments({ total_paid: 0, total_amount: 0 });
   };
 
   const loadData = async (id: number) => {
@@ -125,10 +126,13 @@ const ClientPaymentModal: React.FC<ClientPaymentModalProps> = ({
       // Try to load payment summary
       try {
         const summary = await paymentsService.getSummary(id);
-        setExistingPayments({ total_paid: summary.total_paid || 0 });
+        setExistingPayments({
+          total_paid: summary.amount_paid || 0,
+          total_amount: summary.total_amount || 0,
+        });
       } catch {
-        // Summary endpoint may not exist — default to 0
-        setExistingPayments({ total_paid: 0 });
+        // Summary endpoint may not exist — default to contract amount
+        setExistingPayments({ total_paid: 0, total_amount: Number(contract.amount || 0) });
       }
     } catch (err: any) {
       log.error("Error loading contract data:", err);
@@ -138,7 +142,7 @@ const ClientPaymentModal: React.FC<ClientPaymentModalProps> = ({
     }
   };
 
-  const contractAmount = Number(contractData?.amount || 0);
+  const contractAmount = existingPayments.total_amount || Number(contractData?.amount || 0);
   const totalPaid = existingPayments.total_paid;
   const remaining = contractAmount - totalPaid;
 
@@ -210,7 +214,7 @@ const ClientPaymentModal: React.FC<ClientPaymentModalProps> = ({
                 {/* Contract Summary */}
                 <div className={styles.summaryCard}>
                   <div className={styles.summaryRow}>
-                    <Text weight="semibold">Contrato:</Text>
+                    <Text weight="semibold">Servicio:</Text>
                     <Text>#{contractId}</Text>
                   </div>
                   <div className={styles.summaryRow}>
