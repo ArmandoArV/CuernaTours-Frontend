@@ -366,7 +366,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                           />
                         </Tooltip>
 
-                        {isChofer && (
+                        {(isChofer || canManage) && (
                           <Tooltip content="Agregar Vales" relationship="label">
                             <Button
                               appearance="subtle"

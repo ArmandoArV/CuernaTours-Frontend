@@ -27,7 +27,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     { title: "Inicio", link: "/dashboard", icon: <HomeFilled /> },
     { title: "Historial", link: "/dashboard/historical", icon: <HistoryFilled /> },
     { title: "Gastos", link: "/gastos", icon: <MoneyFilled /> },
-    { title: "Vales", link: "/dashboard/vales", icon: <GasPumpFilled /> },
+    { title: "Vales", link: "/dashboard/vales", icon: <GasPumpFilled />, isAdmin: true },
     { title: "Usuarios", link: "/users", icon: <PeopleFilled />, isAdmin: true },
   ];
 
