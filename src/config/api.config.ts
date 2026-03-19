@@ -57,7 +57,7 @@ export const API_ENDPOINTS = {
     CREATE_WITH_TRIPS: '/contracts/create',
     UPDATE: (id: number) => `/contracts/${id}`,
     BY_ID: (id: number) => `/contracts/${id}`,
-    BY_DRIVER: (driverId: number) => `/contracts/driver/${driverId}`,
+    BY_DRIVER: (driverId: number) => `/contracts/driver/${driverId}?filter=all&historicalDays=100`,
     DETAILS: (id: number) => `/contracts/details/${id}`,
     ALL_DETAILS: '/contracts/details',
     CANCELLED: '/contracts/cancelled',
@@ -218,6 +218,17 @@ export const API_ENDPOINTS = {
     BY_STATUS: (status: string) => `/driver-receipts/status/${status}`,
     DETAILS: (id: number) => `/driver-receipts/${id}/details`,
     VERIFY: (id: number) => `/driver-receipts/${id}/verify`,
+  },
+
+  // Vales endpoints
+  VALES: {
+    BASE: '/vales',
+    PENDING: '/vales/pending',
+    BY_DRIVER: (driverId: number) => `/vales/driver/${driverId}`,
+    BY_ID: (id: number) => `/vales/${id}`,
+    CREATE: '/vales',
+    ASSIGN: '/vales/assign',
+    DECIDE: (id: number) => `/vales/${id}/decide`,
   },
   
   // System/Reference data endpoints

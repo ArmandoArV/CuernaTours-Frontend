@@ -7,14 +7,14 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
-import { EyeRegular, ReceiptRegular } from "@fluentui/react-icons";
+import { EyeRegular, GasPumpRegular } from "@fluentui/react-icons";
 import { getStatusTextColor } from "@/app/Utils/statusUtils";
 
 interface Props {
   trip: any;
   animationIndex?: number;
   onClick: (trip: any) => void;
-  onAddExpense?: (trip: any) => void;
+  onAddVale?: (trip: any) => void;
 }
 
 const useStyles = makeStyles({
@@ -123,7 +123,7 @@ export default function DriverTripCard({
   trip,
   animationIndex = 0,
   onClick,
-  onAddExpense,
+  onAddVale,
 }: Props) {
   const styles = useStyles();
 
@@ -232,11 +232,11 @@ export default function DriverTripCard({
             className={styles.actionBtn}
             onClick={(e) => {
               e.stopPropagation();
-              onAddExpense?.(trip);
+              onAddVale?.(trip);
             }}
           >
-            <ReceiptRegular fontSize={16} />
-            Agregar gasto
+            <GasPumpRegular fontSize={16} />
+            Agregar vales
           </button>
         </div>
       </Card>

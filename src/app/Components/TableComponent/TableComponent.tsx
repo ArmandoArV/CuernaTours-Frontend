@@ -31,6 +31,7 @@ import {
   DismissRegular,
   WalletRegular,
   ArrowSyncRegular,
+  GasPumpRegular,
 } from "@fluentui/react-icons";
 
 import { Pagination } from "@/app/PaginationComponent/PaginationComponent";
@@ -38,6 +39,7 @@ import DetailsPanel from "@/app/Components/DetailsPanel/DetailsPanel";
 import AssignDriverModal from "@/app/Components/AssignDriverModal/AssignDriverModal";
 import DriverPaymentModal from "@/app/Components/DriverPaymentModal/DriverPaymentModal";
 import ClientPaymentModal from "@/app/Components/ClientPaymentModal/ClientPaymentModal";
+import AddValeModal from "@/app/Components/AddValeModal/AddValeModal";
 import { useUserRole } from "@/app/hooks/useUserRole";
 import { contractsService } from "@/services/api/contracts.service";
 import {
@@ -108,6 +110,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
     contractId: number | null;
     currentStatus?: string;
   }>({ open: false, contractId: null });
+
+  const [isValeModalOpen, setIsValeModalOpen] = useState(false);
+  const [valeRow, setValeRow] = useState<any | null>(null);
 
   const activePage =
     currentPage !== undefined ? currentPage : internalCurrentPage;
@@ -361,6 +366,20 @@ const TableComponent: React.FC<TableComponentProps> = ({
                           />
                         </Tooltip>
 
+                        {isChofer && (
+                          <Tooltip content="Agregar Vales" relationship="label">
+                            <Button
+                              appearance="subtle"
+                              icon={<GasPumpRegular />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setValeRow(row);
+                                setIsValeModalOpen(true);
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+
                         {canManage && (
                           <Menu>
                             <MenuTrigger disableButtonEnhancement>
@@ -530,6 +549,15 @@ const TableComponent: React.FC<TableComponentProps> = ({
         currentStatus={statusModal.currentStatus}
         onClose={() => setStatusModal({ open: false, contractId: null })}
         onConfirm={handleStatusConfirm}
+      />
+
+      <AddValeModal
+        isOpen={isValeModalOpen}
+        onClose={() => {
+          setIsValeModalOpen(false);
+          setValeRow(null);
+        }}
+        tripData={valeRow}
       />
     </div>
   );
