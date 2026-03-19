@@ -528,6 +528,12 @@ export default function CreateTripContent({
     log.debug("CreateTripContent - Context hydrated:", isHydrated);
 
     const checkOrderData = () => {
+      // In edit mode, trip data is fetched from the API — no need for order context
+      if (isEdit) {
+        log.debug("Edit mode: skipping order data validation");
+        return;
+      }
+
       if (!isHydrated) {
         log.debug("Skipping order data validation until context hydration finishes");
         return;

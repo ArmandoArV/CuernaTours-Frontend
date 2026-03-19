@@ -274,8 +274,6 @@ export default function CreateOrderContent({
     if (isEdit && contractId) {
       try {
         // Construct update payload
-        // Note: UpdateContractRequest only supports specific fields from the Contract table.
-        // Commission updates are not currently supported by the single update endpoint.
         const updatePayload: any = {
           payment_type_id: parseInt(formData.tipoPago),
           IVA: formData.aplicaIva === "Si",
@@ -291,10 +289,14 @@ export default function CreateOrderContent({
 
         // TODO: Implement commission update if backend supports it in the future
 
-        showSuccessAlert("Éxito", "Servicio actualizado correctamente");
+        showSuccessAlert("Éxito", "Datos del contrato actualizados. Ahora puede editar el viaje.");
 
-        // Navigate back to contract details
-        router.push(`/dashboard/order/${contractId}`);
+        // Persist order data in context so the trip edit page can access it
+        setOrderData(formData);
+        saveToLocalStorage(formData, tripData);
+
+        // Navigate to edit trip page
+        router.push(`/dashboard/order/${contractId}/editTrip`);
       } catch (error) {
         log.error("Error updating contract:", error);
         showErrorAlert("Error", "Error al actualizar el contrato");
