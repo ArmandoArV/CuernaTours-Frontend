@@ -14,7 +14,7 @@
     "@fluentui/react-datepicker-compat": "^0.6.17",
     "@fluentui/react-icons": "^2.0.311",
     "framer-motion": "^12.34.3",
-    "next": "15.5.9",
+    "next": "^16.1.7",
     "react": "19.1.0",
     "react-country-flag": "^3.1.0",
     "react-dom": "19.1.0",

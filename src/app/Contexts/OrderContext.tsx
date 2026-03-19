@@ -89,10 +89,14 @@ interface TripFormData {
 interface OrderContextType {
   orderData: OrderFormData;
   tripData: TripFormData;
+  isHydrated: boolean;
   setOrderData: (data: OrderFormData) => void;
   setTripData: (data: TripFormData) => void;
   clearData: () => void;
-  saveToLocalStorage: () => void;
+  saveToLocalStorage: (
+    orderDataOverride?: OrderFormData,
+    tripDataOverride?: TripFormData,
+  ) => void;
   loadFromLocalStorage: () => void;
 }
 
@@ -173,16 +177,20 @@ const OrderContext = createContext<OrderContextType | undefined>(undefined);
 export function OrderProvider({ children }: { children: ReactNode }) {
   const [orderData, setOrderData] = useState<OrderFormData>(defaultOrderData);
   const [tripData, setTripData] = useState<TripFormData>(defaultTripData);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Load data from localStorage on mount
   useEffect(() => {
     loadFromLocalStorage();
   }, []);
 
-  const saveToLocalStorage = () => {
+  const saveToLocalStorage = (
+    orderDataOverride?: OrderFormData,
+    tripDataOverride?: TripFormData,
+  ) => {
     const data = {
-      orderData,
-      tripData,
+      orderData: orderDataOverride ?? orderData,
+      tripData: tripDataOverride ?? tripData,
       timestamp: Date.now(),
     };
     localStorage.setItem("orderFormData", JSON.stringify(data));
@@ -211,6 +219,8 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       log.error("Error loading data from localStorage:", error);
+    } finally {
+      setIsHydrated(true);
     }
   };
 
@@ -235,6 +245,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const value: OrderContextType = {
     orderData,
     tripData,
+    isHydrated,
     setOrderData,
     setTripData,
     clearData,

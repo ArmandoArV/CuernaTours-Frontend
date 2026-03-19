@@ -54,7 +54,8 @@ export default function CreateTripContent({
   contractId,
 }: CreateTripContentProps) {
   const isEdit = !!contractId;
-  const { orderData, tripData, setTripData, clearData } = useOrderContext();
+  const { orderData, tripData, isHydrated, setTripData, clearData } =
+    useOrderContext();
   const router = useRouter();
   const { canAssignResources } = useUserRole();
 
@@ -524,16 +525,34 @@ export default function CreateTripContent({
   useEffect(() => {
     log.debug("CreateTripContent - OrderData:", orderData);
     log.debug("CreateTripContent - TripData:", tripData);
+    log.debug("CreateTripContent - Context hydrated:", isHydrated);
 
     const checkOrderData = () => {
+      if (!isHydrated) {
+        log.debug("Skipping order data validation until context hydration finishes");
+        return;
+      }
+
       const localStorageData =
         typeof window !== "undefined"
-          ? localStorage.getItem("orderData")
+          ? localStorage.getItem("orderFormData")
           : null;
+      const parsedLocalStorageData = localStorageData
+        ? JSON.parse(localStorageData)
+        : null;
+      const persistedOrderData = parsedLocalStorageData?.orderData;
 
       const hasOrderData =
-        orderData &&
-        (orderData.empresa || orderData.nombreContacto || orderData.costoViaje);
+        !!(
+          (orderData &&
+            (orderData.empresa ||
+              orderData.nombreContacto ||
+              orderData.costoViaje)) ||
+          (persistedOrderData &&
+            (persistedOrderData.empresa ||
+              persistedOrderData.nombreContacto ||
+              persistedOrderData.costoViaje))
+        );
 
       if (!hasOrderData) {
         log.debug("No order data found, redirecting...");
@@ -562,7 +581,7 @@ export default function CreateTripContent({
     }));
 
     return () => clearTimeout(timeoutId);
-  }, [orderData, tripData, router]);
+  }, [orderData, tripData, isHydrated, router]);
 
   // Debug effect to monitor form data changes
   useEffect(() => {

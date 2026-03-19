@@ -30,6 +30,30 @@ export interface ContractWithDetails extends Contract {
   
   // Associated trips
   trips?: any[];
+
+  // Flat commission fields returned by details endpoints
+  commission_type?: 'percentage' | 'arranged' | null;
+  commission_amount?: number | null;
+  commission_arranged_deal?: string | null;
+  commission_establishment?: string | null;
+  commission_status?: 'paid' | 'pending' | null;
+  commission_paid_date?: string | null;
+  commission_paid_by?: number | null;
+
+  // Nested commission object (also returned by details endpoints)
+  commission?: {
+    commission_id: number;
+    type: 'percentage' | 'arranged';
+    amount?: number | null;
+    arranged_deal?: string | null;
+    establishment?: string | null;
+    status?: 'paid' | 'pending';
+    paid_date?: string | null;
+    paid_by?: number | null;
+  } | null;
+
+  // Payments
+  payments?: any[];
 }
 
 export interface CreateContractRequest {

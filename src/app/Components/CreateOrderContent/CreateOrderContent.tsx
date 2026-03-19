@@ -41,7 +41,8 @@ export default function CreateOrderContent({
   contractId,
 }: CreateOrderContentProps) {
   const isEdit = !!contractId;
-  const { orderData, setOrderData, clearData } = useOrderContext();
+  const { orderData, tripData, setOrderData, clearData, saveToLocalStorage } =
+    useOrderContext();
   const router = useRouter();
 
   const [prefillableData, setPrefillableData] =
@@ -145,6 +146,42 @@ export default function CreateOrderContent({
           comentarios: contractData.observations || "",
         };
 
+        // Pre-fill commission fields from API response
+        const commission = contractData.commission;
+        if (contractData.commission_id && commission) {
+          updatedFormData.llevaComision = "Si";
+          updatedFormData.nombreRecibeComision =
+            commission.establishment || "";
+          updatedFormData.tipoComision =
+            commission.type === "percentage" ? "Porcentaje" : "Arreglada";
+          if (commission.type === "percentage" && commission.amount != null) {
+            updatedFormData.porcentaje = commission.amount.toString();
+          }
+          if (commission.type === "arranged") {
+            updatedFormData.montoArreglado =
+              commission.amount != null ? commission.amount.toString() : "";
+          }
+        } else {
+          updatedFormData.llevaComision = "No";
+        }
+
+        log.group(`Edit order debug for contract ${contractId}`, () => {
+          log.debug("Raw contract details response:", contractData);
+          log.debug("Commission data received from API:", {
+            commissionId: contractData.commission_id ?? null,
+            commission: contractData.commission ?? null,
+          });
+          log.debug("Form prefill currently mapped from contract:", updatedFormData);
+          log.debug("Commission-related fields currently mapped into form:", {
+            llevaComision: updatedFormData.llevaComision ?? "(not mapped)",
+            nombreRecibeComision:
+              updatedFormData.nombreRecibeComision ?? "(not mapped)",
+            tipoComision: updatedFormData.tipoComision ?? "(not mapped)",
+            porcentaje: updatedFormData.porcentaje ?? "(not mapped)",
+            montoArreglado: updatedFormData.montoArreglado ?? "(not mapped)",
+          });
+        });
+
         // Fetch client details to get contact information
         if (contractData.client_id) {
           try {
@@ -174,6 +211,16 @@ export default function CreateOrderContent({
           ...prev,
           ...updatedFormData,
         }));
+
+        log.debug("Edit order form data after applying contract prefill:", {
+          contractId,
+          llevaComision: updatedFormData.llevaComision ?? "(not mapped)",
+          nombreRecibeComision:
+            updatedFormData.nombreRecibeComision ?? "(not mapped)",
+          tipoComision: updatedFormData.tipoComision ?? "(not mapped)",
+          porcentaje: updatedFormData.porcentaje ?? "(not mapped)",
+          montoArreglado: updatedFormData.montoArreglado ?? "(not mapped)",
+        });
 
         // Also update context with the data
         setOrderData({
@@ -253,7 +300,11 @@ export default function CreateOrderContent({
         showErrorAlert("Error", "Error al actualizar el contrato");
       }
     } else {
+      log.debug("Persisting order draft before navigating to create trip", {
+        formData,
+      });
       setOrderData(formData);
+      saveToLocalStorage(formData, tripData);
       router.push("/dashboard/createOrder/createTrip");
     }
   };
@@ -436,6 +487,7 @@ export default function CreateOrderContent({
           <div className={styles.placeSection}>
             <SearchableSelectComponent
               value={formData.empresa}
+              selectedLabel={formData.empresaNombre}
               onChange={handleClientSelect}
               onSearch={handleClientSearch}
               onCreate={handleCreateClient}
