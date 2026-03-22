@@ -33,8 +33,10 @@ import {
   MoneyRegular,
   FilterRegular,
   SearchRegular,
+  AddFilled,
 } from "@fluentui/react-icons";
 import { valesService, ValeWithDetails, ValeStatus, ValePaymentType } from "@/services/api/vales.service";
+import { referenceService, DriverReference } from "@/services/api/reference.service";
 import { showSuccessAlert, showErrorAlert } from "@/app/Utils/AlertUtil";
 import { useIsMobile } from "@/app/hooks/useIsMobile";
 import LoadingComponent from "@/app/Components/LoadingComponent/LoadingComponent";
@@ -285,6 +287,17 @@ export default function ValesContent() {
   const [decisionNotes, setDecisionNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Assign vale dialog state
+  const [assignDialog, setAssignDialog] = useState(false);
+  const [drivers, setDrivers] = useState<DriverReference[]>([]);
+  const [assignForm, setAssignForm] = useState({
+    driver_id: 0,
+    amount: "",
+    payment_type: "Efectivo" as ValePaymentType,
+    decision_notes: "",
+  });
+  const [assignSaving, setAssignSaving] = useState(false);
+
   const fetchVales = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -367,6 +380,43 @@ export default function ValesContent() {
     }
   };
 
+  const openAssignDialog = async () => {
+    setAssignForm({ driver_id: 0, amount: "", payment_type: "Efectivo", decision_notes: "" });
+    setAssignDialog(true);
+    try {
+      const driverList = await referenceService.getDrivers();
+      setDrivers(driverList);
+    } catch (err: any) {
+      log.error("Error fetching drivers:", err);
+    }
+  };
+
+  const handleAssignVale = async () => {
+    const amount = parseFloat(assignForm.amount);
+    if (!assignForm.driver_id || isNaN(amount) || amount <= 0) {
+      showErrorAlert("Campos requeridos", "Selecciona un chofer e ingresa un monto válido");
+      return;
+    }
+    setAssignSaving(true);
+    try {
+      await valesService.assignVale({
+        driver_id: assignForm.driver_id,
+        amount,
+        payment_type: assignForm.payment_type,
+        decision_notes: assignForm.decision_notes.trim() || undefined,
+      });
+      showSuccessAlert("Vale asignado", "El vale fue asignado correctamente al chofer", () => {
+        setAssignDialog(false);
+        fetchVales();
+      });
+    } catch (err: any) {
+      log.error("Error assigning vale:", err);
+      showErrorAlert("Error", err?.message || "No se pudo asignar el vale");
+    } finally {
+      setAssignSaving(false);
+    }
+  };
+
   if (loading) {
     return <LoadingComponent message="Cargando vales..." />;
   }
@@ -385,13 +435,23 @@ export default function ValesContent() {
             {vales.length} {vales.length === 1 ? "vale registrado" : "vales registrados"}
           </Text>
         </div>
-        <Button
-          appearance="subtle"
-          icon={<ArrowClockwiseRegular />}
-          onClick={fetchVales}
-        >
-          Actualizar
-        </Button>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          <Button
+            appearance="subtle"
+            icon={<ArrowClockwiseRegular />}
+            onClick={fetchVales}
+          >
+            Actualizar
+          </Button>
+          <Button
+            appearance="primary"
+            icon={<AddFilled />}
+            onClick={openAssignDialog}
+            style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47" }}
+          >
+            Asignar Vale
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -672,6 +732,116 @@ export default function ValesContent() {
                   {saving ? "Procesando..." : "Confirmar Rechazo"}
                 </Button>
               )}
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
+
+      {/* Assign Vale Dialog */}
+      <Dialog
+        open={assignDialog}
+        onOpenChange={(_, data) => {
+          if (!data.open) setAssignDialog(false);
+        }}
+      >
+        <DialogSurface className={styles.dialogSurface}>
+          <DialogBody>
+            <DialogTitle
+              action={
+                <Button
+                  appearance="subtle"
+                  aria-label="cerrar"
+                  icon={<Dismiss24Regular />}
+                  onClick={() => setAssignDialog(false)}
+                />
+              }
+            >
+              Asignar Vale a Chofer
+            </DialogTitle>
+
+            <DialogContent>
+              <div className={styles.dialogForm}>
+                <Field label="Chofer" required>
+                  <Dropdown
+                    placeholder="Selecciona un chofer"
+                    value={
+                      drivers.find((d) => d.id === assignForm.driver_id)
+                        ? (drivers.find((d) => d.id === assignForm.driver_id)?.display_name ||
+                           `${drivers.find((d) => d.id === assignForm.driver_id)?.name} ${drivers.find((d) => d.id === assignForm.driver_id)?.first_lastname}`)
+                        : ""
+                    }
+                    onOptionSelect={(_, d) =>
+                      setAssignForm((prev) => ({ ...prev, driver_id: Number(d.optionValue) || 0 }))
+                    }
+                  >
+                    {drivers.map((d) => (
+                      <Option key={d.id} value={String(d.id)}>
+                        {d.display_name || `${d.name} ${d.first_lastname}`}
+                      </Option>
+                    ))}
+                  </Dropdown>
+                </Field>
+
+                <Field label="Monto" required>
+                  <Input
+                    type="number"
+                    contentBefore={<Text>$</Text>}
+                    value={assignForm.amount}
+                    onChange={(_, d) =>
+                      setAssignForm((prev) => ({ ...prev, amount: d.value }))
+                    }
+                    placeholder="0.00"
+                    min={0}
+                    step={0.01}
+                  />
+                </Field>
+
+                <Field label="Tipo de pago" required>
+                  <Dropdown
+                    value={assignForm.payment_type}
+                    onOptionSelect={(_, d) =>
+                      setAssignForm((prev) => ({
+                        ...prev,
+                        payment_type: (d.optionValue as ValePaymentType) || "Efectivo",
+                      }))
+                    }
+                  >
+                    <Option value="Efectivo">Efectivo</Option>
+                    <Option value="Transferencia">Transferencia</Option>
+                  </Dropdown>
+                </Field>
+
+                <Field label="Notas (opcional)">
+                  <Textarea
+                    value={assignForm.decision_notes}
+                    onChange={(_, d) =>
+                      setAssignForm((prev) => ({ ...prev, decision_notes: d.value }))
+                    }
+                    placeholder="Notas adicionales..."
+                    resize="vertical"
+                    rows={3}
+                  />
+                </Field>
+              </div>
+            </DialogContent>
+
+            <DialogActions>
+              <Button
+                appearance="secondary"
+                onClick={() => setAssignDialog(false)}
+                disabled={assignSaving}
+              >
+                Cancelar
+              </Button>
+              <Button
+                appearance="primary"
+                onClick={handleAssignVale}
+                disabled={assignSaving || !assignForm.driver_id || !assignForm.amount}
+                icon={assignSaving ? <Spinner size="tiny" /> : <CheckmarkCircleRegular />}
+                style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47" }}
+              >
+                {assignSaving ? "Asignando..." : "Asignar Vale"}
+              </Button>
             </DialogActions>
           </DialogBody>
         </DialogSurface>
