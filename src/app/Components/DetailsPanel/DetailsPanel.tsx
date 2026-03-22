@@ -21,11 +21,8 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
     return <div className={styles.error}>Error al cargar datos</div>;
 
   const contract = new Contract(data as ContractData);
-  const phone =
-    (data as any)?.phone ?? (data as any)?.contact_phone ?? "No hay número";
-
-  const email =
-    (data as any)?.email ?? (data as any)?.contact_email ?? "No hay correo";
+  const phone = contract.contactPhone || "—";
+  const email = contract.contactEmail || "—";
   return (
     <div className={styles.container}>
       {/* HEADER SECTION */}
@@ -90,7 +87,7 @@ const DetailsPanel: React.FC<DetailsPanelProps> = ({
           </div>
           <div className={styles.infoGroup}>
             <label>Coordinador</label>
-            <span>{contract.coordinatorName || "Nombre coordinador"}</span>
+            <span>{contract.coordinatorName || "—"}</span>
           </div>
           <div className={styles.infoGroup}>
             <label>Tipo de pago</label>

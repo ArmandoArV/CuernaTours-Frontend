@@ -7,7 +7,8 @@ import {
   CartFilled,
   HistoryFilled,
   PersonCircleFilled,
-  MoneyFilled
+  MoneyFilled,
+  ReceiptMoneyFilled
 } from "@fluentui/react-icons";
 import styles from "../DashboardLayout/DashboardLayout.module.css";
 
@@ -22,6 +23,7 @@ const DriverDashboardLayout: React.FC<DriverDashboardLayoutProps> = ({
     { title: "Mis Viajes", link: "/chofer/dashboard", icon: <CartFilled /> },
     { title: "Histórico", link: "/chofer/historico", icon: <HistoryFilled /> },
     { title: "Gastos", link: "/chofer/gastos", icon: <MoneyFilled /> },
+    { title: "Vales", link: "/chofer/vales", icon: <ReceiptMoneyFilled /> },
     { title: "Perfil", link: "/profile", icon: <PersonCircleFilled /> },
   ];
 

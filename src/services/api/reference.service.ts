@@ -90,6 +90,7 @@ export interface DriverReference {
   user_id?: number;
   name?: string;
   first_lastname?: string;
+  display_name?: string;
   phone?: string;
   country_code?: string;
 }
@@ -359,9 +360,8 @@ class ReferenceService {
   transformDriversForSelect(drivers: DriverReference[]): Array<{ value: string; label: string }> {
     return drivers.map(driver => ({
       value: (driver.user_id || driver.id).toString(),
-      label: driver.name 
-        ? `${driver.name} ${driver.first_lastname || ''}`.trim()
-        : driver.nombre,
+      label: driver.display_name
+        || (driver.name ? `${driver.name} ${driver.first_lastname || ''}`.trim() : driver.nombre),
     }));
   }
 

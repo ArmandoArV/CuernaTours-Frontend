@@ -33,6 +33,8 @@ export interface UserRoleInfo {
   canCreateOrders: boolean;
   /** True if user can assign drivers and vehicles (Maestro, Admin, Oficina) */
   canAssignResources: boolean;
+  /** True if user can assign specific drivers to units (Maestro, Admin) */
+  canAssignDrivers: boolean;
   /** True if user can manage payments (Maestro, Admin) */
   canManagePayments: boolean;
   /** True if user can view all contracts (Maestro, Admin, Oficina) */
@@ -99,6 +101,7 @@ export function useUserRole(): UserRoleInfo {
       hasFullAccess: isMaestro || isAdmin,
       canCreateOrders: isMaestro || isAdmin || isOficina,
       canAssignResources: isMaestro || isAdmin || isOficina,
+      canAssignDrivers: isMaestro || isAdmin,
       canManagePayments: isMaestro || isAdmin,
       canViewAllContracts: isMaestro || isAdmin || isOficina,
       isDriverOnly: isChofer,

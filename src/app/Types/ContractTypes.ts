@@ -49,6 +49,13 @@ export interface ContractData {
   creator_name: string;
   creator_lastname: string;
   trips: TripData[];
+  client_contact?: {
+    name: string;
+    country_code?: string;
+    phone: string;
+    email?: string;
+    is_whatsapp_available?: boolean;
+  } | null;
 }
 
 export interface ContractResponse {
@@ -139,6 +146,18 @@ export class Contract {
     };
   }
 
+  get contactPhone(): string {
+    return this._data.client_contact?.phone || "";
+  }
+
+  get contactEmail(): string {
+    return this._data.client_contact?.email || "";
+  }
+
+  get contactName(): string {
+    return this._data.client_contact?.name || "";
+  }
+
   // Status and payment information getters
   get contractStatusName(): string {
     return this._data.contract_status_name;
@@ -164,7 +183,10 @@ export class Contract {
 
   // Coordinator information getters
   get coordinatorName(): string {
-    return `${this._data.coordinator_name} ${this._data.coordinator_lastname}`;
+    const first = this._data.coordinator_name;
+    const last = this._data.coordinator_lastname;
+    const full = [first, last].filter(Boolean).join(" ");
+    return full || "";
   }
 
   get coordinatorFirstName(): string {

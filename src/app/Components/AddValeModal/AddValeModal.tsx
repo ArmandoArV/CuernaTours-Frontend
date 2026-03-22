@@ -167,21 +167,23 @@ const AddValeModal: React.FC<AddValeModalProps> = ({
 
           <DialogContent>
             <div className={styles.form}>
-              {/* Trip context */}
-              <div className={styles.tripInfo}>
-                <div className={styles.tripInfoRow}>
-                  <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-                    Viaje
-                  </Text>
-                  <Text weight="semibold">#{tripId}</Text>
+              {/* Trip context — only shown when launched from a trip */}
+              {tripData && (
+                <div className={styles.tripInfo}>
+                  <div className={styles.tripInfoRow}>
+                    <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                      Viaje
+                    </Text>
+                    <Text weight="semibold">#{tripId}</Text>
+                  </div>
+                  <div className={styles.tripInfoRow}>
+                    <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                      Cliente
+                    </Text>
+                    <Text>{cliente}</Text>
+                  </div>
                 </div>
-                <div className={styles.tripInfoRow}>
-                  <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-                    Cliente
-                  </Text>
-                  <Text>{cliente}</Text>
-                </div>
-              </div>
+              )}
 
               {/* Monto */}
               <Field

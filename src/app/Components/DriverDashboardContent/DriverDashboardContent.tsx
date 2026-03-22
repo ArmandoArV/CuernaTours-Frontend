@@ -6,7 +6,7 @@ import LoadingComponent from "@/app/Components/LoadingComponent/LoadingComponent
 import DriverTripCard from "@/app/Components/DriverTripCard/DriverTripCard";
 import ErrorBlock from "@/app/Components/ErrorBlock/ErrorBlock";
 import FilterComponent from "../FilterComponent/FilterComponent";
-import AddValeModal from "@/app/Components/AddValeModal/AddValeModal";
+
 import { FilterConfig, FilterPresets } from "../FilterComponent";
 import { useDriverId } from "@/app/hooks/useDriverId";
 import { useDriverTrips } from "@/app/hooks/useDriverTrips";
@@ -24,17 +24,8 @@ export default function DriverDashboardContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [dateRange, setDateRange] = useState<{ start?: Date; end?: Date }>({});
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
-  const [isValeModalOpen, setIsValeModalOpen] = useState(false);
-  const [valeTrip, setValeTrip] = useState<any | null>(null);
-
   const handleRowClick = (row: any) => {
     log.info("Row clicked:", row);
-  };
-
-  const handleAddVale = (row: any) => {
-    log.info("Add vale clicked:", row);
-    setValeTrip(row);
-    setIsValeModalOpen(true);
   };
 
   const groupByDate = (row: any): string => {
@@ -218,7 +209,6 @@ export default function DriverDashboardContent() {
                     trip={trip}
                     animationIndex={idx}
                     onClick={handleRowClick}
-                    onAddVale={handleAddVale}
                   />
                 </div>
               );
@@ -253,15 +243,6 @@ export default function DriverDashboardContent() {
         />
       )}
 
-      <AddValeModal
-        isOpen={isValeModalOpen}
-        onClose={() => {
-          setIsValeModalOpen(false);
-          setValeTrip(null);
-        }}
-        tripData={valeTrip}
-        onValeCreated={refresh}
-      />
     </div>
   );
 }

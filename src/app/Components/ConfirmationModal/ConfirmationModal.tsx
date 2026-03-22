@@ -1,6 +1,15 @@
 "use client";
 import React, { useState } from "react";
 import styles from "./ConfirmationModal.module.css";
+import {
+  Dialog,
+  DialogSurface,
+  DialogBody,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  makeStyles,
+} from "@fluentui/react-components";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import RouteTimeline, {
   RouteLocation,
@@ -8,6 +17,16 @@ import RouteTimeline, {
 import type { Parada } from "@/app/hooks/useParadas";
 
 import type { UnitAssignment } from "@/app/hooks/useUnidades";
+
+const useDialogStyles = makeStyles({
+  surface: {
+    maxWidth: "650px",
+    width: "100%",
+    maxHeight: "85vh",
+    overflowY: "auto",
+    padding: "0",
+  },
+});
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -31,8 +50,7 @@ export default function ConfirmationModal({
   lugares = [],
 }: ConfirmationModalProps) {
   const [sendNotification, setSendNotification] = useState(true);
-
-  if (!isOpen) return null;
+  const dialogStyles = useDialogStyles();
 
   const buildAddressLabel = (prefix: "origen" | "destino", defaultLabel: string) => {
     // Prefer stored display name (set when place was selected)
@@ -85,159 +103,161 @@ export default function ConfirmationModal({
     },
   ];
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modal}>
-        <button className={styles.closeButton} onClick={onClose}>
-          ×
-        </button>
+    <Dialog open={isOpen} onOpenChange={(_, data) => { if (!data.open) onClose(); }}>
+      <DialogSurface className={dialogStyles.surface}>
+        <DialogBody>
+          <DialogTitle>Resumen de la orden</DialogTitle>
 
-        <h2 className={styles.modalTitle}>Resumen de la orden</h2>
+          <DialogContent>
+            <div className={styles.modalContent}>
+              <div className={styles.topSection}>
+                {/* LEFT: CLIENT INFO */}
+                <div className={styles.leftColumn}>
+                  <div className={styles.infoItem}>
+                    <div className={styles.summaryLabel}>Empresa/Cliente</div>
+                    <div className={styles.summaryValue}>
+                      {orderData?.empresaNombre ||
+                        orderData?.empresa ||
+                        "Cliente no seleccionado"}
+                    </div>
+                  </div>
 
-        <div className={styles.modalContent}>
-          <div className={styles.topSection}>
-            {/* LEFT: CLIENT INFO */}
-            <div className={styles.leftColumn}>
-              <div className={styles.infoItem}>
-                <div className={styles.summaryLabel}>Empresa/Cliente</div>
-                <div className={styles.summaryValue}>
-                  {orderData?.empresaNombre ||
-                    orderData?.empresa ||
-                    "Cliente no seleccionado"}
+                  <div className={styles.infoItem}>
+                    <div className={styles.summaryLabel}>Nombre del contacto</div>
+                    <div className={styles.summaryValue}>
+                      {orderData?.nombreContacto || "Nombre del contacto"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* RIGHT: COST */}
+                <div className={styles.rightColumn}>
+                  <div className={styles.summaryLabel}>Costo del viaje</div>
+                  <div className={styles.costValue}>
+                    ${orderData?.costoViaje || "0000"}
+                  </div>
                 </div>
               </div>
 
-              <div className={styles.infoItem}>
-                <div className={styles.summaryLabel}>Nombre del contacto</div>
-                <div className={styles.summaryValue}>
-                  {orderData?.nombreContacto || "Nombre del contacto"}
+              <div className={styles.middleSection}>
+                {/* LEFT: TRIP DETAILS */}
+                <div className={styles.leftColumn}>
+                  <div className={styles.infoItem}>
+                    <div className={styles.summaryLabel}>No. pasajeros</div>
+                    <div className={styles.summaryValue}>
+                      {tripFormData?.idaPasajeros ||
+                        tripFormData?.numeroPasajeros ||
+                        "0"}
+                    </div>
+                  </div>
+
+                  <div className={styles.infoItem}>
+                    <div className={styles.summaryLabel}>No. unidades</div>
+                    <div className={styles.summaryValue}>
+                      {unitAssignments.length || "0"}
+                    </div>
+                  </div>
+
+                  <div className={styles.infoItem}>
+                    <div className={styles.summaryLabel}>Chofer Principal</div>
+                    <div className={styles.summaryValue}>
+                      {orderData?.coordinadorNombre || "Sin asignar"}
+                    </div>
+                  </div>
+
+                  <div className={styles.infoItem}>
+                    <div className={styles.summaryLabel}>Fecha</div>
+                    <div className={styles.summaryValue}>
+                      {tripFormData?.idaFecha
+                        ? `${tripFormData.idaFecha}, ${tripFormData.idaHora?.padStart(
+                            2,
+                            "0",
+                          )}:${tripFormData.idaMinutos?.padStart(2, "0")}:00 ${
+                            tripFormData.idaAmPm || ""
+                          }`
+                        : "00/00/0000, 00:00:00"}
+                      <br />
+                      {tripFormData?.tipoViaje === "redondo"
+                        ? tripFormData.regresoFecha
+                          ? `${
+                              tripFormData.regresoFecha
+                            }, ${tripFormData.regresoHora?.padStart(
+                              2,
+                              "0",
+                            )}:${tripFormData.regresoMinutos?.padStart(
+                              2,
+                              "0",
+                            )}:00 ${tripFormData.regresoAmPm || ""}`
+                          : "Sin fecha de regreso"
+                        : "SOLO IDA"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* RIGHT: ROUTE BUBBLES */}
+                <div className={styles.rightColumn}>
+                  <RouteTimeline locations={routeLocations} />
+                </div>
+              </div>
+
+              {/* NOTIFICATIONS / CHECKBOXES */}
+              <div className={styles.summarySection}>
+                <div className={styles.radioBlock}>
+                  <span className={styles.radioTitle}>
+                    Mandar notificación al cliente{" "}
+                    <strong style={{ color: "red" }}>*</strong>
+                  </span>
+                  <div className={styles.radioOptions}>
+                    <label className={styles.radioOption}>
+                      <input
+                        type="radio"
+                        name="notif"
+                        checked={sendNotification === true}
+                        onChange={() => setSendNotification(true)}
+                      />
+                      <span>Sí</span>
+                    </label>
+                    <label className={styles.radioOption}>
+                      <input
+                        type="radio"
+                        name="notif"
+                        checked={sendNotification === false}
+                        onChange={() => setSendNotification(false)}
+                      />
+                      <span>No</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className={styles.checkboxRow}>
+                  <label className={styles.checkboxLabel}>
+                    <input type="checkbox" />
+                    <span>Guardar como viaje frecuente</span>
+                  </label>
                 </div>
               </div>
             </div>
+          </DialogContent>
 
-            {/* RIGHT: COST */}
-            <div className={styles.rightColumn}>
-              <div className={styles.summaryLabel}>Costo del viaje</div>
-              <div className={styles.costValue}>
-                ${orderData?.costoViaje || "0000"}
-              </div>
+          {/* BUTTONS */}
+          <DialogActions>
+            <div className={styles.modalActions}>
+              <ButtonComponent
+                type="button"
+                onClick={onClose}
+                text="Editar"
+                className={`${styles.button} ${styles.editButton}`}
+              />
+              <ButtonComponent
+                type="button"
+                onClick={() => onConfirm(sendNotification)}
+                text="Confirmar"
+                className={`${styles.button} ${styles.confirmButton}`}
+              />
             </div>
-          </div>
-
-          <div className={styles.middleSection}>
-            {/* LEFT: TRIP DETAILS */}
-            <div className={styles.leftColumn}>
-              <div className={styles.infoItem}>
-                <div className={styles.summaryLabel}>No. pasajeros</div>
-                <div className={styles.summaryValue}>
-                  {tripFormData?.idaPasajeros ||
-                    tripFormData?.numeroPasajeros ||
-                    "0"}
-                </div>
-              </div>
-
-              <div className={styles.infoItem}>
-                <div className={styles.summaryLabel}>No. unidades</div>
-                <div className={styles.summaryValue}>
-                  {unitAssignments.length || "0"}
-                </div>
-              </div>
-
-              <div className={styles.infoItem}>
-                <div className={styles.summaryLabel}>Chofer Principal</div>
-                <div className={styles.summaryValue}>
-                  {orderData?.coordinadorNombre || "Sin asignar"}
-                </div>
-              </div>
-
-              <div className={styles.infoItem}>
-                <div className={styles.summaryLabel}>Fecha</div>
-                <div className={styles.summaryValue}>
-                  {tripFormData?.idaFecha
-                    ? `${tripFormData.idaFecha}, ${tripFormData.idaHora?.padStart(
-                        2,
-                        "0",
-                      )}:${tripFormData.idaMinutos?.padStart(2, "0")}:00 ${
-                        tripFormData.idaAmPm || ""
-                      }`
-                    : "00/00/0000, 00:00:00"}
-                  <br />
-                  {tripFormData?.tipoViaje === "redondo"
-                    ? tripFormData.regresoFecha
-                      ? `${
-                          tripFormData.regresoFecha
-                        }, ${tripFormData.regresoHora?.padStart(
-                          2,
-                          "0",
-                        )}:${tripFormData.regresoMinutos?.padStart(
-                          2,
-                          "0",
-                        )}:00 ${tripFormData.regresoAmPm || ""}`
-                      : "Sin fecha de regreso"
-                    : "SOLO IDA"}
-                </div>
-              </div>
-            </div>
-
-            {/* RIGHT: ROUTE BUBBLES */}
-            <div className={styles.rightColumn}>
-              <RouteTimeline locations={routeLocations} />
-            </div>
-          </div>
-
-          {/* NOTIFICATIONS / CHECKBOXES */}
-          <div className={styles.summarySection}>
-            <div className={styles.radioBlock}>
-              <span className={styles.radioTitle}>
-                Mandar notificación al cliente{" "}
-                <strong style={{ color: "red" }}>*</strong>
-              </span>
-              <div className={styles.radioOptions}>
-                <label className={styles.radioOption}>
-                  <input
-                    type="radio"
-                    name="notif"
-                    checked={sendNotification === true}
-                    onChange={() => setSendNotification(true)}
-                  />
-                  <span>Sí</span>
-                </label>
-                <label className={styles.radioOption}>
-                  <input
-                    type="radio"
-                    name="notif"
-                    checked={sendNotification === false}
-                    onChange={() => setSendNotification(false)}
-                  />
-                  <span>No</span>
-                </label>
-              </div>
-            </div>
-
-            <div className={styles.checkboxRow}>
-              <label className={styles.checkboxLabel}>
-                <input type="checkbox" />
-                <span>Guardar como viaje frecuente</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* BUTTONS */}
-        <div className={styles.modalActions}>
-          <ButtonComponent
-            type="button"
-            onClick={onClose}
-            text="Editar"
-            className={`${styles.button} ${styles.editButton}`}
-          />
-          <ButtonComponent
-            type="button"
-            onClick={() => onConfirm(sendNotification)}
-            text="Confirmar"
-            className={`${styles.button} ${styles.confirmButton}`}
-          />
-        </div>
-      </div>
-    </div>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
   );
 }

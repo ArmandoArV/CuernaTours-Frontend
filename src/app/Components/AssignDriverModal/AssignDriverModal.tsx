@@ -557,7 +557,7 @@ interface UnitCardProps {
 // ── Field normalizers (handles both old Spanish keys and new English keys) ──
 const driverKey = (d: DriverReference) => (d.user_id ?? d.id)?.toString() ?? "";
 const driverLabel = (d: DriverReference) =>
-  d.name ? `${d.name} ${d.first_lastname ?? ""}`.trim() : (d.nombre ?? "—");
+  d.display_name || (d.name ? `${d.name} ${d.first_lastname ?? ""}`.trim() : (d.nombre ?? "—"));
 
 const vehicleKey = (v: VehicleReference) => (v.vehicle_id ?? v.id)?.toString() ?? "";
 const vehicleLabel = (v: VehicleReference) => {

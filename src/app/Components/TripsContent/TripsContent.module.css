@@ -11,6 +11,11 @@
   margin-bottom: 2rem;
 }
 
+.actionsMenuButton {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .backButton {
   background-color: #f3f2f1;
   color: #333;

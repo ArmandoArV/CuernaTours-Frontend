@@ -57,7 +57,7 @@ export default function CreateTripContent({
   const { orderData, tripData, isHydrated, setTripData, clearData } =
     useOrderContext();
   const router = useRouter();
-  const { canAssignResources } = useUserRole();
+  const { canAssignResources, canAssignDrivers } = useUserRole();
 
   // Loading state for trip data
   const [isLoadingTrip, setIsLoadingTrip] = useState(false);
@@ -1389,7 +1389,7 @@ export default function CreateTripContent({
                 />
               ))}
 
-              {unitAssignments.length > 0 && (
+              {canAssignDrivers && unitAssignments.length > 0 && (
                 <>
                   <h3 className={styles.subsectionTitle}>Asignación de Unidades</h3>
 
