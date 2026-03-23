@@ -11,6 +11,8 @@ import { FilterConfig, FilterPresets } from "../FilterComponent";
 import { useDriverId } from "@/app/hooks/useDriverId";
 import { useDriverTrips } from "@/app/hooks/useDriverTrips";
 import { useIsMobile } from "@/app/hooks/useIsMobile";
+import { contractsService } from "@/services/api/contracts.service";
+import { showSuccessAlert, showErrorAlert, showConfirmAlert } from "@/app/Utils/AlertUtil";
 import styles from "./DriverDashboardContent.module.css";
 import { Logger } from "@/app/Utils/Logger";
 import { CONTRACT_STATUS_MAP } from "@/app/Utils/statusUtils";
@@ -26,6 +28,29 @@ export default function DriverDashboardContent() {
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
   const handleRowClick = (row: any) => {
     log.info("Row clicked:", row);
+  };
+
+  const handleStatusChange = (trip: any, statusId: number) => {
+    const contractId = trip.contract_id || trip._contractData?.contract_id;
+    if (!contractId) {
+      showErrorAlert("Error", "No se pudo identificar el contrato");
+      return;
+    }
+    const label = statusId === 4 ? "En curso" : "Finalizado";
+    showConfirmAlert(
+      "Cambiar estatus",
+      `¿Cambiar el estatus del servicio a "${label}"?`,
+      "Sí, cambiar",
+      async () => {
+        try {
+          await contractsService.updateStatus(contractId, statusId);
+          showSuccessAlert("Estatus actualizado", `El servicio ahora está "${label}"`, refresh);
+        } catch (err: any) {
+          log.error("Error updating status:", err);
+          showErrorAlert("Error", err?.message || "No se pudo actualizar el estatus");
+        }
+      },
+    );
   };
 
   const groupByDate = (row: any): string => {
@@ -209,6 +234,7 @@ export default function DriverDashboardContent() {
                     trip={trip}
                     animationIndex={idx}
                     onClick={handleRowClick}
+                    onStatusChange={handleStatusChange}
                   />
                 </div>
               );

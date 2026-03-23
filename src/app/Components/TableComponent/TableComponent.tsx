@@ -31,6 +31,8 @@ import {
   DismissRegular,
   WalletRegular,
   ArrowSyncRegular,
+  PlayFilled,
+  CheckmarkCircleFilled,
 } from "@fluentui/react-icons";
 
 import { Pagination } from "@/app/PaginationComponent/PaginationComponent";
@@ -45,6 +47,7 @@ import {
   showInputAlert,
   showSuccessAlert,
   showErrorAlert,
+  showConfirmAlert,
 } from "@/app/Utils/AlertUtil";
 import { Logger } from "@/app/Utils/Logger";
 import { getStatusColor, getStatusTextColor } from "@/app/Utils/statusUtils";
@@ -216,6 +219,28 @@ const TableComponent: React.FC<TableComponentProps> = ({
     }
   };
 
+  const handleDriverStatusChange = (row: any, statusId: number) => {
+    const contractId = getRowId(row);
+    if (!contractId) return;
+    const label = statusId === 4 ? "En curso" : "Finalizado";
+    showConfirmAlert(
+      "Cambiar estatus",
+      `¿Cambiar el estatus del servicio a "${label}"?`,
+      "Sí, cambiar",
+      async () => {
+        try {
+          await contractsService.updateStatus(Number(contractId), statusId);
+          showSuccessAlert("Estatus actualizado", `El servicio ahora está "${label}"`, () => {
+            window.location.reload();
+          });
+        } catch (error) {
+          log.error("Error updating status:", error);
+          showErrorAlert("Error", "No se pudo actualizar el estatus. Inténtalo de nuevo.");
+        }
+      },
+    );
+  };
+
   /* ─────────────────────────────────────────────────────────────────── */
 
   return (
@@ -363,6 +388,42 @@ const TableComponent: React.FC<TableComponentProps> = ({
                             }}
                           />
                         </Tooltip>
+
+                        {isChofer && (() => {
+                          const st = getStatusFromRow(row)?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                          const canStart = st !== "en curso" && st !== "finalizado" && st !== "cancelado";
+                          const canFinish = st === "en curso";
+                          return (
+                            <>
+                              {canStart && (
+                                <Tooltip content="Iniciar Viaje" relationship="label">
+                                  <Button
+                                    appearance="subtle"
+                                    icon={<PlayFilled />}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDriverStatusChange(row, 4);
+                                    }}
+                                    style={{ color: "#2563eb" }}
+                                  />
+                                </Tooltip>
+                              )}
+                              {canFinish && (
+                                <Tooltip content="Finalizar Viaje" relationship="label">
+                                  <Button
+                                    appearance="subtle"
+                                    icon={<CheckmarkCircleFilled />}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDriverStatusChange(row, 6);
+                                    }}
+                                    style={{ color: "#059669" }}
+                                  />
+                                </Tooltip>
+                              )}
+                            </>
+                          );
+                        })()}
 
                         {canManage && (
                           <Menu>

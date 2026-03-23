@@ -7,13 +7,14 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
-import { EyeRegular } from "@fluentui/react-icons";
+import { EyeRegular, PlayFilled, CheckmarkCircleFilled } from "@fluentui/react-icons";
 import { getStatusTextColor } from "@/app/Utils/statusUtils";
 
 interface Props {
   trip: any;
   animationIndex?: number;
   onClick: (trip: any) => void;
+  onStatusChange?: (trip: any, statusId: number) => void;
 }
 
 const useStyles = makeStyles({
@@ -116,12 +117,30 @@ const useStyles = makeStyles({
       color: tokens.colorNeutralForeground1,
     },
   },
+
+  statusBtn: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    padding: "8px 12px",
+    borderRadius: "6px",
+    border: "none",
+    fontWeight: "600",
+    fontSize: "13px",
+    cursor: "pointer",
+    transition: "opacity 0.15s",
+    color: "#fff",
+    ":hover": {
+      opacity: 0.85,
+    },
+  },
 });
 
 export default function DriverTripCard({
   trip,
   animationIndex = 0,
   onClick,
+  onStatusChange,
 }: Props) {
   const styles = useStyles();
 
@@ -133,6 +152,10 @@ export default function DriverTripCard({
   const tipoServicio = tripCount > 1 ? "Redondo" : "Sencillo";
 
   const fechaHora = trip.Hora ? `${trip.Fecha}, ${trip.Hora}` : trip.Fecha;
+
+  const status = trip.Estatus?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  const canStart = status !== "en curso" && status !== "finalizado" && status !== "cancelado";
+  const canFinish = status === "en curso";
 
   return (
     <div
@@ -226,6 +249,34 @@ export default function DriverTripCard({
             <EyeRegular fontSize={16} />
             Ver detalles
           </button>
+
+          {onStatusChange && canStart && (
+            <button
+              className={styles.statusBtn}
+              style={{ backgroundColor: "#2563eb" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onStatusChange(trip, 4);
+              }}
+            >
+              <PlayFilled fontSize={14} />
+              Iniciar
+            </button>
+          )}
+
+          {onStatusChange && canFinish && (
+            <button
+              className={styles.statusBtn}
+              style={{ backgroundColor: "#059669" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onStatusChange(trip, 6);
+              }}
+            >
+              <CheckmarkCircleFilled fontSize={14} />
+              Finalizar
+            </button>
+          )}
         </div>
       </Card>
     </div>
