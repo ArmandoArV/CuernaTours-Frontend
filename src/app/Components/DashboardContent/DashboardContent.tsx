@@ -111,7 +111,7 @@ function transformApiData(apiData: any[]): any[] {
       "🔍 [DEBUG] All contract assignment snapshots:",
       activeContracts.map((c) => ({
         id: c.contract_id,
-        client: c.client_name,
+        client: c.client?.name || c.client_name,
         trips: (c.trips || []).map((t: any) => ({
           trip_id: t.contract_trip_id,
           driver_id: t.driver_id,
@@ -182,7 +182,7 @@ function transformApiData(apiData: any[]): any[] {
         }
       }
       log.debug(
-        `📊 [ASSIGNMENT RESULT] contract=${contract.contract_id} client="${contract.client_name}" → ${assignedSlots}/${totalSlots}`,
+        `📊 [ASSIGNMENT RESULT] contract=${contract.contract_id} client="${contract.client?.name || contract.client_name}" → ${assignedSlots}/${totalSlots}`,
       );
 
       const assignmentStatus =
@@ -209,7 +209,7 @@ function transformApiData(apiData: any[]): any[] {
 
       return {
         "ID Servicio": contract.contract_id,
-        "Empresa O Cliente": formatPersonName(contract.client_name) || "",
+        "Empresa O Cliente": formatPersonName(contract.client?.name || contract.client_name) || "",
         Origen:
           (firstTrip as any).origin_name ||
           (firstTrip as any).origin?.name ||
@@ -235,10 +235,10 @@ function transformApiData(apiData: any[]): any[] {
           for (const t of trips) {
             const units: any[] = t.units && t.units.length > 0 ? t.units : [];
             for (const u of units) {
-              const driverName = u.driver?.name || u.driver?.full_name;
+              const driverName = u.driver?.driver_displayname || u.driver?.name || u.driver?.full_name;
               if (driverName) return formatPersonName(driverName);
               const extName =
-                u.external_driver?.name || u.external_driver?.full_name;
+                u.external_driver?.driver_displayname || u.external_driver?.name || u.external_driver?.full_name;
               if (extName) return formatPersonName(extName);
             }
             const dName = t.driver?.name || t.driver?.full_name;
