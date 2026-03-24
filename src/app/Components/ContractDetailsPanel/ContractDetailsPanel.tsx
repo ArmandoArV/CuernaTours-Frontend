@@ -213,7 +213,7 @@ export default function ContractDetailsPanel({ contract }: Props) {
               Observaciones para el chofer:
             </span>
             <p className={styles.obsTextHighlight}>
-              {activeTrip?.notes || "—"}
+              {activeTrip?.internalNotes || "—"}
             </p>
           </div>
         </div>

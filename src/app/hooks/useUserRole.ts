@@ -1,10 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { getCookie } from "@/app/Utils/CookieUtil";
-import { Logger } from "@/app/Utils/Logger";
-
-const log = Logger.getLogger("useUserRole");
+import { useMemo } from "react";
+import { useAuth } from "@/app/Contexts/AuthContext/AuthContext";
 
 /**
  * User role types
@@ -52,65 +49,32 @@ const ROLE_NAMES: { [key: number]: string } = {
 };
 
 /**
- * Hook to retrieve and manage user role information
+ * Hook to retrieve and manage user role information.
+ * Delegates to AuthContext — no cookie parsing, no extra state.
  * @returns UserRoleInfo object with role details and permission flags
  */
 export function useUserRole(): UserRoleInfo {
-  const [roleId, setRoleId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const auth = useAuth();
 
-  useEffect(() => {
-    const loadUserRole = () => {
-      try {
-        const userCookie = getCookie("user");
-        if (userCookie) {
-          const userData = JSON.parse(userCookie);
-          const userRoleId = userData.roleId || userData.role_id || null;
-          setRoleId(userRoleId);
-        } else {
-          log.warn("No user cookie found");
-        }
-      } catch (error) {
-        log.error("Error loading user role:", error);
-        setRoleId(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUserRole();
-  }, []);
-
-  const roleInfo = useMemo<UserRoleInfo>(() => {
-    const isMaestro = roleId === UserRole.MAESTRO;
-    const isAdmin = roleId === UserRole.ADMINISTRADOR;
-    const isChofer = roleId === UserRole.CHOFER;
-    const isOficina = roleId === UserRole.OFICINA;
-
-    return {
-      roleId,
-      roleName: roleId ? ROLE_NAMES[roleId] || "Usuario" : "Usuario",
-
-      // PURE ROLE FLAGS (no mixing)
-      isMaestro,
-      isAdmin,
-      isChofer,
-      isOficina,
-
-      // PERMISSION FLAGS
-      hasFullAccess: isMaestro || isAdmin,
-      canCreateOrders: isMaestro || isAdmin || isOficina,
-      canAssignResources: isMaestro || isAdmin || isOficina,
-      canAssignDrivers: isMaestro || isAdmin,
-      canManagePayments: isMaestro || isAdmin,
-      canViewAllContracts: isMaestro || isAdmin || isOficina,
-      isDriverOnly: isChofer,
-
-      isLoading,
-    };
-  }, [roleId, isLoading]);
-
-  return roleInfo;
+  return useMemo<UserRoleInfo>(
+    () => ({
+      roleId: auth.roleId,
+      roleName: auth.roleName,
+      isMaestro: auth.isMaestro,
+      isAdmin: auth.isAdmin,
+      isChofer: auth.isChofer,
+      isOficina: auth.isOficina,
+      hasFullAccess: auth.hasFullAccess,
+      canCreateOrders: auth.canCreateOrders,
+      canAssignResources: auth.canAssignResources,
+      canAssignDrivers: auth.canAssignDrivers,
+      canManagePayments: auth.canManagePayments,
+      canViewAllContracts: auth.canViewAllContracts,
+      isDriverOnly: auth.isDriverOnly,
+      isLoading: auth.isLoading,
+    }),
+    [auth],
+  );
 }
 
 /**

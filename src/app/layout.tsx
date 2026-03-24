@@ -3,6 +3,7 @@ import { Raleway } from "next/font/google";
 import "./globals.css";
 import FluentUIProvider from "./Components/Providers/FluentUIProvider";
 import PageTransition from "./Components/PageTransition/PageTransition";
+import { AuthProvider } from "./Contexts/AuthContext/AuthContext";
 
 const raleway = Raleway({
   variable: "--font-raleway",
@@ -28,9 +29,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={raleway.variable}>
         <FluentUIProvider>
-          <PageTransition>
-            {children}
-          </PageTransition>
+          <AuthProvider>
+            <PageTransition>
+              {children}
+            </PageTransition>
+          </AuthProvider>
         </FluentUIProvider>
       </body>
     </html>

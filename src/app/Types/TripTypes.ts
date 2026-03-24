@@ -13,15 +13,16 @@ export interface Location {
 export interface Vehicle {
   id: number;
   alias: string;
-  type: string;
+  type?: string;
   license_plate: string;
 }
 
 export interface Driver {
   id: number;
-  name: string;
-  lastname: string;
-  phone: string;
+  name?: string;
+  lastname?: string;
+  phone?: string;
+  driver_displayname?: string;
 }
 
 export interface Flight {
@@ -218,7 +219,9 @@ export class Trip {
 
   get driverName(): string {
     const d = this.driver;
-    return d ? `${d.name} ${d.lastname}` : "";
+    if (!d) return "";
+    if (d.driver_displayname) return d.driver_displayname;
+    return [d.name, d.lastname].filter(Boolean).join(" ");
   }
 
   get driverFirstName(): string {

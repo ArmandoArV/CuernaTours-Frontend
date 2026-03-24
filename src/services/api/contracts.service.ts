@@ -12,35 +12,55 @@ import type { Contract } from '@/app/backend_models/contract.model';
 
 // Extended contract type with joined data from API
 export interface ContractWithDetails extends Contract {
-  // Client information
-  client_name: string;
-  client_type_name: string;
-  
-  // Status information
+  // Status information (flat fields from API join)
   contract_status_name: string;
   payment_type_name: string;
   
-  // Coordinator information
-  coordinator_name: string;
-  coordinator_lastname: string;
-  
-  // Creator information
-  creator_name: string;
-  creator_lastname: string;
-  
+  // Displayname fields from API
+  coordinator_displayname: string | null;
+  creator_displayname: string;
+
+  // Payment tracking
+  paid_date: string | null;
+  amount_paid: number;
+  amount_remaining: number;
+  is_fully_paid: number;
+
+  // Cancellation
+  cancelled_at: string | null;
+  cancelled_by: number | null;
+  cancellation_reason: string | null;
+
+  // Nested client object from API
+  client: {
+    client_id: number;
+    name: string;
+    comments: string | null;
+    client_type_id: number;
+    client_type: {
+      client_type_id: number;
+      name: string;
+      description: string;
+    };
+    contacts: Array<{
+      contact_id: number;
+      name: string;
+      first_lastname: string;
+      second_lastname: string | null;
+      country_code: string;
+      phone: string;
+      email: string;
+      is_whatsapp_available: number;
+      comments: string | null;
+      role: string | null;
+      is_primary: number;
+    }>;
+  };
+
   // Associated trips
   trips?: any[];
 
-  // Flat commission fields returned by details endpoints
-  commission_type?: 'percentage' | 'arranged' | null;
-  commission_amount?: number | null;
-  commission_arranged_deal?: string | null;
-  commission_establishment?: string | null;
-  commission_status?: 'paid' | 'pending' | null;
-  commission_paid_date?: string | null;
-  commission_paid_by?: number | null;
-
-  // Nested commission object (also returned by details endpoints)
+  // Nested commission object
   commission?: {
     commission_id: number;
     type: 'percentage' | 'arranged';

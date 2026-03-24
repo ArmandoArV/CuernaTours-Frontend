@@ -26,9 +26,50 @@ export interface User {
   lastname: string;
 }
 
+// --- New interfaces matching the actual API response ---
+
+export interface ClientContact {
+  contact_id: number;
+  name: string;
+  first_lastname: string;
+  second_lastname: string | null;
+  country_code: string;
+  phone: string;
+  email: string;
+  is_whatsapp_available: number;
+  comments: string | null;
+  role: string | null;
+  is_primary: number;
+}
+
+export interface ClientTypeData {
+  client_type_id: number;
+  name: string;
+  description: string;
+}
+
+export interface ClientData {
+  client_id: number;
+  name: string;
+  comments: string | null;
+  client_type_id: number;
+  client_type: ClientTypeData;
+  contacts: ClientContact[];
+}
+
+export interface CommissionData {
+  commission_id: number;
+  type: "percentage" | "arranged";
+  amount?: number | null;
+  arranged_deal?: string | null;
+  establishment?: string | null;
+  status?: "paid" | "pending";
+  paid_date?: string | null;
+  paid_by?: number | null;
+}
+
 export interface ContractData {
   contract_id: number;
-  client_id: number;
   created_at: string;
   payment_type_id: number;
   IVA: number;
@@ -36,26 +77,24 @@ export interface ContractData {
   commission_id: number | null;
   observations: string | null;
   internal_observations: string | null;
-  coordinator_id: number;
+  coordinator_id: number | null;
   creator_id: number;
   contract_status_id: number;
-  payment_status: string;
-  client_name: string;
-  client_type_name: string;
+  paid_date: string | null;
+  amount_paid: number;
+  amount_remaining: number;
+  is_fully_paid: number;
+  cancelled_at: string | null;
+  cancelled_by: number | null;
+  cancellation_reason: string | null;
   contract_status_name: string;
   payment_type_name: string;
-  coordinator_name: string;
-  coordinator_lastname: string;
-  creator_name: string;
-  creator_lastname: string;
+  coordinator_displayname: string | null;
+  creator_displayname: string;
+  client: ClientData;
+  commission: CommissionData | null;
   trips: TripData[];
-  client_contact?: {
-    name: string;
-    country_code?: string;
-    phone: string;
-    email?: string;
-    is_whatsapp_available?: boolean;
-  } | null;
+  payments: any[];
 }
 
 export interface ContractResponse {
@@ -72,13 +111,20 @@ export class Contract {
     this._trips = new TripCollection(contractData.trips);
   }
 
+  // Helper: find the primary contact from the client's contacts array
+  private get primaryContact(): ClientContact | null {
+    const contacts = this._data.client?.contacts;
+    if (!contacts || contacts.length === 0) return null;
+    return contacts.find((c) => c.is_primary === 1) ?? contacts[0];
+  }
+
   // Basic contract information getters
   get contractId(): number {
     return this._data.contract_id;
   }
 
   get clientId(): number {
-    return this._data.client_id;
+    return this._data.client?.client_id ?? 0;
   }
 
   get createdAt(): string {
@@ -113,7 +159,7 @@ export class Contract {
     return this._data.internal_observations || "";
   }
 
-  get coordinatorId(): number {
+  get coordinatorId(): number | null {
     return this._data.coordinator_id;
   }
 
@@ -126,36 +172,47 @@ export class Contract {
   }
 
   get paymentStatus(): string {
-    return this._data.payment_status;
+    return this._data.is_fully_paid ? "paid" : "pending";
   }
 
   // Client information getters
   get clientName(): string {
-    return this._data.client_name;
+    return this._data.client?.name ?? "";
   }
 
   get clientTypeName(): string {
-    return this._data.client_type_name;
+    return this._data.client?.client_type?.name ?? "";
   }
 
   get client(): Client {
     return {
-      id: this._data.client_id,
-      name: this._data.client_name,
-      type_name: this._data.client_type_name,
+      id: this._data.client?.client_id ?? 0,
+      name: this._data.client?.name ?? "",
+      type_name: this._data.client?.client_type?.name ?? "",
     };
   }
 
   get contactPhone(): string {
-    return this._data.client_contact?.phone || "";
+    const contact = this.primaryContact;
+    if (!contact) return "";
+    const code = contact.country_code ? `+${contact.country_code} ` : "";
+    return `${code}${contact.phone}`;
   }
 
   get contactEmail(): string {
-    return this._data.client_contact?.email || "";
+    return this.primaryContact?.email || "";
   }
 
   get contactName(): string {
-    return this._data.client_contact?.name || "";
+    const contact = this.primaryContact;
+    if (!contact) return "";
+    return [contact.name, contact.first_lastname, contact.second_lastname]
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  get contactIsWhatsapp(): boolean {
+    return this.primaryContact?.is_whatsapp_available === 1;
   }
 
   // Status and payment information getters
@@ -183,46 +240,31 @@ export class Contract {
 
   // Coordinator information getters
   get coordinatorName(): string {
-    const first = this._data.coordinator_name;
-    const last = this._data.coordinator_lastname;
-    const full = [first, last].filter(Boolean).join(" ");
-    return full || "";
-  }
-
-  get coordinatorFirstName(): string {
-    return this._data.coordinator_name;
-  }
-
-  get coordinatorLastName(): string {
-    return this._data.coordinator_lastname;
+    return this._data.coordinator_displayname ?? "";
   }
 
   get coordinator(): User {
+    const displayname = this._data.coordinator_displayname ?? "";
+    const parts = displayname.split(" ");
     return {
-      id: this._data.coordinator_id,
-      name: this._data.coordinator_name,
-      lastname: this._data.coordinator_lastname,
+      id: this._data.coordinator_id ?? 0,
+      name: parts[0] ?? "",
+      lastname: parts.slice(1).join(" "),
     };
   }
 
   // Creator information getters
   get creatorName(): string {
-    return `${this._data.creator_name} ${this._data.creator_lastname}`;
-  }
-
-  get creatorFirstName(): string {
-    return this._data.creator_name;
-  }
-
-  get creatorLastName(): string {
-    return this._data.creator_lastname;
+    return this._data.creator_displayname ?? "";
   }
 
   get creator(): User {
+    const displayname = this._data.creator_displayname ?? "";
+    const parts = displayname.split(" ");
     return {
       id: this._data.creator_id,
-      name: this._data.creator_name,
-      lastname: this._data.creator_lastname,
+      name: parts[0] ?? "",
+      lastname: parts.slice(1).join(" "),
     };
   }
 
@@ -265,9 +307,17 @@ export class Contract {
     return (this._data.IVA / this._data.amount) * 100;
   }
 
+  get amountPaid(): number {
+    return this._data.amount_paid ?? 0;
+  }
+
+  get amountRemaining(): number {
+    return this._data.amount_remaining ?? this._data.amount;
+  }
+
   // Status checks
   get isPaid(): boolean {
-    return (this._data.payment_status ?? "").toLowerCase() === "paid";
+    return this._data.is_fully_paid === 1;
   }
 
   get isFinished(): boolean {
@@ -278,8 +328,20 @@ export class Contract {
     return !this.isFinished;
   }
 
+  get isCancelled(): boolean {
+    return this._data.cancelled_at !== null;
+  }
+
+  get cancellationReason(): string | null {
+    return this._data.cancellation_reason;
+  }
+
   get hasCommission(): boolean {
-    return this._data.commission_id !== null;
+    return this._data.commission !== null;
+  }
+
+  get commissionData(): CommissionData | null {
+    return this._data.commission;
   }
 
   get hasObservations(): boolean {
@@ -357,7 +419,7 @@ export class Contract {
   }
 
   set paymentStatus(value: string) {
-    this._data.payment_status = value;
+    this._data.is_fully_paid = value === "paid" ? 1 : 0;
   }
 
   // Method to get all raw data
@@ -373,7 +435,7 @@ export class Contract {
 
   // Method to update payment status
   updatePaymentStatus(status: string): void {
-    this._data.payment_status = status;
+    this._data.is_fully_paid = status === "paid" ? 1 : 0;
   }
 
   // Method to get trip by ID
@@ -383,7 +445,7 @@ export class Contract {
 
   // Method to check if contract is for a specific client
   isForClient(clientId: number): boolean {
-    return this._data.client_id === clientId;
+    return this._data.client?.client_id === clientId;
   }
 
   // Method to check if contract was created by specific user

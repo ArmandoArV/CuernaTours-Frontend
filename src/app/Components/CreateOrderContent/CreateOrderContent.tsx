@@ -133,15 +133,13 @@ export default function CreateOrderContent({
 
         // Pre-fill form with contract data
         const updatedFormData: Partial<OrderFormData> = {
-          empresa: contractData.client_id?.toString() || "",
-          empresaNombre: contractData.client_name || "",
+          empresa: contractData.client?.client_id?.toString() || "",
+          empresaNombre: contractData.client?.name || "",
           tipoPago: contractData.payment_type_id?.toString() || "",
           aplicaIva: contractData.IVA ? "Si" : "No",
           costoViaje: contractData.amount?.toString() || "",
           coordinadorViaje: contractData.coordinator_id?.toString() || "",
-          coordinadorNombre: contractData.coordinator_name
-            ? `${contractData.coordinator_name} ${contractData.coordinator_lastname || ""}`.trim()
-            : "",
+          coordinadorNombre: contractData.coordinator_displayname || "",
           observacionesInternas: contractData.internal_observations || "",
           comentarios: contractData.observations || "",
         };
@@ -183,10 +181,10 @@ export default function CreateOrderContent({
         });
 
         // Fetch client details to get contact information
-        if (contractData.client_id) {
+        if (contractData.client?.client_id) {
           try {
             const clientDetails = await referenceService.getClientById(
-              contractData.client_id,
+              contractData.client.client_id,
             );
             const primaryContact =
               clientDetails.primary_contact || clientDetails.contacts?.[0];
