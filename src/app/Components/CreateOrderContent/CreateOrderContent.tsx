@@ -41,7 +41,7 @@ export default function CreateOrderContent({
   contractId,
 }: CreateOrderContentProps) {
   const isEdit = !!contractId;
-  const { orderData, tripData, setOrderData, clearData, saveToLocalStorage } =
+  const { orderData, tripData, isHydrated, setOrderData, clearData, saveToLocalStorage } =
     useOrderContext();
   const router = useRouter();
 
@@ -76,6 +76,15 @@ export default function CreateOrderContent({
     radio,
     updateField,
   } = orderForm;
+
+  // Sync form with context data when returning from createTrip or after hydration.
+  // useState in useOrderForm only captures data on the first render, so if
+  // context updates after mount (e.g. hydration), the form won't reflect it.
+  useEffect(() => {
+    if (!isEdit && orderData.empresa && !formData.empresa) {
+      setFormData(orderData as OrderFormData);
+    }
+  }, [isHydrated, orderData.empresa]);
 
   const {
     isClientModalOpen,
@@ -409,8 +418,9 @@ export default function CreateOrderContent({
 
   useEffect(() => {
     const initializeForm = async () => {
-      // Clear any persisted data on initial mount
-      if (!isEdit) {
+      // Wait for context hydration before deciding to clear.
+      // Without this, we might clear data that's still loading from localStorage.
+      if (!isEdit && isHydrated && !orderData.empresa) {
         clearData();
       }
 
@@ -419,7 +429,7 @@ export default function CreateOrderContent({
     };
 
     initializeForm();
-  }, [isEdit]); // Run on mount and if isEdit changes
+  }, [isEdit, isHydrated]); // Run on mount, when isEdit changes, or after hydration
 
   // Set default values after prefillable data is loaded
   useEffect(() => {
@@ -465,7 +475,7 @@ export default function CreateOrderContent({
       <div className={styles.container}>
         <div className={styles.header}>
           <Link
-            href={isEdit ? `/dashboard/order/${contractId}` : "/dashboard"}
+            href="/dashboard"
             passHref
           >
             <button className={styles.backButton}>

@@ -54,7 +54,7 @@ export default function CreateTripContent({
   contractId,
 }: CreateTripContentProps) {
   const isEdit = !!contractId;
-  const { orderData, tripData, isHydrated, setTripData, clearData } =
+  const { orderData, tripData, isHydrated, setTripData, clearData, saveToLocalStorage } =
     useOrderContext();
   const router = useRouter();
   const { canAssignResources, canAssignDrivers } = useUserRole();
@@ -596,7 +596,12 @@ export default function CreateTripContent({
 
   const handleCancel = () => {
     setTripData(tripFormData);
-    router.push("/dashboard/createOrder");
+    saveToLocalStorage(orderData as any, tripFormData);
+    if (contractId) {
+      router.push(`/dashboard/order/${contractId}`);
+    } else {
+      router.push("/dashboard/createOrder");
+    }
   };
 
   const handleSaveDraft = () => {
