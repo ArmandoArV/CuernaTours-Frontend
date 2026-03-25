@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Raleway } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import FluentUIProvider from "./Components/Providers/FluentUIProvider";
 import PageTransition from "./Components/PageTransition/PageTransition";
 import { AuthProvider } from "./Contexts/AuthContext/AuthContext";
 
-const raleway = Raleway({
-  variable: "--font-raleway",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={raleway.variable}>
+      <body className={inter.variable}>
         <FluentUIProvider>
           <AuthProvider>
             <PageTransition>

@@ -8,7 +8,7 @@
   --Main-96781A: #96781a;
   --Background-F5F7FA: #f5f7fa;
 
-  /* FluentUI Design Tokens with Raleway font */
+  /* FluentUI Design Tokens with Inter font */
   --colorNeutralForeground1: #242424;
   --colorNeutralForeground2: #605e5c;
   --colorNeutralForeground3: #8a8886;
@@ -26,7 +26,7 @@
   --colorBrandBackgroundSelected: #7d6316;
   --colorBrandForeground1: #96781a;
   --colorStrokeFocus2: #96781a;
-  --fontFamilyBase: var(--font-raleway), "Raleway", -apple-system,
+  --fontFamilyBase: var(--font-inter), "Inter", -apple-system,
     BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --fontSizeBase200: 12px;
   --fontSizeBase300: 14px;
@@ -138,7 +138,7 @@ body {
 body {
   color: black;
   background: #fff;
-  font-family: var(--font-raleway), "Raleway";
+  font-family: var(--font-inter), "Inter";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

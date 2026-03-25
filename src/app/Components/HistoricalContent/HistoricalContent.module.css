@@ -17,7 +17,7 @@
   font-weight: 600;
   color: #1a2e47;
   margin: 0;
-  font-family: var(--font-raleway), Raleway, sans-serif;
+  font-family: var(--font-inter), Inter, sans-serif;
 }
 
 .refreshButton {
@@ -32,7 +32,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-raleway), Raleway, sans-serif;
+  font-family: var(--font-inter), Inter, sans-serif;
   transition: all 0.2s ease;
   height: 40px;
 }

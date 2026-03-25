@@ -11,12 +11,12 @@ interface FluentUIProviderProps {
   children: ReactNode;
 }
 
-// Custom CuernaTours theme: gold brand (#96781a) + Raleway font
+// Custom CuernaTours theme: gold brand (#96781a) + Inter font
 const cuernaToursTheme: Theme = {
   ...webLightTheme,
-  fontFamilyBase: "var(--font-raleway), Raleway, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
-  fontFamilyMonospace: "var(--font-raleway), Raleway, 'Consolas', 'Monaco', monospace",
-  fontFamilyNumeric: "var(--font-raleway), Raleway, 'Bahnschrift', 'Segoe UI', system-ui, sans-serif",
+  fontFamilyBase: "var(--font-inter), Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
+  fontFamilyMonospace: "'Consolas', 'Monaco', monospace",
+  fontFamilyNumeric: "var(--font-inter), Inter, 'Bahnschrift', 'Segoe UI', system-ui, sans-serif",
   // Brand colors — gold palette from Figma design system
   colorBrandBackground: '#96781a',
   colorBrandBackgroundHover: '#7d6316',

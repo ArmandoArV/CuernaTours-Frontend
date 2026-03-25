@@ -41,7 +41,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-raleway);
+  font-family: var(--font-inter);
   text-align: center;
   font-size: 20px;
 }
