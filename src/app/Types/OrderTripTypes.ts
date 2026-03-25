@@ -66,6 +66,7 @@ export interface TripFormData {
   idaMinutos?: string; // STRING
   idaAmPm?: "AM" | "PM";
   idaPasajeros?: string; // STRING
+  numeroPasajeros?: string; // STRING
 
   regresoFecha?: string;
   regresoHora?: string; // STRING
@@ -142,7 +143,7 @@ export const mapCompleteOrderToPayload = (
         tripData.idaMinutos || "0",
         tripData.idaAmPm || "AM",
       ),
-      passengers: parseInt(tripData.idaPasajeros || "1", 10),
+      passengers: parseInt(tripData.numeroPasajeros || tripData.idaPasajeros || "1", 10),
 
       // Origin place
       origin: tripData.origenNombreLugar && !isNaN(parseInt(tripData.origenNombreLugar))

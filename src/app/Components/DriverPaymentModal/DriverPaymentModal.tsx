@@ -135,20 +135,49 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const trip = await tripsService.getById(Number(id));
+      let trip: ContractTrip | null = null;
+
+      // Try fetching as trip ID first
+      try {
+        trip = await tripsService.getById(Number(id));
+      } catch {
+        // If that fails, try fetching trips by contract ID
+        try {
+          const trips = await tripsService.getByContractId(Number(id));
+          if (trips && trips.length > 0) {
+            trip = trips[0];
+          }
+        } catch {
+          // Both approaches failed
+        }
+      }
+
+      if (!trip) {
+        setError("No se encontró el viaje asociado");
+        return;
+      }
+
       setTripData(trip);
 
       // Fetch contract details for cost
       if (trip.contract_id) {
-        const contract = await contractsService.getById(trip.contract_id);
-        setContractData(contract);
+        try {
+          const contract = await contractsService.getById(trip.contract_id);
+          setContractData(contract);
+        } catch (contractErr: any) {
+          log.error("Error loading contract:", contractErr);
+        }
       }
 
       // Fetch driver details
       const driverId = trip.driver_id; 
       if (driverId) {
-        const driver = await usersService.getById(driverId);
-        setDriverData(driver);
+        try {
+          const driver = await usersService.getById(driverId);
+          setDriverData(driver);
+        } catch (driverErr: any) {
+          log.error("Error loading driver:", driverErr);
+        }
       }
       
     } catch (err: any) {
@@ -192,32 +221,30 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
       // Process Internal Driver Payment
       if (internalPaymentAmount && parseFloat(internalPaymentAmount) > 0) {
         if (!tripData.driver_id) {
-           // Skip internal payment if no driver assigned but amount entered? Or throw error?
-           // Assuming we only process if driver exists
-        } else {
-            payments.push({
-                driver_id: tripData.driver_id,
-                driver_type: "internal" as const,
-                amount: parseFloat(internalPaymentAmount),
-            });
+          showErrorAlert("Error", "No se puede registrar el pago: no hay chofer interno asignado al viaje.");
+          setLoading(false);
+          return;
         }
+        payments.push({
+          driver_id: tripData.driver_id,
+          driver_type: "internal" as const,
+          amount: parseFloat(internalPaymentAmount),
+        });
       }
 
       // Process External Provider Payment
       if (externalPaymentAmount && parseFloat(externalPaymentAmount) > 0) {
-         if (!tripData.external_driver_id && !(tripData as any).external_driver) {
-            // Skip
-         } else {
-            // Use external driver ID if available
-            const extId = tripData.external_driver_id || (tripData as any).external_driver?.id;
-            if (extId) {
-                payments.push({
-                    driver_id: extId,
-                    driver_type: "external" as const,
-                    amount: parseFloat(externalPaymentAmount),
-                });
-            }
-         }
+        const extId = tripData.external_driver_id || (tripData as any).external_driver?.id;
+        if (!extId) {
+          showErrorAlert("Error", "No se puede registrar el pago: no hay proveedor externo asignado al viaje.");
+          setLoading(false);
+          return;
+        }
+        payments.push({
+          driver_id: extId,
+          driver_type: "external" as const,
+          amount: parseFloat(externalPaymentAmount),
+        });
       }
 
       if (payments.length === 0) {
@@ -297,8 +324,9 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
           <Label>Monto del efectivo</Label>
            <Input
               type="number"
+              min="0"
               value={internalCashAmount}
-              onChange={(e) => setInternalCashAmount(e.target.value)}
+              onChange={(_, d) => setInternalCashAmount(d.value.replace(/-/g, ""))}
               placeholder="0.00"
               contentBefore="$"
               disabled={internalCashReceived === "no"}
@@ -315,8 +343,9 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
         <Label required>Monto de pago del chofer</Label>
         <Input
           type="number"
+          min="0"
           value={internalPaymentAmount}
-          onChange={(e) => setInternalPaymentAmount(e.target.value)}
+          onChange={(_, d) => setInternalPaymentAmount(d.value.replace(/-/g, ""))}
           placeholder="0.00"
           contentBefore="$"
         />
@@ -352,8 +381,9 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
           <Label>Monto del efectivo</Label>
            <Input
               type="number"
+              min="0"
               value={externalCashAmount}
-              onChange={(e) => setExternalCashAmount(e.target.value)}
+              onChange={(_, d) => setExternalCashAmount(d.value.replace(/-/g, ""))}
               placeholder="0.00"
               contentBefore="$"
               disabled={externalCashReceived === "no"}
@@ -370,8 +400,9 @@ const DriverPaymentModal: React.FC<DriverPaymentModalProps> = ({
         <Label required>Monto de pago del proveedor</Label>
         <Input
           type="number"
+          min="0"
           value={externalPaymentAmount}
-          onChange={(e) => setExternalPaymentAmount(e.target.value)}
+          onChange={(_, d) => setExternalPaymentAmount(d.value.replace(/-/g, ""))}
           placeholder="0.00"
           contentBefore="$"
         />

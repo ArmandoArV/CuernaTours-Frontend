@@ -431,14 +431,14 @@ export default function DashboardContent() {
         Array.from(
           new Set(transformedData.map((item) => item["Empresa O Cliente"])),
         ),
-        "Filtrar Por Cliente",
+        "Por Cliente",
       ),
 
       FilterPresets.createSelectFilter(
         "Estado de Pago",
         "Pago",
         ["Pagado", "Pendiente"],
-        "Filtrar Por Estado de Pago",
+        "Por Estado de Pago",
       ),
     ],
     [transformedData],

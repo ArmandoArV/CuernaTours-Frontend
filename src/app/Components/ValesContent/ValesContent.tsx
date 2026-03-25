@@ -204,7 +204,8 @@ const useStyles = makeStyles({
     display: "flex",
     flexDirection: "column",
     gap: tokens.spacingVerticalL,
-    marginTop: tokens.spacingVerticalM,
+    marginTop: tokens.spacingVerticalL,
+    ...shorthands.padding(tokens.spacingVerticalM, tokens.spacingHorizontalM),
   },
   dialogSummary: {
     ...shorthands.padding(tokens.spacingVerticalM),
@@ -764,6 +765,7 @@ export default function ValesContent() {
                 <Field label="Chofer" required>
                   <Dropdown
                     placeholder="Selecciona un chofer"
+                    selectedOptions={assignForm.driver_id > 0 ? [String(assignForm.driver_id)] : []}
                     value={
                       drivers.find((d) => d.id === assignForm.driver_id)
                         ? (drivers.find((d) => d.id === assignForm.driver_id)?.display_name ||

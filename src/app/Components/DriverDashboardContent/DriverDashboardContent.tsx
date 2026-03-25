@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import FilterableTableComponent from "../FilterableTable/FilterableTableComponent";
 import LoadingComponent from "@/app/Components/LoadingComponent/LoadingComponent";
 import DriverTripCard from "@/app/Components/DriverTripCard/DriverTripCard";
+import DetailsPanel from "@/app/Components/DetailsPanel/DetailsPanel";
 import ErrorBlock from "@/app/Components/ErrorBlock/ErrorBlock";
 import FilterComponent from "../FilterComponent/FilterComponent";
 
@@ -26,8 +27,12 @@ export default function DriverDashboardContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [dateRange, setDateRange] = useState<{ start?: Date; end?: Date }>({});
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+  const [selectedTrip, setSelectedTrip] = useState<any | null>(null);
   const handleRowClick = (row: any) => {
     log.info("Row clicked:", row);
+    setSelectedTrip((prev: any) =>
+      prev && prev["ID Viaje"] === row["ID Viaje"] ? null : row,
+    );
   };
 
   const handleStatusChange = (trip: any, statusId: number) => {
@@ -269,6 +274,11 @@ export default function DriverDashboardContent() {
         />
       )}
 
+      {selectedTrip && (
+        <div className={styles.detailsPanelContainer}>
+          <DetailsPanel data={selectedTrip._contractData || selectedTrip} />
+        </div>
+      )}
     </div>
   );
 }

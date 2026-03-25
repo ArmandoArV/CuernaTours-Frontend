@@ -716,8 +716,12 @@ export default function CreateOrderContent({
             </div>
             <div className={styles.col}>
               <InputComponent
-                type="text"
-                {...input("costoViaje")}
+                type="number"
+                value={formData.costoViaje}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/-/g, "");
+                  updateField("costoViaje", val);
+                }}
                 label="Costo del viaje"
                 required
                 className={styles.input}
@@ -814,48 +818,35 @@ export default function CreateOrderContent({
 
               <div className={styles.row}>
                 {formData.tipoComision === "Porcentaje" && (
-                  <>
-                    <div className={styles.col}>
-                      <SelectComponent
-                        value={formData.porcentaje}
-                        onChange={(e) => {
-                          const percentage = e.target.value;
-                          const tripCost = parseFloat(formData.costoViaje) || 0;
-                          const calculatedAmount =
-                            tripCost * (parseFloat(percentage) / 100);
-                          setFormData((prev) => ({
-                            ...prev,
-                            porcentaje: percentage,
-                            montoArreglado:
-                              calculatedAmount > 0
-                                ? calculatedAmount.toFixed(2)
-                                : "",
-                          }));
-                        }}
-                        options={[
-                          { value: "", label: "Seleccione..." },
-                          { value: "10", label: "10%" },
-                          { value: "15", label: "15%" },
-                          { value: "20", label: "20%" },
-                        ]}
-                        label="Porcentaje (%)"
-                        required
-                        placeholder="Seleccione..."
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.col}>
-                      <InputComponent
-                        type="text"
-                        {...input("nombreRecibeComision")}
-                        label="Nombre de quien recibe la comisión"
-                        required
-                        className={styles.input}
-                        hasError={!!mergedErrors.nombreRecibeComision}
-                        errorMessage={mergedErrors.nombreRecibeComision}
-                      />
-                    </div>
-                  </>
+                  <div className={styles.col}>
+                    <SelectComponent
+                      value={formData.porcentaje}
+                      onChange={(e) => {
+                        const percentage = e.target.value;
+                        const tripCost = parseFloat(formData.costoViaje) || 0;
+                        const calculatedAmount =
+                          tripCost * (parseFloat(percentage) / 100);
+                        setFormData((prev) => ({
+                          ...prev,
+                          porcentaje: percentage,
+                          montoArreglado:
+                            calculatedAmount > 0
+                              ? calculatedAmount.toFixed(2)
+                              : "",
+                        }));
+                      }}
+                      options={[
+                        { value: "", label: "Seleccione..." },
+                        { value: "10", label: "10%" },
+                        { value: "15", label: "15%" },
+                        { value: "20", label: "20%" },
+                      ]}
+                      label="Porcentaje (%)"
+                      required
+                      placeholder="Seleccione..."
+                      className={styles.input}
+                    />
+                  </div>
                 )}
                 {formData.tipoComision === "Arreglada" && (
                   <div className={styles.col}>

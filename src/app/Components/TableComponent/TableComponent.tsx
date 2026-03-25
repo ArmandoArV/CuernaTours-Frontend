@@ -346,7 +346,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                           {isStatusColumn ? (
                             <span
                               className={
-                                value === "En curso" || value === "Por pagar"
+                                value === "En curso"
                                   ? "status-pulse"
                                   : ""
                               }
@@ -365,7 +365,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                               {value}
                             </span>
                           ) : (
-                            (value ?? "—")
+                            (value || "---")
                           )}
                         </TableCell>
                       );
@@ -484,10 +484,15 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
                                 <MenuItem
                                   icon={<MoneyRegular />}
+                                  disabled={!row["Chofer"] || row["Chofer"] === "---" || row["Chofer"] === "—" || row["Chofer"] === "Sin asignar"}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    if (id) {
-                                      setPaymentTripId(Number(id));
+                                    const trips = row._trips || [];
+                                    const tripId = trips.length > 0
+                                      ? (trips[0].trip_id || trips[0].contract_trip_id)
+                                      : null;
+                                    if (tripId) {
+                                      setPaymentTripId(Number(tripId));
                                       setIsPaymentModalOpen(true);
                                     }
                                   }}

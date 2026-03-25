@@ -26,8 +26,8 @@ export function useCreateSpendingForm() {
       newErrors.customCategory = "Especifica la categoría";
     if (!amount || parseFloat(amount) <= 0)
       newErrors.amount = "El monto debe ser mayor a 0";
-    if (!description.trim())
-      newErrors.description = "La descripción es obligatoria";
+    if (!contractId)
+      newErrors.contractId = "El servicio es obligatorio";
     if (files.length === 0)
       newErrors.files = "Debes adjuntar al menos un archivo";
 

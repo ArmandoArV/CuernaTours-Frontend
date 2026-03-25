@@ -58,6 +58,23 @@ const filterItemStyles: IStackStyles = {
   },
 };
 
+const dateRangeItemStyles: IStackStyles = {
+  root: {
+    minWidth: 160,
+    maxWidth: 300,
+    flexBasis: "160px",
+    flexGrow: 1,
+    display: "flex",
+    alignItems: "center",
+    height: 40,
+    "@media (max-width: 600px)": {
+      minWidth: "100%",
+      maxWidth: "100%",
+      flexBasis: "100%",
+    },
+  },
+};
+
 const dropdownStylesFunction = (
   props: IDropdownStyleProps,
 ): Partial<IDropdownStyles> => {
@@ -458,7 +475,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
             <ComboBox
               placeholder={placeholder}
               options={fluentOptions as IComboBoxOption[]}
-              selectedKey={value}
+              selectedKey={value !== undefined ? value : null}
               onChange={(_, option) => {
                 if (option) handleFilterChange(key, option.key);
               }}
@@ -479,7 +496,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
             <Dropdown
               placeholder={placeholder}
               options={fluentOptions as IDropdownOption[]}
-              selectedKey={value || (multiple ? [] : undefined)}
+              selectedKey={value !== undefined ? value : (multiple ? [] : null)}
               onChange={(_, option) => {
                 if (!option) return;
                 if (multiple) {
@@ -527,9 +544,8 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         {sortedFilters.map((filter) => (
           <Stack.Item
             key={filter.key}
-            grow={filter.type === "dateRange" ? 1 : undefined}
             styles={filter.type === "dateRange"
-              ? { root: { display: "flex", alignItems: "center", height: 40, minWidth: 160, flexBasis: "160px", "@media (max-width: 600px)": { minWidth: "100%", flexBasis: "100%" } } }
+              ? dateRangeItemStyles
               : filterItemStyles}
           >
             {renderFilterInput(filter)}

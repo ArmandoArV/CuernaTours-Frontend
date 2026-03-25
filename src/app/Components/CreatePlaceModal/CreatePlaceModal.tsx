@@ -2,6 +2,16 @@
 
 import React, { useState } from 'react';
 import styles from './CreatePlaceModal.module.css';
+import {
+  Dialog,
+  DialogSurface,
+  DialogTitle,
+  DialogBody,
+  DialogContent,
+  DialogActions,
+  Button,
+} from "@fluentui/react-components";
+import { Dismiss24Regular } from "@fluentui/react-icons";
 import ButtonComponent from '../ButtonComponent/ButtonComponent';
 import InputComponent from '../InputComponent/InputComponent';
 import { referenceService } from '@/services/api/reference.service';
@@ -48,8 +58,6 @@ export default function CreatePlaceModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  if (!isOpen) return null;
-
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -65,8 +73,8 @@ export default function CreatePlaceModal({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e) e.preventDefault();
 
     if (!validateForm()) {
       showErrorAlert('Error de validación', 'Corrija los errores en el formulario');
@@ -135,138 +143,147 @@ export default function CreatePlaceModal({
   };
 
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modal}>
-        <div className={styles.modalHeader}>
-          <h2 className={styles.modalTitle}>Crear Nuevo Lugar</h2>
-          <button className={styles.closeButton} onClick={handleClose} disabled={isSubmitting}>
-            ×
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Información del Lugar</h3>
-            
-            <InputComponent
-              type="text"
-              label="Nombre del Lugar"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Ej: Hotel Marriott, Aeropuerto Internacional, etc."
-              disabled={isSubmitting}
-              hasError={!!errors.name}
-              errorMessage={errors.name}
-            />
-          </div>
-
-          <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Dirección</h3>
-            
-            <div className={styles.rowAddress}>
-              <div className={styles.fieldLarge}>
+    <Dialog open={isOpen} onOpenChange={(_, data) => { if (!data.open) handleClose(); }}>
+      <DialogSurface style={{ maxWidth: "45rem", width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
+        <DialogBody>
+          <DialogTitle
+            action={
+              <Button
+                appearance="subtle"
+                aria-label="close"
+                icon={<Dismiss24Regular />}
+                onClick={handleClose}
+                disabled={isSubmitting}
+              />
+            }
+          >
+            Crear Nuevo Lugar
+          </DialogTitle>
+          <DialogContent>
+            <form onSubmit={handleSubmit} className={styles.form} id="create-place-form">
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Información del Lugar</h3>
+                
                 <InputComponent
                   type="text"
-                  label="Calle"
+                  label="Nombre del Lugar"
                   required
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="Nombre de la calle"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Ej: Hotel Marriott, Aeropuerto Internacional, etc."
                   disabled={isSubmitting}
-                  hasError={!!errors.address}
-                  errorMessage={errors.address}
+                  hasError={!!errors.name}
+                  errorMessage={errors.name}
                 />
               </div>
 
-              <div className={styles.fieldSmall}>
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Dirección</h3>
+                
+                <div className={styles.rowAddress}>
+                  <div className={styles.fieldLarge}>
+                    <InputComponent
+                      type="text"
+                      label="Calle"
+                      required
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      placeholder="Nombre de la calle"
+                      disabled={isSubmitting}
+                      hasError={!!errors.address}
+                      errorMessage={errors.address}
+                    />
+                  </div>
+
+                  <div className={styles.fieldSmall}>
+                    <InputComponent
+                      type="text"
+                      label="Número"
+                      value={formData.number}
+                      onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                      placeholder="Núm."
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+
                 <InputComponent
                   type="text"
-                  label="Número"
-                  value={formData.number}
-                  onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-                  placeholder="Núm."
+                  label="Colonia"
+                  value={formData.colonia}
+                  onChange={(e) => setFormData({ ...formData, colonia: e.target.value })}
+                  placeholder="Colonia"
                   disabled={isSubmitting}
                 />
-              </div>
-            </div>
 
-            <InputComponent
-              type="text"
-              label="Colonia"
-              value={formData.colonia}
-              onChange={(e) => setFormData({ ...formData, colonia: e.target.value })}
-              placeholder="Colonia"
-              disabled={isSubmitting}
-            />
+                <div className={styles.row}>
+                  <div className={styles.field}>
+                    <InputComponent
+                      type="text"
+                      label="Ciudad"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      placeholder="Ciudad"
+                      disabled={isSubmitting}
+                    />
+                  </div>
 
-            <div className={styles.row}>
-              <div className={styles.field}>
+                  <div className={styles.field}>
+                    <InputComponent
+                      type="text"
+                      label="Estado"
+                      value={formData.state}
+                      onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                      placeholder="Estado"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+
                 <InputComponent
                   type="text"
-                  label="Ciudad"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  placeholder="Ciudad"
+                  label="Código Postal"
+                  value={formData.zip_code}
+                  onChange={(e) => setFormData({ ...formData, zip_code: e.target.value.replace(/\D/g, '') })}
+                  placeholder="00000"
                   disabled={isSubmitting}
                 />
               </div>
 
-              <div className={styles.field}>
+              <div className={styles.section}>
+                <div className={styles.checkboxGroup}>
+                  <label className={styles.checkbox}>
+                    <input
+                      type="checkbox"
+                      checked={formData.should_save}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          should_save: e.target.checked,
+                        })
+                      }
+                      disabled={isSubmitting}
+                    />
+                    <span>Guardar este lugar para uso futuro</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>Notas Adicionales</h3>
+                
                 <InputComponent
                   type="text"
-                  label="Estado"
-                  value={formData.state}
-                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  placeholder="Estado"
+                  label="Anotaciones"
+                  value={formData.annotations}
+                  onChange={(e) => setFormData({ ...formData, annotations: e.target.value })}
+                  placeholder="Referencias, instrucciones especiales, etc. (opcional)"
                   disabled={isSubmitting}
                 />
               </div>
-            </div>
-
-            <InputComponent
-              type="text"
-              label="Código Postal"
-              value={formData.zip_code}
-              onChange={(e) => setFormData({ ...formData, zip_code: e.target.value.replace(/\D/g, '') })}
-              placeholder="00000"
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <div className={styles.section}>
-            <div className={styles.checkboxGroup}>
-              <label className={styles.checkbox}>
-                <input
-                  type="checkbox"
-                  checked={formData.should_save}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      should_save: e.target.checked,
-                    })
-                  }
-                  disabled={isSubmitting}
-                />
-                <span>Guardar este lugar para uso futuro</span>
-              </label>
-            </div>
-          </div>
-
-          <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Notas Adicionales</h3>
-            
-            <InputComponent
-              type="text"
-              label="Anotaciones"
-              value={formData.annotations}
-              onChange={(e) => setFormData({ ...formData, annotations: e.target.value })}
-              placeholder="Referencias, instrucciones especiales, etc. (opcional)"
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <div className={styles.modalActions}>
+            </form>
+          </DialogContent>
+          <DialogActions>
             <ButtonComponent
               type="button"
               onClick={handleClose}
@@ -279,10 +296,11 @@ export default function CreatePlaceModal({
               text={isSubmitting ? 'Creando...' : 'Crear'}
               disabled={isSubmitting}
               className={styles.submitButton}
+              onClick={handleSubmit}
             />
-          </div>
-        </form>
-      </div>
-    </div>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
   );
 }

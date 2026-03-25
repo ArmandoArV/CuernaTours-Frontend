@@ -215,9 +215,14 @@ export default function CreateSpendingContent({ backRoute = "/chofer/gastos" }: 
 
           <div className={styles.formRow}>
             <div className={styles.formField}>
-              <Field label="Servicio">
+              <Field
+                label="Servicio"
+                required
+                validationMessage={errors.contractId}
+                validationState={errors.contractId ? "error" : "none"}
+              >
                 <Dropdown
-                  placeholder={refsLoading ? "Cargando..." : "Selecciona contrato (opcional)"}
+                  placeholder={refsLoading ? "Cargando..." : "Selecciona contrato"}
                   disabled={refsLoading || contracts.length === 0}
                   onOptionSelect={(_, data) =>
                     setContractId(data.optionValue ? Number(data.optionValue) : null)
@@ -259,8 +264,7 @@ export default function CreateSpendingContent({ backRoute = "/chofer/gastos" }: 
 
           <div className={styles.formFieldFull}>
             <Field
-              label="Descripción o Comentarios"
-              required
+              label="Descripción o Comentarios (opcional)"
               validationMessage={errors.description}
             >
               <Textarea

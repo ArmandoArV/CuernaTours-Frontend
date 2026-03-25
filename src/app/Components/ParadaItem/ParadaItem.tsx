@@ -4,12 +4,14 @@ import styles from "./ParadaItem.module.css";
 import SearchableSelectComponent, { SearchableSelectOption } from "../SearchableSelectComponent/SearchableSelectComponent";
 import InputComponent from "../InputComponent/InputComponent";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
-import { DeleteRegular, AddFilled } from "@fluentui/react-icons";
+import { DeleteRegular, AddFilled, Edit24Regular } from "@fluentui/react-icons";
 import type { Parada } from "@/app/hooks/useParadas";
 
 interface ParadaItemProps {
   parada: Parada;
   index: number;
+  isEditing: boolean;
+  onToggleEdit: () => void;
   onRemove: (id: string) => void;
   onChange: (id: string, field: keyof Parada, value: string) => void;
   onPlaceSelect: (id: string, placeId: string, option?: SearchableSelectOption) => void;
@@ -21,6 +23,8 @@ interface ParadaItemProps {
 export default function ParadaItem({
   parada,
   index,
+  isEditing,
+  onToggleEdit,
   onRemove,
   onChange,
   onPlaceSelect,
@@ -30,6 +34,20 @@ export default function ParadaItem({
 }: ParadaItemProps) {
   return (
     <div className={styles.paradaContainer}>
+      <div className={styles.paradaHeader}>
+        <h3 className={styles.paradaTitle}>Parada {index + 1}</h3>
+        {!isEditing && (
+          <button
+            type="button"
+            onClick={onToggleEdit}
+            className={styles.editButton}
+            title="Editar dirección de parada"
+          >
+            <Edit24Regular />
+          </button>
+        )}
+      </div>
+
       <div className={styles.section}>
         <SearchableSelectComponent
           label={`Parada`}
@@ -50,6 +68,7 @@ export default function ParadaItem({
           label="Descripción de la parada"
           placeholder="Ej: Parar por café en algún Oxxo"
           className={styles.input}
+          disabled={!isEditing}
         />
       </div>
 
@@ -61,6 +80,7 @@ export default function ParadaItem({
           label="Calle"
           required
           containerClassName={styles.streetInputContainer}
+          disabled={!isEditing}
         />
         <InputComponent
           type="text"
@@ -68,6 +88,7 @@ export default function ParadaItem({
           onChange={(e) => onChange(parada.id, "numero", e.target.value)}
           label="Número"
           containerClassName={styles.numberInputContainer}
+          disabled={!isEditing}
         />
       </div>
 
@@ -79,6 +100,7 @@ export default function ParadaItem({
           label="Colonia"
           className={styles.input}
           containerClassName={styles.streetInputContainer}
+          disabled={!isEditing}
         />
         <InputComponent
           type="text"
@@ -87,6 +109,7 @@ export default function ParadaItem({
           label="Código postal"
           className={styles.input}
           containerClassName={styles.numberInputContainer}
+          disabled={!isEditing}
         />
       </div>
 
@@ -98,6 +121,7 @@ export default function ParadaItem({
           label="Ciudad"
           required
           className={styles.input}
+          disabled={!isEditing}
         />
         <InputComponent
           type="text"
@@ -106,6 +130,7 @@ export default function ParadaItem({
           label="Estado"
           required
           className={styles.input}
+          disabled={!isEditing}
         />
       </div>
 

@@ -39,7 +39,7 @@ import type { TripFormData } from "@/app/Types/OrderTripTypes";
 import { useTripDropdowns } from "@/app/hooks/useTripDropdowns";
 import { usePlaceSelection } from "@/app/hooks/usePlaceSelection";
 import { useParadas, Parada } from "@/app/hooks/useParadas";
-import { useUnidades } from "@/app/hooks/useUnidades";
+import { useUnidades, UnitAssignment } from "@/app/hooks/useUnidades";
 import { useAddressEditor } from "@/app/hooks/useAddressEditor";
 import UnidadItem from "../UnidadItem/UnidadItem";
 import { Logger } from "@/app/Utils/Logger";
@@ -159,6 +159,8 @@ export default function CreateTripContent({
     handleRemoveParada,
     handleParadaChange,
     handleParadaPlaceSelect,
+    isParadaEditing,
+    toggleParadaEdit,
   } = useParadas();
 
   const {
@@ -168,6 +170,8 @@ export default function CreateTripContent({
     handleRemoveParada: handleRemoveReturnParada,
     handleParadaChange: handleReturnParadaChange,
     handleParadaPlaceSelect: handleReturnParadaPlaceSelect,
+    isParadaEditing: isReturnParadaEditing,
+    toggleParadaEdit: toggleReturnParadaEdit,
   } = useParadas();
 
   const [returnStopOption, setReturnStopOption] = useState<"none" | "reverse" | "custom">("none");
@@ -389,6 +393,7 @@ export default function CreateTripContent({
               idaMinutos !== undefined ? idaMinutos.toString() : undefined,
             idaAmPm,
             idaPasajeros: trip.passengers?.toString() || "",
+            numeroPasajeros: trip.passengers?.toString() || "",
             nombreChofer: trip.driver?.id?.toString() || "",
             observacionesChofer: trip.internal_notes || "",
             observacionesCliente: trip.notes || "",
@@ -418,7 +423,71 @@ export default function CreateTripContent({
             }));
             if (selections.length > 0) {
               setTypeSelections(selections);
+
+              // Prefill individual unit assignments (driver/vehicle per unit)
+              // We need a short delay so the useEffect in useUnidades generates the assignment slots first
+              setTimeout(() => {
+                const prefillAssignments: UnitAssignment[] = [];
+                let assignmentIndex = 0;
+                selections.forEach((sel) => {
+                  const unitsOfType = trip.units.filter(
+                    (u: any) => (u.vehicle_type_id || u.vehicleTypeId || "").toString() === sel.vehicleTypeId
+                  );
+                  for (let i = 0; i < sel.quantity; i++) {
+                    const unit = unitsOfType[i];
+                    prefillAssignments.push({
+                      id: `${sel.id}-${i}`,
+                      vehicleTypeId: sel.vehicleTypeId,
+                      vehicleTypeName: unit?.vehicle_type_name || "",
+                      driverId: (unit?.driver_id || "").toString(),
+                      vehicleId: (unit?.vehicle_id || "").toString(),
+                      notes: unit?.notes || "",
+                    });
+                    assignmentIndex++;
+                  }
+                });
+                if (prefillAssignments.length > 0) {
+                  setUnitAssignments(prefillAssignments);
+                }
+              }, 100);
             }
+          }
+
+          // Prefill paradas (stops) from API response
+          if (trip.stops && Array.isArray(trip.stops) && trip.stops.length > 0) {
+            const prefillParadas: Parada[] = trip.stops
+              .sort((a: any, b: any) => (a.stop_order || 0) - (b.stop_order || 0))
+              .map((stop: any) => ({
+                id: (stop.stop_id || Date.now() + Math.random()).toString(),
+                nombreLugar: stop.place_id ? stop.place_id.toString() : "",
+                description: stop.description || "",
+                calle: stop.place?.address || stop.address || "",
+                numero: stop.place?.number || "",
+                colonia: stop.place?.colonia || "",
+                codigoPostal: stop.place?.zip_code || "",
+                ciudad: stop.place?.city || stop.city || "",
+                estado: stop.place?.state || stop.state || "",
+              }));
+            setParadas(prefillParadas);
+          }
+
+          // Prefill return paradas if available
+          if (trip.return_stops && Array.isArray(trip.return_stops) && trip.return_stops.length > 0) {
+            const prefillReturnParadas: Parada[] = trip.return_stops
+              .sort((a: any, b: any) => (a.stop_order || 0) - (b.stop_order || 0))
+              .map((stop: any) => ({
+                id: (stop.stop_id || Date.now() + Math.random()).toString(),
+                nombreLugar: stop.place_id ? stop.place_id.toString() : "",
+                description: stop.description || "",
+                calle: stop.place?.address || stop.address || "",
+                numero: stop.place?.number || "",
+                colonia: stop.place?.colonia || "",
+                codigoPostal: stop.place?.zip_code || "",
+                ciudad: stop.place?.city || stop.city || "",
+                estado: stop.place?.state || stop.state || "",
+              }));
+            setReturnParadas(prefillReturnParadas);
+            setReturnStopOption("custom");
           }
 
           setTripFormData((prev: any) => ({
@@ -521,6 +590,9 @@ export default function CreateTripContent({
 
   // Removed manual fetchLugares, fetchChoferes, fetchUnidades as they are in the hook
 
+  // Track whether the initial context → form sync has happened
+  const hasInitialSynced = useRef(false);
+
   // Load data and sync with context
   useEffect(() => {
     log.debug("CreateTripContent - OrderData:", orderData);
@@ -577,14 +649,17 @@ export default function CreateTripContent({
 
     const timeoutId = setTimeout(checkOrderData, 500);
 
-    // Sync form data with context data, ensuring proper defaults
-    setTripFormData((prev: any) => ({
-      ...prev,
-      ...tripData,
-      numeroPasajeros: tripData.regresoPasajeros || prev.numeroPasajeros || "",
-      idaFecha: tripData.idaFecha || prev.idaFecha || "",
-      regresoFecha: tripData.regresoFecha || prev.regresoFecha || "",
-    }));
+    // Only sync context → form on initial hydration, not on every change
+    if (!hasInitialSynced.current && isHydrated) {
+      hasInitialSynced.current = true;
+      setTripFormData((prev: any) => ({
+        ...prev,
+        ...tripData,
+        numeroPasajeros: tripData.regresoPasajeros || prev.numeroPasajeros || "",
+        idaFecha: tripData.idaFecha || prev.idaFecha || "",
+        regresoFecha: tripData.regresoFecha || prev.regresoFecha || "",
+      }));
+    }
 
     return () => clearTimeout(timeoutId);
   }, [orderData, tripData, isHydrated, router]);
@@ -756,8 +831,9 @@ export default function CreateTripContent({
 
         showSuccessAlert("Éxito", "Servicio y viaje creados correctamente");
 
-        // Clear all form data
+        // Clear all form data — both context state and localStorage directly
         clearData();
+        localStorage.removeItem("orderFormData");
         setParadas([]);
         setReturnParadas([]);
         setReturnStopOption("none");
@@ -827,20 +903,44 @@ export default function CreateTripContent({
                 fieldErrors.idaFecha ? "Este campo es obligatorio" : ""
               }
             />
-            <InputComponent
-              type="number"
-              value={String(tripFormData.idaHora ?? "")}
-              onChange={handleTripInputChange("idaHora")}
+            <SelectComponent
               label="Hora"
-              required
+              options={[
+                { value: "1", label: "1" },
+                { value: "2", label: "2" },
+                { value: "3", label: "3" },
+                { value: "4", label: "4" },
+                { value: "5", label: "5" },
+                { value: "6", label: "6" },
+                { value: "7", label: "7" },
+                { value: "8", label: "8" },
+                { value: "9", label: "9" },
+                { value: "10", label: "10" },
+                { value: "11", label: "11" },
+                { value: "12", label: "12" },
+              ]}
+              value={String(tripFormData.idaHora ?? "8")}
+              onChange={handleTripSelectChange("idaHora")}
               className={styles.input}
             />
-            <InputComponent
-              type="number"
-              value={String(tripFormData.idaMinutos ?? "")}
-              onChange={handleTripInputChange("idaMinutos")}
+            <SelectComponent
               label="Minutos"
-              required
+              options={[
+                { value: "0", label: "00" },
+                { value: "5", label: "05" },
+                { value: "10", label: "10" },
+                { value: "15", label: "15" },
+                { value: "20", label: "20" },
+                { value: "25", label: "25" },
+                { value: "30", label: "30" },
+                { value: "35", label: "35" },
+                { value: "40", label: "40" },
+                { value: "45", label: "45" },
+                { value: "50", label: "50" },
+                { value: "55", label: "55" },
+              ]}
+              value={String(tripFormData.idaMinutos ?? "0")}
+              onChange={handleTripSelectChange("idaMinutos")}
               className={styles.input}
             />
             <SelectComponent
@@ -852,18 +952,6 @@ export default function CreateTripContent({
               value={tripFormData.idaAmPm || "AM"}
               onChange={handleTripSelectChange("idaAmPm")}
               className={styles.input}
-            />
-            <InputComponent
-              type="number"
-              value={String(tripFormData.idaPasajeros ?? "")}
-              onChange={handleTripInputChange("idaPasajeros")}
-              label="Pasajeros"
-              required
-              className={styles.input}
-              hasError={fieldErrors.idaPasajeros}
-              errorMessage={
-                fieldErrors.idaPasajeros ? "Este campo es obligatorio" : ""
-              }
             />
           </div>
 
@@ -1242,20 +1330,44 @@ export default function CreateTripContent({
                   placeholder="dd/mm/yyyy"
                   required
                 />
-                <InputComponent
-                  type="number"
-                  value={String(tripFormData.regresoHora ?? "")}
-                  onChange={handleTripInputChange("regresoHora")}
+                <SelectComponent
                   label="Hora"
-                  required
+                  options={[
+                    { value: "1", label: "1" },
+                    { value: "2", label: "2" },
+                    { value: "3", label: "3" },
+                    { value: "4", label: "4" },
+                    { value: "5", label: "5" },
+                    { value: "6", label: "6" },
+                    { value: "7", label: "7" },
+                    { value: "8", label: "8" },
+                    { value: "9", label: "9" },
+                    { value: "10", label: "10" },
+                    { value: "11", label: "11" },
+                    { value: "12", label: "12" },
+                  ]}
+                  value={String(tripFormData.regresoHora ?? "8")}
+                  onChange={handleTripSelectChange("regresoHora")}
                   className={styles.input}
                 />
-                <InputComponent
-                  type="number"
-                  value={String(tripFormData.regresoMinutos ?? "")}
-                  onChange={handleTripInputChange("regresoMinutos")}
+                <SelectComponent
                   label="Minutos"
-                  required
+                  options={[
+                    { value: "0", label: "00" },
+                    { value: "5", label: "05" },
+                    { value: "10", label: "10" },
+                    { value: "15", label: "15" },
+                    { value: "20", label: "20" },
+                    { value: "25", label: "25" },
+                    { value: "30", label: "30" },
+                    { value: "35", label: "35" },
+                    { value: "40", label: "40" },
+                    { value: "45", label: "45" },
+                    { value: "50", label: "50" },
+                    { value: "55", label: "55" },
+                  ]}
+                  value={String(tripFormData.regresoMinutos ?? "0")}
+                  onChange={handleTripSelectChange("regresoMinutos")}
                   className={styles.input}
                 />
                 <SelectComponent
@@ -1291,6 +1403,8 @@ export default function CreateTripContent({
               key={parada.id}
               parada={parada}
               index={index}
+              isEditing={isParadaEditing(parada.id)}
+              onToggleEdit={() => toggleParadaEdit(parada.id)}
               onRemove={handleRemoveParada}
               onChange={handleParadaChange}
               onPlaceSelect={handleParadaPlaceSelect}
@@ -1360,6 +1474,8 @@ export default function CreateTripContent({
                       key={parada.id}
                       parada={parada}
                       index={index}
+                      isEditing={isReturnParadaEditing(parada.id)}
+                      onToggleEdit={() => toggleReturnParadaEdit(parada.id)}
                       onRemove={handleRemoveReturnParada}
                       onChange={handleReturnParadaChange}
                       onPlaceSelect={handleReturnParadaPlaceSelect}
@@ -1445,18 +1561,18 @@ export default function CreateTripContent({
                               className={styles.input}
                             />
                           </div>
-                          <div>
-                            <InputComponent
-                              type="text"
-                              value={asgn.notes}
-                              onChange={(e) =>
-                                handleAssignmentChange(asgn.id, "notes", e.target.value)
-                              }
-                              label="Notas"
-                              placeholder="Ej: SUV para directivos"
-                              className={styles.input}
-                            />
-                          </div>
+                        </div>
+                        <div style={{ marginTop: "0.75rem" }}>
+                          <InputComponent
+                            type="text"
+                            value={asgn.notes}
+                            onChange={(e) =>
+                              handleAssignmentChange(asgn.id, "notes", e.target.value)
+                            }
+                            label="Notas"
+                            placeholder="Ej: SUV para directivos"
+                            className={styles.input}
+                          />
                         </div>
                       </div>
                     );

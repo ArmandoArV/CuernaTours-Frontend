@@ -62,6 +62,15 @@ class TripsService {
   }
 
   /**
+   * Get trips by contract ID
+   */
+  async getByContractId(contractId: number): Promise<ContractTrip[]> {
+    const endpoint = API_ENDPOINTS.TRIPS.BY_CONTRACT(contractId);
+    const response = await apiClient.get<ContractTrip[]>(endpoint);
+    return validateResponse<ContractTrip[]>(response);
+  }
+
+  /**
    * Update existing trip
    */
   async update(tripId: number, data: UpdateTripRequest): Promise<ContractTrip> {

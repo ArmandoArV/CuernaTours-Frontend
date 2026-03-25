@@ -582,10 +582,10 @@ export default function AdminSpendingsContent() {
                   onClick={handleAction}
                   disabled={actionLoading}
                   icon={actionLoading ? <Spinner size="tiny" /> : undefined}
-                  className={
+                  style={
                     actionDialog.type === "approve"
-                      ? styles.approveBtn
-                      : styles.denyBtn
+                      ? { backgroundColor: "#059669", borderColor: "#059669", color: "white" }
+                      : { backgroundColor: "#dc2626", borderColor: "#dc2626", color: "white" }
                   }
                 >
                   {actionDialog.type === "approve" ? "Aprobar" : "Rechazar"}

@@ -19,8 +19,33 @@ export interface Parada {
 
 export function useParadas(initialParadas: Parada[] = []) {
   const [paradas, setParadas] = useState<Parada[]>(initialParadas);
+  const [editingParadas, setEditingParadas] = useState<Record<string, boolean>>({});
+
+  const isParadaEditing = useCallback(
+    (id: string) => editingParadas[id] || false,
+    [editingParadas],
+  );
+
+  const toggleParadaEdit = useCallback((id: string) => {
+    setEditingParadas((prev) => ({ ...prev, [id]: !prev[id] }));
+  }, []);
+
+  const startParadaEdit = useCallback((id: string) => {
+    setEditingParadas((prev) => ({ ...prev, [id]: true }));
+  }, []);
+
+  const stopParadaEdit = useCallback((id: string) => {
+    setEditingParadas((prev) => ({ ...prev, [id]: false }));
+  }, []);
 
   const handleAddParada = useCallback(() => {
+    // Validate that the last parada has required fields before adding a new one
+    if (paradas.length > 0) {
+      const lastParada = paradas[paradas.length - 1];
+      if (!lastParada.nombreLugar && !lastParada.calle) {
+        return; // Don't add a new stop if the last one is empty
+      }
+    }
     const newParada: Parada = {
       id: Date.now().toString(),
       nombreLugar: "",
@@ -33,7 +58,8 @@ export function useParadas(initialParadas: Parada[] = []) {
       estado: "",
     };
     setParadas((prev) => [...prev, newParada]);
-  }, []);
+    startParadaEdit(newParada.id);
+  }, [paradas, startParadaEdit]);
 
   const handleRemoveParada = useCallback((id: string) => {
     setParadas((prev) => prev.filter((p) => p.id !== id));
@@ -74,12 +100,13 @@ export function useParadas(initialParadas: Parada[] = []) {
                 : p,
             ),
           );
+          stopParadaEdit(id);
         } catch (error) {
           log.error("Error fetching place details:", error);
         }
       }
     },
-    [handleParadaChange],
+    [handleParadaChange, stopParadaEdit],
   );
 
   return {
@@ -89,5 +116,9 @@ export function useParadas(initialParadas: Parada[] = []) {
     handleRemoveParada,
     handleParadaChange,
     handleParadaPlaceSelect,
+    isParadaEditing,
+    toggleParadaEdit,
+    startParadaEdit,
+    stopParadaEdit,
   };
 }

@@ -106,7 +106,7 @@ export default function ConfirmationModal({
     <Dialog open={isOpen} onOpenChange={(_, data) => { if (!data.open) onClose(); }}>
       <DialogSurface className={dialogStyles.surface}>
         <DialogBody>
-          <DialogTitle>Resumen de la orden</DialogTitle>
+          <DialogTitle style={{ paddingLeft: "1.5rem" }}>Resumen de la orden</DialogTitle>
 
           <DialogContent>
             <div className={styles.modalContent}>
@@ -145,9 +145,7 @@ export default function ConfirmationModal({
                   <div className={styles.infoItem}>
                     <div className={styles.summaryLabel}>No. pasajeros</div>
                     <div className={styles.summaryValue}>
-                      {tripFormData?.idaPasajeros ||
-                        tripFormData?.numeroPasajeros ||
-                        "0"}
+                      {tripFormData?.numeroPasajeros || "0"}
                     </div>
                   </div>
 

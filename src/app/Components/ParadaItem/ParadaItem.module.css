@@ -8,6 +8,37 @@
   box-sizing: border-box;
 }
 
+.paradaHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.paradaTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a2e47;
+  margin: 0;
+}
+
+.editButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #1a2e47;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.editButton:hover {
+  background-color: #f0f0f0;
+}
+
 .section {
   display: flex;
   gap: 1rem;

@@ -178,6 +178,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const [orderData, setOrderData] = useState<OrderFormData>(defaultOrderData);
   const [tripData, setTripData] = useState<TripFormData>(defaultTripData);
   const [isHydrated, setIsHydrated] = useState(false);
+  const isCleared = React.useRef(false);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -188,6 +189,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     orderDataOverride?: OrderFormData,
     tripDataOverride?: TripFormData,
   ) => {
+    isCleared.current = false; // Reset cleared flag on explicit save
     const data = {
       orderData: orderDataOverride ?? orderData,
       tripData: tripDataOverride ?? tripData,
@@ -225,6 +227,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   };
 
   const clearData = () => {
+    isCleared.current = true;
     setOrderData(defaultOrderData);
     setTripData(defaultTripData);
     localStorage.removeItem("orderFormData");
@@ -232,10 +235,14 @@ export function OrderProvider({ children }: { children: ReactNode }) {
 
   // Auto-save to localStorage whenever data changes
   useEffect(() => {
+    // Don't auto-save after clearData was called
+    if (isCleared.current) return;
     // Only save if we have actual data (not just default values)
     if (orderData.empresa || tripData.idaFecha) {
       const timeoutId = setTimeout(() => {
-        saveToLocalStorage();
+        if (!isCleared.current) {
+          saveToLocalStorage();
+        }
       }, 500); // Debounce saves
 
       return () => clearTimeout(timeoutId);

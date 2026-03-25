@@ -106,10 +106,6 @@ const AddValeModal: React.FC<AddValeModalProps> = ({
       errs.amount = "Ingresa un monto válido mayor a $0";
     }
 
-    if (!concepto.trim()) {
-      errs.concepto = "El concepto es obligatorio";
-    }
-
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -207,8 +203,7 @@ const AddValeModal: React.FC<AddValeModalProps> = ({
 
               {/* Concepto */}
               <Field
-                label="Concepto"
-                required
+                label="Concepto (opcional)"
                 validationMessage={formErrors.concepto}
                 validationState={formErrors.concepto ? "error" : "none"}
               >

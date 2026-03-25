@@ -40,17 +40,30 @@ function transformHistoricalData(apiData: any[]): any[] {
       // Vehicle type: prefer first unit, fall back gracefully
       const firstUnit = (trip.units || [])[0];
       const unitDisplay = firstUnit?.vehicle_type_name || firstUnit?.vehicle_type || "";
-      // Driver: check unit-level driver fields
-      // Driver: read from nested driver object returned by the API
-      const driver = firstUnit?.driver;
-      const driverName = driver
-        ? driver.is_external
-          ? driver.name || ""
-          : `${driver.name || ""} ${driver.lastname || ""}`.trim()
-        : "";
+
+      // Driver: check all units for driver info (internal + external), then trip-level fallback
+      let driverName = "";
+      for (const u of trip.units || []) {
+        const d = u.driver;
+        if (d) {
+          driverName = d.driver_displayname || d.full_name || `${d.name || ""} ${d.first_lastname || d.lastname || ""}`.trim();
+          if (driverName) break;
+        }
+        const ed = u.external_driver;
+        if (ed) {
+          driverName = ed.driver_displayname || ed.driver_name || ed.name || ed.full_name || "";
+          if (driverName) break;
+        }
+      }
+      if (!driverName && trip.driver) {
+        driverName = trip.driver.driver_displayname || trip.driver.name || trip.driver.full_name || "";
+      }
+
+      // Client name: primary path is nested object, fallback to flat field
+      const clientName = contract.client?.name || contract.client_name;
 
       rows.push({
-        "Empresa o Cliente": formatPersonName(contract.client_name),
+        "Empresa o Cliente": formatPersonName(clientName),
         Origen: trip.origin?.name || "",
         Destino: trip.destination?.name || "",
         Fecha: formatDateStandard(trip.service_date),

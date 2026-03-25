@@ -240,13 +240,16 @@ const ClientPaymentModal: React.FC<ClientPaymentModalProps> = ({
                 <Field
                   label="Monto del pago"
                   required
-                  validationMessage={formErrors.amount}
+                  validationMessage={formErrors.amount || undefined}
+                  validationState={formErrors.amount ? "error" : "none"}
                 >
                   <Input
                     type="number"
+                    min="0"
                     value={amount}
                     onChange={(_, d) => {
-                      setAmount(d.value);
+                      const val = d.value.replace(/-/g, "");
+                      setAmount(val);
                       setFormErrors((p) => ({ ...p, amount: "" }));
                     }}
                     placeholder="0.00"
@@ -259,7 +262,8 @@ const ClientPaymentModal: React.FC<ClientPaymentModalProps> = ({
                   <Field
                     label="Fecha de pago"
                     required
-                    validationMessage={formErrors.paymentDate}
+                    validationMessage={formErrors.paymentDate || undefined}
+                    validationState={formErrors.paymentDate ? "error" : "none"}
                   >
                     <Input
                       type="date"
@@ -273,7 +277,8 @@ const ClientPaymentModal: React.FC<ClientPaymentModalProps> = ({
                   <Field
                     label="Tipo de pago"
                     required
-                    validationMessage={formErrors.paymentTypeId}
+                    validationMessage={formErrors.paymentTypeId || undefined}
+                    validationState={formErrors.paymentTypeId ? "error" : "none"}
                   >
                     <Dropdown
                       value={
@@ -327,7 +332,7 @@ const ClientPaymentModal: React.FC<ClientPaymentModalProps> = ({
             <Button
               appearance="primary"
               onClick={handleSave}
-              disabled={saving || loading || !!error}
+              disabled={saving || loading || !!error || remaining <= 0}
               style={{ backgroundColor: "#96781a", borderColor: "#96781a" }}
             >
               {saving ? <Spinner size="tiny" /> : "Registrar Pago"}
