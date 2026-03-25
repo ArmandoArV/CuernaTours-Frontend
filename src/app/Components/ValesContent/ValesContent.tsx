@@ -449,7 +449,7 @@ export default function ValesContent() {
             onClick={openAssignDialog}
             style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47" }}
           >
-            Asignar Vale
+            Registrar Vale
           </Button>
         </div>
       </div>
@@ -756,7 +756,7 @@ export default function ValesContent() {
                 />
               }
             >
-              Asignar Vale a Chofer
+              Registrar Vale a Chofer
             </DialogTitle>
 
             <DialogContent>
@@ -840,7 +840,7 @@ export default function ValesContent() {
                 icon={assignSaving ? <Spinner size="tiny" /> : <CheckmarkCircleRegular />}
                 style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47" }}
               >
-                {assignSaving ? "Asignando..." : "Asignar Vale"}
+                {assignSaving ? "Registrando..." : "Registrar Vale"}
               </Button>
             </DialogActions>
           </DialogBody>

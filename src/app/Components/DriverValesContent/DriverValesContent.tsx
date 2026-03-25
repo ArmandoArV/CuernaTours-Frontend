@@ -103,7 +103,7 @@ export default function DriverValesContent() {
             onClick={() => setIsValeModalOpen(true)}
             style={{ backgroundColor: "#1a2e47", borderColor: "#1a2e47" }}
           >
-            Registrar Vale
+            Asignar Vale
           </Button>
         </div>
       </div>
