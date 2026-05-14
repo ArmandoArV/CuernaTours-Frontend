@@ -255,16 +255,11 @@ const TableComponent: React.FC<TableComponentProps> = ({
             {columns.map((col, index) => (
               <TableHeaderCell
                 key={col}
-                className={`${styles.headerCell} ${index === 0 ? styles.headerCellFirst : ""} ${index === columns.length - 1 && !showActions ? styles.headerCellLast : ""}`}
+                className={`${styles.headerCell} ${index === 0 ? styles.headerCellFirst : ""} ${index === columns.length - 1 ? styles.headerCellLast : ""}`}
               >
                 {col}
               </TableHeaderCell>
             ))}
-            {showActions && (
-              <TableHeaderCell
-                className={`${styles.headerCell} ${styles.headerCellLast} ${styles.actionsHeaderCell}`}
-              />
-            )}
           </TableRow>
         </TableHeader>
 
@@ -273,7 +268,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
           {paginatedData.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={columns.length + (showActions ? 1 : 0)}
+                colSpan={columns.length}
                 className={styles.emptyMessage}
               >
                 {emptyMessage}
@@ -303,7 +298,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                   {showGroupHeader && (
                     <TableRow className={styles.groupHeaderRow}>
                       <TableCell
-                        colSpan={columns.length + (showActions ? 1 : 0)}
+                        colSpan={columns.length}
                         className={styles.groupHeaderCell}
                       >
                         {groupLabel}
@@ -335,6 +330,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                       const isStatusColumn =
                         col.toLowerCase() === "estatus" ||
                         col.toLowerCase() === "status";
+                      const isLastCol = colIndex === columns.length - 1;
 
                       return (
                         <TableCell
@@ -342,6 +338,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
                           className={
                             colIndex === 0 ? styles.firstCell : styles.cell
                           }
+                          style={isLastCol && showActions ? { display: "flex", alignItems: "center", justifyContent: "space-between" } : undefined}
                         >
                           {isStatusColumn ? (
                             <span
@@ -367,73 +364,72 @@ const TableComponent: React.FC<TableComponentProps> = ({
                           ) : (
                             (value || "---")
                           )}
-                        </TableCell>
-                      );
-                    })}
 
-                    {showActions && (
-                      <TableCell className={styles.actionsContainer}>
-                        <Tooltip content="Ver Detalles" relationship="label">
-                          <Button
-                            appearance="subtle"
-                            icon={<EyeFilled />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (isChofer) {
-                                handleRowToggle(row, globalRowIndex);
-                                return;
-                              }
-                              if (canViewDetails && id)
-                                router.push(`/dashboard/trips/${id}`);
-                            }}
-                          />
-                        </Tooltip>
+                          {isLastCol && showActions && (
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", marginLeft: "auto", flexShrink: 0 }}>
+                              <Tooltip content="Ver Detalles" relationship="label">
+                                <Button
+                                  appearance="transparent"
+                                  icon={<EyeFilled />}
+                                  style={{ border: "none", boxShadow: "none", outline: "none", background: "transparent", minWidth: "unset", width: "32px", height: "32px", padding: 0 }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (isChofer) {
+                                      handleRowToggle(row, globalRowIndex);
+                                      return;
+                                    }
+                                    if (canViewDetails && id)
+                                      router.push(`/dashboard/trips/${id}`);
+                                  }}
+                                />
+                              </Tooltip>
 
-                        {isChofer && (() => {
-                          const st = getStatusFromRow(row)?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-                          const canStart = st !== "en curso" && st !== "finalizado" && st !== "cancelado";
-                          const canFinish = st === "en curso";
-                          return (
-                            <>
-                              {canStart && (
-                                <Tooltip content="Iniciar Viaje" relationship="label">
-                                  <Button
-                                    appearance="subtle"
-                                    icon={<PlayFilled />}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDriverStatusChange(row, 4);
-                                    }}
-                                    style={{ color: "#2563eb" }}
-                                  />
-                                </Tooltip>
-                              )}
-                              {canFinish && (
-                                <Tooltip content="Finalizar Viaje" relationship="label">
-                                  <Button
-                                    appearance="subtle"
-                                    icon={<CheckmarkCircleFilled />}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDriverStatusChange(row, 6);
-                                    }}
-                                    style={{ color: "#059669" }}
-                                  />
-                                </Tooltip>
-                              )}
-                            </>
-                          );
-                        })()}
+                              {isChofer && (() => {
+                                const st = getStatusFromRow(row)?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                                const canStart = st !== "en curso" && st !== "finalizado" && st !== "cancelado";
+                                const canFinish = st === "en curso";
+                                return (
+                                  <>
+                                    {canStart && (
+                                      <Tooltip content="Iniciar Viaje" relationship="label">
+                                        <Button
+                                          appearance="subtle"
+                                          icon={<PlayFilled />}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDriverStatusChange(row, 4);
+                                          }}
+                                          style={{ color: "#2563eb", minWidth: "unset", width: "32px", height: "32px", padding: 0 }}
+                                        />
+                                      </Tooltip>
+                                    )}
+                                    {canFinish && (
+                                      <Tooltip content="Finalizar Viaje" relationship="label">
+                                        <Button
+                                          appearance="subtle"
+                                          icon={<CheckmarkCircleFilled />}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDriverStatusChange(row, 6);
+                                          }}
+                                          style={{ color: "#059669", minWidth: "unset", width: "32px", height: "32px", padding: 0 }}
+                                        />
+                                      </Tooltip>
+                                    )}
+                                  </>
+                                );
+                              })()}
 
-                        {canManage && (
-                          <Menu>
-                            <MenuTrigger disableButtonEnhancement>
-                              <Button
-                                appearance="subtle"
-                                icon={<MoreVerticalRegular />}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </MenuTrigger>
+                              {canManage && (
+                                <Menu>
+                                  <MenuTrigger disableButtonEnhancement>
+                                    <Button
+                                      appearance="subtle"
+                                      icon={<MoreVerticalRegular />}
+                                      onClick={(e) => e.stopPropagation()}
+                                      style={{ minWidth: "unset", width: "32px", height: "32px", padding: 0 }}
+                                    />
+                                  </MenuTrigger>
                             <MenuPopover>
                               <MenuList>
                                 <MenuItem
@@ -532,17 +528,20 @@ const TableComponent: React.FC<TableComponentProps> = ({
                                 </MenuItem>
                               </MenuList>
                             </MenuPopover>
-                          </Menu>
-                        )}
-                      </TableCell>
-                    )}
+                              </Menu>
+                            )}
+                            </span>
+                          )}
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
 
                   {/* Inline details for Chofer only */}
                   {isChofer && isSelected && (
                     <TableRow>
                       <TableCell
-                        colSpan={columns.length + (showActions ? 1 : 0)}
+                        colSpan={columns.length}
                         className={styles.detailsRowCell}
                       >
                         <DetailsPanel data={selectedRow} />

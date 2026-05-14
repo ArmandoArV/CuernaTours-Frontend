@@ -14,6 +14,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { authService } from "@/services/api";
 import { getCookie } from "@/app/Utils/CookieUtil";
 import { Logger } from "@/app/Utils/Logger";
+import { showWarningAlert } from "@/app/Utils/AlertUtil";
 
 const log = Logger.getLogger("AuthContext");
 
@@ -147,13 +148,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Kick user out — clear state and redirect
   const clearAndRedirect = useCallback(
-    (currentPath: string) => {
+    (currentPath: string, showExpiredModal = false) => {
       authService.clearSession();
       setIsAuthenticated(false);
       setUser(null);
       setRoleId(null);
       if (!isPublicRoute(currentPath)) {
-        router.push("/");
+        if (showExpiredModal) {
+          showWarningAlert(
+            "Sesión expirada",
+            "Tu sesión ha expirado. Por favor inicia sesión nuevamente.",
+            () => router.push("/"),
+          );
+        } else {
+          router.push("/");
+        }
       }
     },
     [router],
@@ -196,11 +205,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         handleRoleRedirects(pathname, serverRoleId);
       } else {
-        clearAndRedirect(pathname);
+        clearAndRedirect(pathname, true);
       }
     } catch (error) {
       log.error("Token validation error:", error);
-      clearAndRedirect(pathname);
+      clearAndRedirect(pathname, true);
     } finally {
       setIsLoading(false);
     }
@@ -232,7 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!hasToken) {
       log.warn("Token cookie missing on route change — logging out");
-      clearAndRedirect(pathname);
+      clearAndRedirect(pathname, true);
     } else if (!isAuthenticated) {
       // Token exists but context says not authenticated (e.g. just logged in)
       validateAuth();

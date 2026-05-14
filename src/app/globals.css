@@ -117,6 +117,25 @@ button:active:not(:disabled) {
   animation: gentleBounce 1.5s ease-in-out 0.5s;
 }
 
+/* Remove FluentUI shadow/border on action cells in tables */
+td[class*="actionsContainer"],
+td[class*="actionsContainer"] button.fui-Button,
+td[class*="actionsContainer"] .fui-Button {
+  box-shadow: none !important;
+  border: none !important;
+}
+td[class*="actionsContainer"] button.fui-Button::after,
+td[class*="actionsContainer"] .fui-Button::after {
+  box-shadow: none !important;
+  outline: none !important;
+  border: none !important;
+}
+
+/* Remove FluentUI default border-bottom on all table cells */
+.fui-TableCell {
+  border-bottom: none !important;
+}
+
 html,
 body {
   margin: 0;
